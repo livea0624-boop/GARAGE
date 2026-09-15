@@ -454,7 +454,361 @@ body:not(.light-theme) .seller-add-line input::placeholder{color:#7f8ea0!importa
   font-weight:750;
 }
 </style>
-</head>
+
+<style id="garage-premium-theme-v2">
+/* GARAGE premium visual refresh: colors only */
+:root{
+ --blue:#2f80ed;
+ --bg:#f3f5f7;
+ --card:#ffffff;
+ --text:#172033;
+ --muted:#64748b;
+ --line:#d9e1ea;
+ --field:#ffffff;
+}
+body.light-theme{
+ background:#f3f5f7!important;
+ color:#172033!important;
+}
+body.light-theme .card,
+body.light-theme .stat,
+body.light-theme .rowcard,
+body.light-theme .car,
+body.light-theme .win-card{
+ background:#fff!important;
+ border-color:#d9e1ea!important;
+ box-shadow:0 4px 14px rgba(15,23,42,.05)!important;
+}
+body.light-theme .btn,
+body.light-theme .smallbtn,
+body.light-theme .filter{
+ background:#f8fafc!important;
+ color:#334155!important;
+ border:1px solid #d6dee8!important;
+}
+body.light-theme .btn:hover,
+body.light-theme .smallbtn:hover,
+body.light-theme .filter:hover{
+ border-color:#2f80ed!important;
+ background:#fff!important;
+}
+body.light-theme .btn.primary,
+body.light-theme .smallbtn.primary,
+body.light-theme .filter.active{
+ background:#2f80ed!important;
+ border-color:#2f80ed!important;
+ color:#fff!important;
+}
+
+/* dark */
+body:not(.light-theme){
+ --bg:#0b1016;
+ --card:#121922;
+ --text:#e7edf5;
+ --line:#273443;
+}
+body:not(.light-theme) .card,
+body:not(.light-theme) .stat,
+body:not(.light-theme) .rowcard,
+body:not(.light-theme) .car,
+body:not(.light-theme) .win-card{
+ background:#121922!important;
+ border-color:#273443!important;
+ box-shadow:0 8px 25px rgba(0,0,0,.18)!important;
+}
+body:not(.light-theme) .btn,
+body:not(.light-theme) .smallbtn,
+body:not(.light-theme) .filter{
+ background:#151d27!important;
+ color:#dbe5ef!important;
+ border:1px solid #2b3745!important;
+}
+body:not(.light-theme) .btn:hover,
+body:not(.light-theme) .smallbtn:hover,
+body:not(.light-theme) .filter:hover{
+ border-color:#2f80ed!important;
+ background:#192432!important;
+}
+body:not(.light-theme) .btn.primary,
+body:not(.light-theme) .smallbtn.primary,
+body:not(.light-theme) .filter.active{
+ background:#2f80ed!important;
+ border-color:#2f80ed!important;
+ color:#fff!important;
+}
+
+/* unified controls */
+.btn,.smallbtn,.filter{
+ border-radius:10px!important;
+ min-height:40px;
+ font-weight:700;
+ transition:.18s ease;
+}
+.card,.stat,.rowcard,.car,.win-card{
+ border-radius:14px!important;
+}
+
+/* status badges */
+.status{
+ border-radius:999px!important;
+ padding:5px 10px!important;
+ font-size:12px!important;
+ font-weight:750!important;
+}
+.s-wait,.s-notified{
+ background:rgba(234,179,8,.14)!important;
+ color:#d89b00!important;
+}
+.s-pick{
+ background:rgba(47,128,237,.14)!important;
+ color:#4ea0ff!important;
+}
+.s-done{
+ background:rgba(34,197,94,.14)!important;
+ color:#22c55e!important;
+}
+
+/* inputs */
+input,select,textarea{
+ border-radius:10px!important;
+}
+body:not(.light-theme) input,
+body:not(.light-theme) select,
+body:not(.light-theme) textarea{
+ background:#101720!important;
+ border-color:#2b3745!important;
+ color:#edf2f7!important;
+}
+</style>
+<style id="garage-dark-v3">
+body:not(.light-theme){
+--nav:#0b0f14;--nav2:#121820;--bg:#111418;--card:#1a2028;--text:#e8edf3;--muted:#94a3b8;--line:#303945;--blue:#4a90ff;
+background:#111418!important;color:var(--text)!important
+}
+body:not(.light-theme) .sidebar{background:linear-gradient(180deg,#0b0f14,#141a21);border-right:1px solid #29313b}
+body:not(.light-theme) .card,body:not(.light-theme) .stat,body:not(.light-theme) .rowcard,body:not(.light-theme) .car{background:#1a2028!important;border-color:#303945!important;box-shadow:none!important}
+body:not(.light-theme) .btn,body:not(.light-theme) .smallbtn,body:not(.light-theme) .filter{background:#171d25!important;border-color:#394554!important;color:#e8edf3!important}
+body:not(.light-theme) .btn:hover,body:not(.light-theme) .smallbtn:hover,body:not(.light-theme) .filter:hover{background:#222b36!important;border-color:#4a90ff!important}
+body:not(.light-theme) .btn.primary,body:not(.light-theme) .smallbtn.primary,body:not(.light-theme) .filter.active{background:#286bd6!important;border-color:#286bd6!important}
+body:not(.light-theme) .search input,body:not(.light-theme) .cars-search,body:not(.light-theme) .form input,body:not(.light-theme) .form select,body:not(.light-theme) .form textarea{background:#141a21!important;border-color:#344150!important;color:#edf2f7!important}
+body:not(.light-theme) .modalbox{background:#1a2028!important;border-color:#303945!important}
+body:not(.light-theme) .status{filter:saturate(.85)}
+body:not(.light-theme) .s-wait,body:not(.light-theme) .s-notified{background:#3a3215;color:#f7d774}
+body:not(.light-theme) .s-done{background:#203b5c;color:#9ecbff}
+body:not(.light-theme) .s-pick{background:#47301a;color:#ffc27a}
+body:not(.light-theme) .cart-client-head,body:not(.light-theme) .cart-add-box,body:not(.light-theme) .cart-item,body:not(.light-theme) .cart-total{background:#151b22;border-color:#303945}
+</style><style id="garage-dark-comfort-v4">
+/* GARAGE dark comfort theme */
+body:not(.light-theme){
+ --bg:#0f1115;
+ --card:#171b21;
+ --text:#d8dde5;
+ --muted:#8b95a3;
+ --line:#252b34;
+ background:#0f1115!important;
+ color:#d8dde5!important;
+}
+body:not(.light-theme) .sidebar{
+ background:#111419!important;
+ border-right:1px solid #20252d!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) .brand{border-bottom:1px solid #20252d!important}
+body:not(.light-theme) .nav button{color:#aeb7c4!important}
+body:not(.light-theme) .nav button:hover,body:not(.light-theme) .nav button.active{
+ background:#202731!important;
+ color:#eef2f7!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) .top{border-bottom:1px solid #20252d!important}
+body:not(.light-theme) .card,
+body:not(.light-theme) .stat,
+body:not(.light-theme) .rowcard,
+body:not(.light-theme) .car{
+ background:#171b21!important;
+ border-color:#252b34!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) .card h2,
+body:not(.light-theme) h1{color:#edf1f6!important}
+body:not(.light-theme) .subtitle,
+body:not(.light-theme) small{color:#8b95a3!important}
+body:not(.light-theme) input,
+body:not(.light-theme) select,
+body:not(.light-theme) textarea,
+body:not(.light-theme) .cars-search{
+ background:#14181d!important;
+ color:#d8dde5!important;
+ border-color:#29313b!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) input::placeholder{color:#707b89!important}
+body:not(.light-theme) .btn,
+body:not(.light-theme) .smallbtn{
+ background:#171b21!important;
+ color:#cfd6df!important;
+ border-color:#303844!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) .btn:hover,
+body:not(.light-theme) .smallbtn:hover{background:#1d232b!important}
+body:not(.light-theme) .btn.primary,
+body:not(.light-theme) .smallbtn.primary{background:#245fba!important;color:#fff!important;border-color:#245fba!important}
+body:not(.light-theme) .status{filter:saturate(.65);}
+body:not(.light-theme) .modalbox{background:#171b21!important;color:#d8dde5!important}
+body:not(.light-theme) .modal{background:rgba(0,0,0,.72)!important}
+body:not(.light-theme) .close{background:#202731!important;color:#cfd6df!important}
+body:not(.light-theme) .cart-item,
+body:not(.light-theme) .cart-client-head,
+body:not(.light-theme) .cart-add-box,
+body:not(.light-theme) .cart-total{background:#14181d!important;border-color:#252b34!important}
+body:not(.light-theme) .order-debt-red,
+body:not(.light-theme) .order-paid-orange,
+body:not(.light-theme) .order-issued-green{
+ box-shadow:none!important;
+}
+</style>
+<style id="garage-dark-fill-v5">
+/* GARAGE dark fill v5 - soft surfaces */
+body:not(.light-theme){
+ --bg:#0e1115!important;
+ --card:#171c23!important;
+ --text:#d4dae2!important;
+ --muted:#8993a0!important;
+ --line:#171c23!important;
+ background:#0e1115!important;
+ color:#d4dae2!important;
+}
+body:not(.light-theme) .sidebar{
+ background:#151a20!important;
+ border:0!important;
+}
+body:not(.light-theme) .top,
+body:not(.light-theme) .card,
+body:not(.light-theme) .stat,
+body:not(.light-theme) .rowcard,
+body:not(.light-theme) .car,
+body:not(.light-theme) .cart-item,
+body:not(.light-theme) .cart-client-head,
+body:not(.light-theme) .cart-add-box,
+body:not(.light-theme) .cart-total,
+body:not(.light-theme) .modalbox{
+ background:#171c23!important;
+ border-color:transparent!important;
+ box-shadow:none!important;
+}
+body:not(.light-theme) .nav button{
+ background:transparent!important;
+ color:#aab3bf!important;
+}
+body:not(.light-theme) .nav button.active,
+body:not(.light-theme) .nav button:hover{
+ background:#232a33!important;
+ color:#f0f3f7!important;
+}
+body:not(.light-theme) input,
+body:not(.light-theme) select,
+body:not(.light-theme) textarea,
+body:not(.light-theme) .cars-search{
+ background:#20262f!important;
+ border:0!important;
+ color:#dce2ea!important;
+}
+body:not(.light-theme) .btn,
+body:not(.light-theme) .smallbtn{
+ background:#252d38!important;
+ border:0!important;
+ color:#e0e5ec!important;
+}
+body:not(.light-theme) .btn:hover,
+body:not(.light-theme) .smallbtn:hover{
+ background:#303947!important;
+}
+body:not(.light-theme) .btn.primary,
+body:not(.light-theme) .smallbtn.primary{
+ background:#315f9e!important;
+ color:white!important;
+}
+body:not(.light-theme) .status{
+ filter:none!important;
+ border:0!important;
+}
+body:not(.light-theme) .s-wait,
+body:not(.light-theme) .s-notified{
+ background:#4b3b14!important;
+ color:#f2c96d!important;
+}
+body:not(.light-theme) .s-done{
+ background:#193a35!important;
+ color:#7fd6b1!important;
+}
+body:not(.light-theme) .s-pick{
+ background:#243958!important;
+ color:#9ec7ff!important;
+}
+body:not(.light-theme) .order-debt-red{
+ background:#4a2328!important;
+ color:#ff9b9b!important;
+}
+</style>
+<style id="garage-v6-order-style">
+/* GARAGE v6: dark order cards like light theme, blue graphite */
+body:not(.light-theme) .order-debt-red,
+body:not(.light-theme) .order-paid-orange,
+body:not(.light-theme) .order-issued-green{
+  background:#17212c !important;
+  border:1px solid #29415b !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.18) !important;
+  color:#e6edf5 !important;
+}
+body:not(.light-theme) .order-debt-red{
+  border-left:4px solid #b94a5a !important;
+}
+body:not(.light-theme) .order-paid-orange{
+  border-left:4px solid #b58a35 !important;
+}
+body:not(.light-theme) .order-issued-green{
+  border-left:4px solid #3b8d67 !important;
+}
+body:not(.light-theme) .order-debt-red b,
+body:not(.light-theme) .order-paid-orange b,
+body:not(.light-theme) .order-issued-green b{
+  color:#f1f5f9 !important;
+}
+body:not(.light-theme) .order-debt-red:hover,
+body:not(.light-theme) .order-paid-orange:hover,
+body:not(.light-theme) .order-issued-green:hover{
+  border-color:#3b82c4 !important;
+  box-shadow:0 8px 22px rgba(59,130,196,.14) !important;
+}
+</style><style id="garage-home-dark-orders-v7">
+/* Главная: карточки заказов в темной теме как в светлой, но в GARAGE dark стиле */
+body:not(.light-theme) #home .rowcard,
+body:not(.light-theme) #home .order-card,
+body:not(.light-theme) #home .card.order {
+  background:#171f2a !important;
+  border:1px solid #30465f !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.18) !important;
+}
+body:not(.light-theme) #home .rowcard:hover,
+body:not(.light-theme) #home .order-card:hover,
+body:not(.light-theme) #home .card.order:hover {
+  border-color:#3b82c4 !important;
+}
+body:not(.light-theme) #home .rowcard small,
+body:not(.light-theme) #home .order-card small {
+  color:#93a4b8 !important;
+}
+</style><style>
+/* GARAGE v9: dark payment modal refinement */
+body.dark .modal .form input,
+body.dark .modal .form select {background:#1b222b!important;color:#e5edf7!important;border-color:#30455d!important;}
+body.dark #orderPayAfterDiscountWrap {background:#202a36!important;border-color:#35577d!important;}
+body.dark #orderPayAfterDiscount {color:#f1f5fb!important;}
+body.dark .modal small {color:#91a0b5!important;}
+body.dark .modal .form > div[style*="border:1px solid var(--border)"] {background:#1b222b!important;border-color:#30455d!important;}
+body.dark .modal .form > div[style*="rgba(148,163,184,.08)"] {background:#1b222b!important;color:#91a0b5!important;}
+</style></head>
 <body>
 <div class="app">
 <aside class="sidebar">
@@ -700,7 +1054,7 @@ function notificationGroup(orders){
 }
 function miniOrder(o,sectionKey=null){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');let eta=(sectionKey==='waiting'&&o.date)?`<small style="display:block;margin-top:5px;color:#2563eb;font-weight:800">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${eta}${d?`<small style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button>${sectionKey?'':`<button class="smallbtn ${unlocked?'primary':''}" onclick="toggleOrderLock(${o.id})" title="${unlocked?'Закрыть изменение статуса':'Открыть изменение статуса'}">${unlocked?'🔓 Открыт':'🔒 Открыть'}</button>`}<button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`}
 function refreshFullPayModal(){let id=window._payFullOrderId,o=data.orders.find(x=>x.id===id);if(!o)return;let base=Number(o.baseTotal??o.total??0)||0;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pctInput=document.getElementById('orderPayDiscount');let personalInput=document.getElementById('orderPayPersonalDiscount');let pct=canDiscount?Math.min(100,Math.max(0,Number(pctInput?.value||0))):0;if(method==='card')pct=0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=canDiscount?Math.max(0,Math.min(percentTotal,Number(personalInput?.value||0))):0;let newTotal=Math.max(0,percentTotal-personal);let remaining=Math.max(0,newTotal-(Number(o.paid)||0));let discAmt=Math.max(0,(Number(o.total)||0)-newTotal);if(pctInput){pctInput.disabled=!canDiscount||method==='card';if(method==='card')pctInput.value='';}if(personalInput){personalInput.disabled=!canDiscount;if(!canDiscount)personalInput.value='';}let t=document.getElementById('orderPayRemaining');if(t)t.value=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});let final=document.getElementById('orderPayAfterDiscount');if(final)final.textContent=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent=discAmt>0?('Всего скидка: '+discAmt.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'):'';let info=document.getElementById('orderPayDiscountInfo');if(info)info.textContent=canDiscount?(method==='card'?'Для оплаты картой процентная скидка отключена.':'Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.'):'Скидка по этому заказу уже была применена.'}
-function payOrderFully(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));if(remaining<=0)return toast('Заказ уже оплачен полностью');let c=client(o.clientId);let previous=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let prevPaid=previous.reduce((a,s)=>a+(Number(s.price)||0),0);let prevRows=previous.length?previous.map(s=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-top:7px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:3px">${s.date||''} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'}${s.paidBy?' · 👤 '+s.paidBy:''}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join(''):'<div style="padding:9px 10px;border-radius:10px;background:rgba(148,163,184,.08);color:var(--muted)">Предыдущих оплат не найдено</div>';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);window._payFullOrderId=id;openModal('Оплата остатка · заказ №'+o.id,`<div class="form"><label>Клиент<div><input value="${c?.name||'—'}" readonly></div></label><label>Остаток к оплате, ₽<div><input id="orderPayRemaining" value="${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})}" readonly></div></label><div id="orderPayAfterDiscountWrap" style="grid-column:1/-1;padding:14px 16px;border-radius:12px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.24);display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="font-weight:700;color:var(--muted)">💳 Сумма к оплате после скидки</span><b id="orderPayAfterDiscount" style="font-size:24px">${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><label>Способ оплаты<div><select id="orderPayMethod" onchange="refreshFullPayModal()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label>${canDiscount?`<label>Скидка %<div><input id="orderPayDiscount" type="number" min="0" max="100" step="0.01" placeholder="" oninput="refreshFullPayModal()"></div></label><label>Персональная скидка для округления, ₽<div><input id="orderPayPersonalDiscount" type="number" min="0" step="1" placeholder="Например: 30" oninput="refreshFullPayModal()"></div></label><small id="orderPayDiscountInfo" style="display:block;margin-top:-8px;color:var(--muted)">Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.</small><small id="orderPayDiscountAmount" style="display:block;margin-top:6px;color:#b7791f;font-weight:700"></small>`:''}</div><div style="margin-top:14px"><b>Что было оплачено до этого</b><div class="previously-paid-total"><span class="previously-paid-total-label">Всего ранее оплачено</span>: <b>${prevPaid.toLocaleString('ru-RU')} ₽</b></div>${prevRows}</div><div style="margin-top:12px;color:#64748b;font-size:13px">После подтверждения остаток будет добавлен в «Продажи» как доплата по заказу №${o.id}.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-pay-all" onclick="completeOrderPayment(${o.id})">Оплатил все</button></div>`);refreshFullPayModal()}
+function payOrderFully(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));if(remaining<=0)return toast('Заказ уже оплачен полностью');let c=client(o.clientId);let previous=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let prevPaid=previous.reduce((a,s)=>a+(Number(s.price)||0),0);let prevRows=previous.length?previous.map(s=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-top:7px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:3px">${s.date||''} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'}${s.paidBy?' · 👤 '+s.paidBy:''}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join(''):'<div style="padding:9px 10px;border-radius:10px;background:rgba(148,163,184,.08);color:var(--muted)">Предыдущих оплат не найдено</div>';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);window._payFullOrderId=id;openModal('Оплата остатка · заказ №'+o.id,`<div class="form"><label>Клиент<div><input value="${c?.name||'—'}" readonly></div></label><label>Остаток к оплате, ₽<div><input id="orderPayRemaining" value="${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})}" readonly></div></label><div id="orderPayAfterDiscountWrap" style="grid-column:1/-1;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--accent-soft,rgba(59,130,246,.28));display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:none"><span style="font-weight:700;color:var(--muted)">💳 Сумма к оплате после скидки</span><b id="orderPayAfterDiscount" style="font-size:24px">${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><label>Способ оплаты<div><select id="orderPayMethod" onchange="refreshFullPayModal()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label>${canDiscount?`<label>Скидка %<div><input id="orderPayDiscount" type="number" min="0" max="100" step="0.01" placeholder="" oninput="refreshFullPayModal()"></div></label><label>Персональная скидка для округления, ₽<div><input id="orderPayPersonalDiscount" type="number" min="0" step="1" placeholder="Например: 30" oninput="refreshFullPayModal()"></div></label><small id="orderPayDiscountInfo" style="display:block;margin-top:-8px;color:var(--muted)">Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.</small><small id="orderPayDiscountAmount" style="display:block;margin-top:6px;color:#b7791f;font-weight:700"></small>`:''}</div><div style="margin-top:14px"><b>Что было оплачено до этого</b><div class="previously-paid-total"><span class="previously-paid-total-label">Всего ранее оплачено</span>: <b>${prevPaid.toLocaleString('ru-RU')} ₽</b></div>${prevRows}</div><div style="margin-top:12px;color:#64748b;font-size:13px">После подтверждения остаток будет добавлен в «Продажи» как доплата по заказу №${o.id}.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-pay-all" onclick="completeOrderPayment(${o.id})">Оплатил все</button></div>`);refreshFullPayModal()}
 function completeOrderPayment(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let method=document.getElementById('orderPayMethod')?.value||'cash';let oldPaid=Number(o.paid)||0;let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pct=canDiscount?Math.min(100,Math.max(0,Number(document.getElementById('orderPayDiscount')?.value||0))):0;if(method==='card')pct=0;let base=Number(o.baseTotal??o.total??0)||0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=canDiscount?Math.max(0,Math.min(percentTotal,Number(document.getElementById('orderPayPersonalDiscount')?.value||0))):0;let oldTotal=Number(o.total)||0;if((pct>0||personal>0)&&canDiscount){o.discount=pct;o.personalDiscount=personal;o.total=Math.max(0,percentTotal-personal);if(oldPaid>o.total)o.paid=o.total}let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));o.paid=Number(o.total)||0;o.paymentMethod=method;o.paidBy=getCurrentUser();o.paidAt=today();orderPaymentSync(o,oldPaid);closeModal();save();toast((pct>0||personal>0)?'Скидки применены, заказ оплачен полностью':'Доплата '+remaining.toLocaleString('ru-RU')+' ₽ добавлена в продажи')}
 function openDebt(o){let debt=Math.max(0,(+o.total||0)-(+o.paid||0));openModal('Изменить долг · заказ №'+o.id,`<div class="form"><label>Стоимость заказа, ₽<div><input value="${o.total}" readonly></div></label><label>Текущий долг, ₽<div><input id="editDebt" type="number" min="0" max="${o.total}" step="0.01" value="${debt}"></div></label></div><div style="margin-top:12px;color:#64748b;font-size:13px">После сохранения сумма оплаты автоматически пересчитается.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-edit-debt" onclick="saveDebt(${o.id})">Сохранить</button></div>`)}
 function saveDebt(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let debt=Number(editDebt.value);if(!Number.isFinite(debt)||debt<0||debt>Number(o.total))return toast('Долг должен быть от 0 до стоимости заказа');let oldPaid=Number(o.paid)||0;o.paid=Number(o.total)-debt;orderPaymentSync(o,oldPaid);closeModal();save();toast('Долг изменён')}
@@ -880,6 +1234,36 @@ document.addEventListener('change',function(e){
   if(cp){e.stopPropagation();setSellerColor(cp.getAttribute('data-seller-color'),cp.value);return;}
 });
 </script>
+
+<style id="garage-dark-sections-v2">
+/* extra dark theme separation */
+body:not(.light-theme) #orders .card,
+body:not(.light-theme) #clients .card,
+body:not(.light-theme) #sales .card,
+body:not(.light-theme) .rowcard,
+body:not(.light-theme) .client-card,
+body:not(.light-theme) .order-card {
+ background:linear-gradient(145deg,#141c26,#10161e)!important;
+ border:1px solid #314254!important;
+ box-shadow:0 12px 28px rgba(0,0,0,.24)!important;
+}
+body:not(.light-theme) #orders .card:hover,
+body:not(.light-theme) #clients .card:hover,
+body:not(.light-theme) #sales .card:hover,
+body:not(.light-theme) .rowcard:hover {
+ border-color:#287df5!important;
+}
+body:not(.light-theme) #orders h2,
+body:not(.light-theme) #clients h2,
+body:not(.light-theme) #sales h2 {
+ color:#f1f5f9!important;
+}
+body:not(.light-theme) #orders small,
+body:not(.light-theme) #clients small,
+body:not(.light-theme) #sales small {
+ color:#9aa8b8!important;
+}
+</style>
 </body>
 </html>
 <script>
@@ -967,5 +1351,23 @@ body:not(.light-theme) .user-manage-btn{
   .top .user{padding-left:6px;gap:6px}
   .top .user > div:nth-child(2){min-width:72px}
   #currentUserSwitch{min-width:108px}
+}
+
+/* Dark theme section highlight update: History, Clients, Sales */
+body:not(.light-theme) .order-card,
+body:not(.light-theme) .client-card,
+body:not(.light-theme) .sale-card,
+body:not(.light-theme) .stat-card,
+body:not(.light-theme) .card,
+body:not(.light-theme) .panel {
+  background:#18212b !important;
+  border:1px solid #2b4058 !important;
+  border-radius:14px !important;
+}
+body:not(.light-theme) .order-card:hover,
+body:not(.light-theme) .client-card:hover,
+body:not(.light-theme) .sale-card:hover,
+body:not(.light-theme) .stat-card:hover {
+  border-color:#287df5 !important;
 }
 </style>
