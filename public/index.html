@@ -1815,69 +1815,304 @@ body:not(.light-theme) .client-profile-box .profile-new-order-row .new-order-pro
 }
 </style>
 
-<style id="garage-login-style">
-#garageLoginGate{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#10131a,#1b2230);font-family:inherit;padding:20px}#garageLoginGate[hidden]{display:none!important}.garage-login-card{width:min(420px,100%);background:#202938;color:#fff;border:1px solid #3c485d;border-radius:20px;padding:30px;box-shadow:0 20px 70px #0008;text-align:center}.garage-login-card h2{margin:0 0 8px;font-size:26px}.garage-login-card p{opacity:.72;margin:0 0 24px}.garage-login-card input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:10px;border:1px solid #536176;background:#111722;color:#fff;font-size:16px;margin:7px 0}.garage-login-card button{width:100%;padding:13px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}.garage-login-card button.secondary{background:#475569}.garage-login-error{min-height:20px;color:#ff8e8e;font-size:14px;margin-top:10px}.garage-change{margin-top:14px;padding-top:18px;border-top:1px solid #3c485d}.garage-change[hidden]{display:none!important}.garage-login-card.unlocked #garageLoginForm{display:none}.garage-password-settings{display:none}.garage-login-card.unlocked .garage-password-settings{display:flex;flex-direction:column;gap:0}.garage-login-card.unlocked .garage-password-settings button{margin-top:10px}.garage-change-toggle{background:#475569!important}
+<style id="garage-home-search-dark-polish">
+/* v71.40 — аккуратный глобальный поиск на Главной в тёмной теме */
+body:not(.light-theme) .top .search{
+  position:relative!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+body:not(.light-theme) .top .search input#search{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:48px!important;
+  padding:13px 18px 13px 48px!important;
+  border:1px solid #2b3948!important;
+  border-radius:14px!important;
+  background:#151d27!important;
+  color:#edf3fa!important;
+  outline:none!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 2px 8px rgba(0,0,0,.10)!important;
+  transition:border-color .18s ease, background .18s ease, box-shadow .18s ease!important;
+}
+body:not(.light-theme) .top .search input#search::placeholder{
+  color:#8190a1!important;
+  opacity:1!important;
+}
+body:not(.light-theme) .top .search input#search:focus{
+  background:#182331!important;
+  border-color:#4a8fe8!important;
+  box-shadow:
+    0 0 0 3px rgba(74,143,232,.14),
+    inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+body:not(.light-theme) .top .search > span{
+  position:absolute!important;
+  left:16px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:20px!important;
+  height:20px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  font-size:22px!important;
+  line-height:1!important;
+  color:#8ea5bf!important;
+  pointer-events:none!important;
+  z-index:2!important;
+}
+body:not(.light-theme) .top .search:focus-within > span{
+  color:#78adf5!important;
+}
 </style>
+
+
+<style id="garage-home-search-dark-final-fix">
+/* Исправление: реальный поиск Главной имеет id=homeSearch, а не id=search */
+body:not(.light-theme) #home .card:has(#homeSearch){
+  background:#171d25!important;
+  border:1px solid #293543!important;
+  border-radius:14px!important;
+  box-shadow:none!important;
+  padding:12px!important;
+}
+body:not(.light-theme) #home .card:has(#homeSearch) .search{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:12px!important;
+  overflow:visible!important;
+}
+body:not(.light-theme) #home #homeSearch{
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:0 16px 0 46px!important;
+  background:#0f151d!important;
+  color:#edf3fa!important;
+  border:1px solid #344354!important;
+  border-radius:12px!important;
+  outline:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+body:not(.light-theme) #home #homeSearch::placeholder{
+  color:#8b99aa!important;
+  opacity:1!important;
+}
+body:not(.light-theme) #home #homeSearch:focus{
+  background:#131d29!important;
+  border-color:#4a90ff!important;
+  box-shadow:0 0 0 3px rgba(74,144,255,.14)!important;
+}
+body:not(.light-theme) #home .card:has(#homeSearch) .search > span{
+  position:absolute!important;
+  z-index:2!important;
+  left:16px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+  padding:0!important;
+  color:#8ea5bf!important;
+  font-size:22px!important;
+  line-height:1!important;
+  pointer-events:none!important;
+}
+body:not(.light-theme) #home .card:has(#homeSearch) .search:focus-within > span{
+  color:#78adf5!important;
+}
+</style>
+
+
+<style id="garage-all-sections-search-dark-polish">
+/* Единый аккуратный стиль поисков в разделах GARAGE (тёмная тема) */
+body:not(.light-theme)
+:is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+){
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:46px!important;
+  padding:12px 16px 12px 46px!important;
+  margin:0!important;
+  border:1px solid #344354!important;
+  border-radius:12px!important;
+  background:#0f151d!important;
+  color:#edf3fa!important;
+  outline:none!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 2px 8px rgba(0,0,0,.08)!important;
+  transition:border-color .18s ease, background .18s ease, box-shadow .18s ease!important;
+}
+body:not(.light-theme)
+:is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+)::placeholder{
+  color:#8b99aa!important;
+  opacity:1!important;
+}
+body:not(.light-theme)
+:is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+):focus{
+  background:#131d29!important;
+  border-color:#4a90ff!important;
+  box-shadow:0 0 0 3px rgba(74,144,255,.14)!important;
+}
+body:not(.light-theme)
+:is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+)::-webkit-search-cancel-button{
+  filter:invert(80%) sepia(10%) saturate(500%) hue-rotate(175deg);
+}
+/* Контейнеры поиска: без двойного фона и конфликтующих рамок */
+body:not(.light-theme) :is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+){
+  font-size:15px!important;
+}
+body:not(.light-theme) :is(
+  #allOrdersSearch,
+  #ordersSearch,
+  #waitingSearch,
+  #debtsSearch,
+  #notifySearch,
+  #historySearch
+) + button{
+  border-radius:10px!important;
+}
+/* Сохраняем корректный вид на узких экранах */
+@media (max-width:700px){
+  body:not(.light-theme) :is(
+    #allOrdersSearch,
+    #ordersSearch,
+    #waitingSearch,
+    #debtsSearch,
+    #notifySearch,
+    #historySearch
+  ){
+    min-height:44px!important;
+    padding-left:42px!important;
+  }
+}
+</style>
+
+
+<style id="garage-cars-search-match">
+/* Автомобили: единый стиль поискового поля как в остальных вкладках */
+#carsSearch {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 44px !important;
+  padding: 11px 14px 11px 42px !important;
+  border: 1px solid #344354 !important;
+  border-radius: 12px !important;
+  background: #0f151d !important;
+  color: #e8eef7 !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  outline: none !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease !important;
+}
+#carsSearch::placeholder {
+  color: #8b99aa !important;
+  opacity: 1 !important;
+}
+#carsSearch:focus {
+  border-color: #4a90ff !important;
+  box-shadow: 0 0 0 3px rgba(74,144,255,.16) !important;
+  background: #111a25 !important;
+}
+#carsSearch + *,
+.cars-search {
+  box-sizing: border-box !important;
+}
+@media (max-width: 640px) {
+  #carsSearch {
+    min-height: 42px !important;
+    font-size: 13px !important;
+    padding-left: 40px !important;
+  }
+}
+</style>
+
+
+<style id="garage-cars-search-final-override">
+/* Финальное переопределение: цвет всего поискового блока в «Автомобили» */
+body:not(.light-theme) #cars .cars-search,
+body:not(.light-theme) #cars .cars-search input {
+  background: #151b22 !important;
+  color: #e7edf5 !important;
+  border-color: #2b3541 !important;
+}
+body:not(.light-theme) #cars .cars-search {
+  border: 1px solid #2b3541 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+body:not(.light-theme) #cars .cars-search input {
+  border: 0 !important;
+  padding: 12px 44px 12px 0 !important;
+}
+body:not(.light-theme) #cars .cars-search input::placeholder {
+  color: #6f7d8d !important;
+}
+body:not(.light-theme) #cars .cars-search .cars-search-icon {
+  color: #7891ad !important;
+}
+body:not(.light-theme) #cars .cars-search:focus-within {
+  background: #151b22 !important;
+  border-color: #3a78bb !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.09) !important;
+}
+body:not(.light-theme) #cars .cars-search-clear {
+  background: #202934 !important;
+  color: #9eabb9 !important;
+}
+body:not(.light-theme) #cars .cars-search-clear:hover {
+  background: #293543 !important;
+  color: #e7edf5 !important;
+}
+</style>
+
 </head>
 <body>
-<div id="garageLoginGate" role="dialog" aria-modal="true" aria-label="Вход по паролю">
-  <div class="garage-login-card" id="garageLoginCard">
-    <h2>Вход в GARAGE</h2>
-    <p>Введите пароль для продолжения</p>
-    <form id="garageLoginForm">
-      <input id="garageLoginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required autofocus>
-      <button type="submit">Войти</button>
-      <div class="garage-login-error" id="garageLoginError" aria-live="polite"></div>
-    </form>
-    <div class="garage-password-settings" id="garagePasswordSettings">
-      <button type="button" id="garageContinue">Продолжить</button>
-      <button type="button" class="secondary garage-change-toggle" id="garageShowChange" aria-expanded="false" aria-controls="garageChangeBlock">Изменить пароль</button>
-    </div>
-    <div class="garage-change" id="garageChangeBlock" hidden>
-      <strong>Изменить пароль</strong>
-      <input id="garageNewPassword" type="password" autocomplete="new-password" placeholder="Новый пароль">
-      <input id="garageNewPassword2" type="password" autocomplete="new-password" placeholder="Повторите пароль">
-      <button type="button" id="garageSavePassword">Сохранить</button>
-      <div class="garage-login-error" id="garageChangeError" aria-live="polite"></div>
-    </div>
-  </div>
-</div>
-<script id="garage-login-script">
-(function(){
-  const KEY='garageAccessPassword';
-  const DEFAULT='6767';
-  if(!localStorage.getItem(KEY)) localStorage.setItem(KEY,DEFAULT);
-  const gate=document.getElementById('garageLoginGate');
-  const card=document.getElementById('garageLoginCard');
-  const form=document.getElementById('garageLoginForm');
-  const pass=document.getElementById('garageLoginPassword');
-  const error=document.getElementById('garageLoginError');
-  const changeError=document.getElementById('garageChangeError');
-  const current=()=>localStorage.getItem(KEY)||DEFAULT;
-  function unlock(){gate.hidden=true;document.body.style.overflow='';}
-  function showChange(){
-    const block=document.getElementById('garageChangeBlock');
-    const toggle=document.getElementById('garageShowChange');
-    const isOpen=!block.hidden;
-    block.hidden=isOpen;
-    toggle.setAttribute('aria-expanded',String(!isOpen));
-    changeError.textContent='';
-  }
-  gate.hidden=false;document.body.style.overflow='hidden';
-  form.addEventListener('submit',function(e){e.preventDefault();if(pass.value===current()){card.classList.add('unlocked');error.textContent='';}else{error.textContent='Неверный пароль.';pass.select();}});
-  document.getElementById('garageSavePassword').addEventListener('click',function(){
-    const a=document.getElementById('garageNewPassword').value;const b=document.getElementById('garageNewPassword2').value;
-    if(!a){changeError.textContent='Введите новый пароль.';return;}
-    if(a!==b){changeError.textContent='Пароли не совпадают.';return;}
-    if(a.length<4){changeError.textContent='Пароль должен содержать минимум 4 символа.';return;}
-    localStorage.setItem(KEY,a);
-    unlock();
-  });
-  document.getElementById('garageShowChange').addEventListener('click',showChange);
-  document.getElementById('garageContinue').addEventListener('click',unlock);
-})();
-</script>
-
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="brand-icon">🚗</div><div><b>ГАРАЖ</b><small>Автозапчасти и всё для авто</small></div></div>
@@ -1890,10 +2125,10 @@ body:not(.light-theme) .client-profile-box .profile-new-order-row .new-order-pro
   </div>
 </aside>
 <main class="main">
-<section id="settings" class="page"><h1>Настройки</h1><div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div></section>
+<section id="settings" class="page"><h1>Настройки</h1><div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div><div class="card" style="max-width:720px;margin-top:16px"><h2>📊 Анализ размера данных</h2><p style="color:var(--muted);margin-top:-6px">Оценка текущего объёма локальных данных и примерный прогноз для будущей облачной базы.</p><div id="garageStorageStats" style="margin-top:14px;color:var(--text)">Нажмите «Обновить расчёт».</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="renderGarageStorageStats()">↻ Обновить расчёт</button><button class="btn" type="button" onclick="copyGarageStorageReport()">⧉ Скопировать отчёт</button></div><small style="display:block;color:var(--muted);margin-top:12px">Расчёт приблизительный: учитывает JSON-данные из текущего localStorage. Размер SQL-базы после миграции может отличаться.</small></div></section>
 
   <div class="top">
-    <div class="search"><span>⌕</span><input id="search" placeholder="Введите телефон, фамилию или госномер..."></div>
+    <div class="search"><span>⌕</span><input id="search" placeholder="Введите телефон, фамилию или госномер..."></div><div id="globalSearchResults" style="margin-top:10px"></div>
     <div class="user" style="gap:8px"><div class="avatar">👤</div><div><b data-current-user-name>Михаил</b><small style="display:block;color:#718096">Продавец</small></div><select id="currentUserSwitch" aria-label="Продавец" onchange="setCurrentUser(this.value)" style="margin-left:6px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text)"></select><button type="button" class="user-manage-btn" onclick="openSellerManager()" title="Управление продавцами">⚙️</button></div>
   </div>
 
@@ -2497,7 +2732,22 @@ function renderHomeSearch(){
 function toast(t){let x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.body.classList.toggle('settings-open',b.dataset.page==='settings')});
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.filter;render()});
-document.getElementById('search').addEventListener('input',e=>{let q=e.target.value.toLowerCase().trim();if(!q)return;let c=data.clients.find(c=>c.name.toLowerCase().includes(q)||c.phone.toLowerCase().includes(q)||c.cars.some(v=>v.plate.toLowerCase().includes(q)));if(c)showClient(c.id)});
+function renderGlobalSearch(){
+ let el=document.getElementById('globalSearchResults'); if(!el)return;
+ let q=(document.getElementById('search')?.value||'').toLowerCase().trim();
+ if(!q){el.innerHTML='';return;}
+ let rows=[];
+ data.clients.forEach(c=>{
+   let name=(c.name||'').toLowerCase(), phone=(c.phone||'').toLowerCase();
+   let cars=(c.cars||[]).filter(v=>((v.plate||'').toLowerCase().includes(q)||(v.vin||v.win||'').toLowerCase().includes(q)));
+   if(name.includes(q)||phone.includes(q)||cars.length){
+     rows.push(`<div class="rowcard global-search-row" style="margin-top:8px"><div><b>${c.name||'Без имени'}</b><small>${c.phone||''}${cars.length?` · ${cars.map(v=>`${v.brand||''} ${v.model||''} ${v.plate||''}`).join(', ')}`:''}</small></div><button class="smallbtn" onclick="showClient(${c.id})">Открыть профиль</button></div>`);
+   }
+ });
+ el.innerHTML=rows.slice(0,20).join('')||'<div class="empty">По вашему запросу ничего не найдено</div>';
+}
+document.getElementById('search')?.addEventListener('input',renderGlobalSearch);
+
 document.getElementById('homeSearch')?.addEventListener('input',renderHomeSearch);
 document.getElementById('allOrdersSearch')?.addEventListener('input',render);document.getElementById('historySearch')?.addEventListener('input',render);document.getElementById('waitingSearch')?.addEventListener('input',render);document.getElementById('notifySearch')?.addEventListener('input',render);document.getElementById('ordersSearch')?.addEventListener('input',render);document.getElementById('debtsSearch')?.addEventListener('input',render);document.getElementById('carsSearch')?.addEventListener('input',render);document.getElementById('salesDate').addEventListener('change',renderSales);function renderStoreBalance(){let d=document.getElementById('salesDate')?.value||today();data.storeBalances=data.storeBalances||{};let b=data.storeBalances[d]||{};let st=+b.start||0,en=+b.end||0;let fmt=n=>n.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let a=document.getElementById('storeBalanceStart');let z=document.getElementById('storeBalanceEnd');if(a)a.textContent=fmt(st);if(z)z.textContent=fmt(en);let si=document.getElementById('storeBalanceStartInput');let ei=document.getElementById('storeBalanceEndInput');if(si)si.value=b.start??'';if(ei)ei.value=b.end??'';}function saveStoreBalance(){let d=document.getElementById('salesDate')?.value||today();data.storeBalances=data.storeBalances||{};data.storeBalances[d]={start:+document.getElementById('storeBalanceStartInput').value||0,end:+document.getElementById('storeBalanceEndInput').value||0};save();renderStoreBalance();}document.getElementById('salesDate').addEventListener('change',renderStoreBalance);setTimeout(()=>{['storeBalanceStartInput','storeBalanceEndInput'].forEach(id=>document.getElementById(id)?.addEventListener('change',saveStoreBalance));renderStoreBalance();},0);
 document.getElementById('salesSearch')?.addEventListener('input',renderSales);document.getElementById('salesPaymentFilter')?.addEventListener('change',renderSales);document.getElementById('salesTypeFilter')?.addEventListener('change',renderSales);document.getElementById('salesFiltersClear')?.addEventListener('click',()=>{const a=document.getElementById('salesPaymentFilter'),b=document.getElementById('salesTypeFilter');if(a)a.value='all';if(b)b.value='all';renderSales();});(function(){const input=document.getElementById('salesSearch'),clear=document.getElementById('salesSearchClear'),box=input?.closest('.cars-search');if(!input||!clear||!box)return;function sync(){box.classList.toggle('has-value',!!input.value.trim())}input.addEventListener('input',sync);clear.addEventListener('click',()=>{input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();sync()});sync()})();
@@ -2506,6 +2756,27 @@ render();
 renderSalesTotal();
 
 (function(){const input=document.getElementById('carsSearch'),clear=document.getElementById('carsSearchClear'),box=input?.closest('.cars-search');if(!input||!clear||!box)return;function sync(){box.classList.toggle('has-value',!!input.value.trim())}input.addEventListener('input',sync);clear.addEventListener('click',()=>{input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();sync()});sync()})();
+</script>
+<script id="garage-storage-analysis-js">
+(function(){
+  function fmtBytes(n){if(!Number.isFinite(n))return '—';if(n<1024)return n+' Б';if(n<1024*1024)return (n/1024).toFixed(1)+' КБ';return (n/1024/1024).toFixed(2)+' МБ'}
+  function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  window.getGarageStorageReport=function(){
+    let raw=localStorage.getItem(KEY)||'';let bytes=new Blob([raw]).size;let clients=Array.isArray(data.clients)?data.clients.length:0;let orders=Array.isArray(data.orders)?data.orders.filter(o=>!o.deleted).length:0;let sales=Array.isArray(data.sales)?data.sales.length:0;let expenses=Array.isArray(data.expenses)?data.expenses.length:0;
+    let avgOrder=orders?bytes/Math.max(1,orders):0;let dailyOrders=150;let projectedOrders=dailyOrders*365*5;let projectedBytes=avgOrder*projectedOrders;let fiveGb=5*1024*1024*1024;let warningBytes=fiveGb*0.8;
+    let dailyGrowth=avgOrder*dailyOrders;let remainingBytes=Math.max(0,fiveGb-bytes);let daysToLimit=dailyGrowth>0?Math.floor(remainingBytes/dailyGrowth):null;let exhaustionDate=daysToLimit===null?null:new Date(Date.now()+daysToLimit*86400000);
+    return {bytes,clients,orders,sales,expenses,avgOrder,dailyOrders,projectedOrders,projectedBytes,fiveGb,warningBytes,dailyGrowth,daysToLimit,exhaustionDate,rawLength:raw.length};
+  };
+  window.renderGarageStorageStats=function(){
+    let el=document.getElementById('garageStorageStats');if(!el)return;let r=getGarageStorageReport();
+    let dateText=r.exhaustionDate?r.exhaustionDate.toLocaleDateString('ru-RU'):'нельзя оценить';let status=r.bytes>=r.warningBytes?'⚠️ Внимание: использовано около 80% или больше лимита 5 ГБ.':'✅ Запас по текущей оценке достаточный';let alertColor=r.bytes>=r.warningBytes?'var(--red)':'var(--green)';
+    let rows=[['Профили клиентов',r.clients.toLocaleString('ru-RU')],['Активные заказы',r.orders.toLocaleString('ru-RU')],['Продажи',r.sales.toLocaleString('ru-RU')],['Расходы',r.expenses.toLocaleString('ru-RU')],['Размер текущего JSON',fmtBytes(r.bytes)],['Средний объём на заказ*',fmtBytes(r.avgOrder)],['Прогноз заказов за 5 лет (150/день)',r.projectedOrders.toLocaleString('ru-RU')],['Грубый прогноз на 5 лет*',fmtBytes(r.projectedBytes)],['Примерная дата достижения 5 ГБ',dateText],['Осталось дней до лимита',r.daysToLimit===null?'нельзя оценить':r.daysToLimit.toLocaleString('ru-RU')],['Статус хранилища',status]];
+    el.innerHTML='<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 16px">'+rows.map(x=>'<div style="color:var(--muted)">'+esc(x[0])+'</div><b style="text-align:right;color:'+(x[0]==='Статус хранилища'?alertColor:'var(--text)')+'">'+esc(x[1])+'</b>').join('')+'</div><div style="margin-top:14px;padding:10px;border-radius:10px;background:'+(r.bytes>=r.warningBytes?'#fee2e2':'#ecfdf5')+';color:'+(r.bytes>=r.warningBytes?'#991b1b':'#166534')+';font-weight:700">'+esc(status)+'</div><div style="margin-top:10px;font-size:12px;color:var(--muted)">* Прогноз условный: рассчитан по текущему среднему размеру заказа и 150 заказам в день. Дата — ориентир, а не гарантия: индексы и структура SQL-базы могут увеличить объём.</div>';
+    window.__garageStorageReportText=rows.map(x=>x[0]+': '+x[1]).join('\n');
+  };
+  window.copyGarageStorageReport=function(){renderGarageStorageStats();if(window.__garageStorageReportText&&navigator.clipboard){navigator.clipboard.writeText(window.__garageStorageReportText).then(()=>toast('Отчёт скопирован')).catch(()=>toast('Не удалось скопировать отчёт'));}else{toast('Копирование недоступно в этом браузере')}};
+  document.querySelector('button[data-page="settings"]')?.addEventListener('click',()=>setTimeout(renderGarageStorageStats,0));
+})();
 </script>
 <script id="garage-theme-js">(function(){const t=localStorage.getItem('autoPartsTheme')||'dark';document.body.classList.toggle('light-theme',t==='light');window.setGarageTheme=function(theme){theme=theme==='light'?'light':'dark';localStorage.setItem('autoPartsTheme',theme);document.body.classList.toggle('light-theme',theme==='light');const l=document.getElementById('themeLightBtn'),d=document.getElementById('themeDarkBtn');if(l)l.classList.toggle('primary',theme==='light');if(d)d.classList.toggle('primary',theme==='dark')}})();</script><script>renderCurrentUser();</script>
 <script id="seller-manager-events">
@@ -3277,6 +3548,19 @@ body:not(.light-theme) #modal .client-profile-box .profile-new-order-row > butto
   box-shadow:0 2px 8px rgba(0,0,0,.26)!important;
 }
 </style>
+
+<style id="garage-home-search-list-view">
+/* Главный поиск: результаты отображаются списком вниз */
+#home #homeSearchResults { display:flex !important; flex-direction:column !important; gap:8px !important; margin-top:10px !important; max-height:420px !important; overflow-y:auto !important; }
+body:not(.light-theme) #home #homeSearchResults .rowcard { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:12px !important; width:100% !important; box-sizing:border-box !important; margin-top:0 !important; padding:12px 14px !important; background:#151b22 !important; border:1px solid #2b3541 !important; border-radius:12px !important; }
+body:not(.light-theme) #home #homeSearchResults .rowcard:hover { background:#1b2430 !important; border-color:#3a78bb !important; }
+body:not(.light-theme) #home #homeSearchResults .rowcard small { color:#8b99aa !important; }
+body:not(.light-theme) #home #homeSearchResults .rowcard .smallbtn { flex:0 0 auto !important; }
+@media (max-width:640px) {
+ body:not(.light-theme) #home #homeSearchResults .rowcard { align-items:flex-start !important; flex-direction:column !important; }
+ body:not(.light-theme) #home #homeSearchResults .rowcard > div:last-child { width:100% !important; flex-wrap:wrap !important; }
+}
+</style>
 </body>
 
 <!-- v70.52 main history next/prev refresh fix -->
@@ -3627,4 +3911,49 @@ body:not(.light-theme) .client-profile-box .profile-new-order-row button.new-ord
   transform:translateY(0)!important;
   box-shadow:0 2px 8px rgba(0,0,0,.24)!important;
 }
+</style>
+
+
+<style id="garage-unify-dark-search-colors-final">
+/* Тёмная тема: «Автомобили» получает ТОЧНО такой же цвет, как остальные поисковые поля */
+body:not(.light-theme) #cars .cars-search,
+body:not(.light-theme) #cars .cars-search input,
+body:not(.light-theme) #cars .cars-search-clear {
+  background: #0f151d !important;
+  color: #e8eef7 !important;
+  border-color: #344354 !important;
+}
+body:not(.light-theme) #cars .cars-search {
+  border: 1px solid #344354 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+body:not(.light-theme) #cars .cars-search input {
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #e8eef7 !important;
+}
+body:not(.light-theme) #cars .cars-search input::placeholder {
+  color: #8b99aa !important;
+}
+body:not(.light-theme) #cars .cars-search .cars-search-icon {
+  color: #8b99aa !important;
+}
+body:not(.light-theme) #cars .cars-search:focus-within {
+  background: #111a25 !important;
+  border-color: #4a90ff !important;
+  box-shadow: 0 0 0 3px rgba(74,144,255,.16) !important;
+}
+body:not(.light-theme) #cars .cars-search-clear:hover {
+  background: #111a25 !important;
+  color: #e8eef7 !important;
+}
+</style>
+
+<style id="global-search-list-view">
+.top{position:relative;}
+#globalSearchResults{position:absolute;left:0;top:52px;width:min(620px,calc(100vw - 40px));z-index:1000;max-height:420px;overflow-y:auto;}
+#globalSearchResults .rowcard{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--card,#151b22);border:1px solid var(--line,#2b3541);border-radius:12px;}
+#globalSearchResults .rowcard small{display:block;color:var(--muted,#8b99aa);margin-top:4px;}
+@media(max-width:640px){#globalSearchResults{width:calc(100vw - 28px);top:52px;}#globalSearchResults .rowcard{align-items:flex-start;flex-direction:column;}#globalSearchResults .rowcard button{width:100%;}}
 </style>
