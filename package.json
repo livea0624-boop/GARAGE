@@ -1,1 +1,11 @@
-{"name":"garage-cloud","version":"1.0.0","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.2"}}
+{
+  "name": "garage",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.133.0"
+  }
+}
