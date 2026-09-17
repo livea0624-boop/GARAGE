@@ -1814,8 +1814,70 @@ body:not(.light-theme) .client-profile-box .profile-new-order-row .new-order-pro
   box-shadow:0 0 0 1px rgba(59,130,246,.10),0 6px 16px rgba(0,0,0,.24)!important;
 }
 </style>
+
+<style id="garage-login-style">
+#garageLoginGate{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#10131a,#1b2230);font-family:inherit;padding:20px}#garageLoginGate[hidden]{display:none!important}.garage-login-card{width:min(420px,100%);background:#202938;color:#fff;border:1px solid #3c485d;border-radius:20px;padding:30px;box-shadow:0 20px 70px #0008;text-align:center}.garage-login-card h2{margin:0 0 8px;font-size:26px}.garage-login-card p{opacity:.72;margin:0 0 24px}.garage-login-card input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:10px;border:1px solid #536176;background:#111722;color:#fff;font-size:16px;margin:7px 0}.garage-login-card button{width:100%;padding:13px;border:0;border-radius:10px;background:#3b82f6;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px}.garage-login-card button.secondary{background:#475569}.garage-login-error{min-height:20px;color:#ff8e8e;font-size:14px;margin-top:10px}.garage-change{margin-top:14px;padding-top:18px;border-top:1px solid #3c485d}.garage-change[hidden]{display:none!important}.garage-login-card.unlocked #garageLoginForm{display:none}.garage-password-settings{display:none}.garage-login-card.unlocked .garage-password-settings{display:flex;flex-direction:column;gap:0}.garage-login-card.unlocked .garage-password-settings button{margin-top:10px}.garage-change-toggle{background:#475569!important}
+</style>
 </head>
 <body>
+<div id="garageLoginGate" role="dialog" aria-modal="true" aria-label="Вход по паролю">
+  <div class="garage-login-card" id="garageLoginCard">
+    <h2>Вход в GARAGE</h2>
+    <p>Введите пароль для продолжения</p>
+    <form id="garageLoginForm">
+      <input id="garageLoginPassword" type="password" autocomplete="current-password" placeholder="Пароль" required autofocus>
+      <button type="submit">Войти</button>
+      <div class="garage-login-error" id="garageLoginError" aria-live="polite"></div>
+    </form>
+    <div class="garage-password-settings" id="garagePasswordSettings">
+      <button type="button" id="garageContinue">Продолжить</button>
+      <button type="button" class="secondary garage-change-toggle" id="garageShowChange" aria-expanded="false" aria-controls="garageChangeBlock">Изменить пароль</button>
+    </div>
+    <div class="garage-change" id="garageChangeBlock" hidden>
+      <strong>Изменить пароль</strong>
+      <input id="garageNewPassword" type="password" autocomplete="new-password" placeholder="Новый пароль">
+      <input id="garageNewPassword2" type="password" autocomplete="new-password" placeholder="Повторите пароль">
+      <button type="button" id="garageSavePassword">Сохранить</button>
+      <div class="garage-login-error" id="garageChangeError" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+<script id="garage-login-script">
+(function(){
+  const KEY='garageAccessPassword';
+  const DEFAULT='6767';
+  if(!localStorage.getItem(KEY)) localStorage.setItem(KEY,DEFAULT);
+  const gate=document.getElementById('garageLoginGate');
+  const card=document.getElementById('garageLoginCard');
+  const form=document.getElementById('garageLoginForm');
+  const pass=document.getElementById('garageLoginPassword');
+  const error=document.getElementById('garageLoginError');
+  const changeError=document.getElementById('garageChangeError');
+  const current=()=>localStorage.getItem(KEY)||DEFAULT;
+  function unlock(){gate.hidden=true;document.body.style.overflow='';}
+  function showChange(){
+    const block=document.getElementById('garageChangeBlock');
+    const toggle=document.getElementById('garageShowChange');
+    const isOpen=!block.hidden;
+    block.hidden=isOpen;
+    toggle.setAttribute('aria-expanded',String(!isOpen));
+    changeError.textContent='';
+  }
+  gate.hidden=false;document.body.style.overflow='hidden';
+  form.addEventListener('submit',function(e){e.preventDefault();if(pass.value===current()){card.classList.add('unlocked');error.textContent='';}else{error.textContent='Неверный пароль.';pass.select();}});
+  document.getElementById('garageSavePassword').addEventListener('click',function(){
+    const a=document.getElementById('garageNewPassword').value;const b=document.getElementById('garageNewPassword2').value;
+    if(!a){changeError.textContent='Введите новый пароль.';return;}
+    if(a!==b){changeError.textContent='Пароли не совпадают.';return;}
+    if(a.length<4){changeError.textContent='Пароль должен содержать минимум 4 символа.';return;}
+    localStorage.setItem(KEY,a);
+    unlock();
+  });
+  document.getElementById('garageShowChange').addEventListener('click',showChange);
+  document.getElementById('garageContinue').addEventListener('click',unlock);
+})();
+</script>
+
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="brand-icon">🚗</div><div><b>ГАРАЖ</b><small>Автозапчасти и всё для авто</small></div></div>
