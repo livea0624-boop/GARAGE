@@ -5192,3 +5192,163 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
 </style>
 
 
+
+
+<style id="garage-sales-mobile-final-fix">
+/* Только мобильная адаптация раздела «Продажи». Десктоп не затрагивается. */
+@media (max-width:720px){
+  #sales{min-width:0!important;overflow-x:hidden!important}
+  #sales .card{width:100%!important;min-width:0!important;box-sizing:border-box!important;overflow:hidden!important}
+
+  /* Дата, балансы и кнопки — строго в одну колонку */
+  #sales > .card:first-of-type > div:first-child{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+    align-items:stretch!important;
+  }
+  #sales > .card:first-of-type > div:first-child > label{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #sales > .card:first-of-type > div:first-child > label > div,
+  #sales > .card:first-of-type > div:first-child input{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  #sales > .card:first-of-type > div:first-child > button{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+  }
+
+  /* Сводка: панель баланса больше не накладывается на выручку */
+  #sales > .card:first-of-type > div:nth-child(2){
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:0!important;
+    padding:16px!important;
+    margin-top:14px!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="position:absolute"]{
+    position:static!important;
+    order:-1!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0 0 18px!important;
+    padding:12px!important;
+    box-sizing:border-box!important;
+    text-align:left!important;
+    border:1px solid var(--line,#2b3744)!important;
+    border-radius:12px!important;
+    background:rgba(127,145,170,.07)!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="position:absolute"] > div:first-child{
+    justify-content:space-between!important;
+    flex-wrap:wrap!important;
+    text-align:left!important;
+    gap:8px!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="position:absolute"] > div:not(:first-child){
+    margin-top:8px!important;
+    text-align:left!important;
+    overflow-wrap:anywhere!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > small,
+  #sales > .card:first-of-type > div:nth-child(2) > #dayRevenue,
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="margin-top:16px"],
+  #sales > .card:first-of-type > div:nth-child(2) > #dayExpenses{
+    position:static!important;
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > #dayRevenue{
+    font-size:clamp(28px,8vw,36px)!important;
+    line-height:1.15!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > #dayExpenses{
+    font-size:clamp(24px,7vw,30px)!important;
+    line-height:1.15!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="display:flex"]{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  #sales > .card:first-of-type > div:nth-child(2) > div[style*="display:flex"] > span{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    flex-wrap:wrap!important;
+    gap:6px!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+  }
+  #sales .sales-debt-line{
+    width:100%!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+    margin-top:12px!important;
+    text-align:left!important;
+  }
+
+  /* Поиск и фильтры */
+  #sales .cars-search{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+  #sales .cars-search input{min-width:0!important;font-size:14px!important}
+  #sales .sales-filter-panel{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  #sales .sales-filter-panel label,
+  #sales .sales-filter-panel select,
+  #sales .sales-filter-panel button{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Списки и итоговая сумма */
+  #sales #salesList,
+  #sales #expenseList{width:100%!important;min-width:0!important;overflow:hidden!important}
+  #sales #salesList .rowcard,
+  #sales #expenseList .rowcard{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+  }
+  #sales #salesList .rowcard > *,
+  #sales #expenseList .rowcard > *{max-width:100%!important;min-width:0!important}
+  #sales #salesTotal{
+    width:100%!important;
+    box-sizing:border-box!important;
+    text-align:left!important;
+    overflow-wrap:anywhere!important;
+  }
+}
+</style>
