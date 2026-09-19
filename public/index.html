@@ -2232,6 +2232,227 @@ body:not(.light-theme) .settings-backup-card button:active{
 .garage-restore-actions button{border-radius:10px;padding:11px 15px}
 .garage-restore-save{background:#405b79!important;border:1px solid #6485a8!important;color:#fff!important}
 </style>
+<style id="garage-site-login-style">
+#garageSiteGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#101722,#243447);padding:20px}
+#garageSiteGate .gate-card{width:min(420px,100%);background:var(--card,#fff);color:var(--text,#18212b);border:1px solid var(--border,#d8dee8);border-radius:20px;padding:28px;box-shadow:0 20px 60px #0005}
+#garageSiteGate h2{margin:0 0 8px}#garageSiteGate p{color:var(--muted,#6b7280);font-size:14px}#garageSiteGate input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid var(--border,#ccd5df);margin:7px 0;font-size:16px}#garageSiteGate button{width:100%;margin-top:10px}
+.garage-site-password-card{margin-top:16px}
+</style>
+<style id="garage-site-password-settings-style">
+/* Пароль входа: визуально в стиле карточки «Резервная копия данных».
+   Логика входа и смены пароля не изменяется. */
+.garage-site-password-card{
+  max-width:720px!important;
+  margin-top:18px!important;
+  padding:16px!important;
+  border:1px solid var(--border,#d8dee9)!important;
+  border-radius:14px!important;
+  background:var(--card,#fff)!important;
+  color:var(--text,#172033)!important;
+  box-shadow:none!important;
+}
+.garage-site-password-card h3{
+  margin:0 0 8px!important;
+  font-size:18px!important;
+  line-height:1.35!important;
+  color:var(--text,#172033)!important;
+}
+.garage-site-password-card p{
+  margin:0 0 12px!important;
+  color:var(--muted,#718096)!important;
+  line-height:1.5!important;
+}
+.garage-site-password-card>div{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.garage-site-password-card .btn{
+  min-height:40px!important;
+  padding:12px 14px!important;
+  border:1px solid #cbd8e8!important;
+  border-radius:10px!important;
+  background:var(--card,#fff)!important;
+  color:var(--text,#334155)!important;
+  text-align:left!important;
+  font-weight:700!important;
+  box-shadow:0 5px 12px rgba(36,76,125,.06)!important;
+}
+.garage-site-password-card .btn:hover{
+  border-color:#287df5!important;
+  background:rgba(40,125,245,.05)!important;
+}
+body:not(.light-theme) .garage-site-password-card{
+  background:#151d26!important;
+  border-color:#344252!important;
+  color:#e7edf5!important;
+}
+body:not(.light-theme) .garage-site-password-card h3{color:#eef3f8!important}
+body:not(.light-theme) .garage-site-password-card p{color:#9aa8b8!important}
+body:not(.light-theme) .garage-site-password-card .btn{
+  background:#18212b!important;
+  border-color:#3a4858!important;
+  color:#e7edf5!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.16)!important;
+}
+body:not(.light-theme) .garage-site-password-card .btn:hover{
+  background:#202c39!important;
+  border-color:#4a90ff!important;
+}
+@media(max-width:600px){
+  .garage-site-password-card .btn{width:100%;text-align:center!important}
+}
+</style>
+
+<style id="garage-site-password-modal-polish">
+.garage-site-password-card .btn#garageChangeSitePasswordBtn{
+  background:#2f80ed!important;
+  border:1px solid #2f80ed!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(47,128,237,.20)!important;
+  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease!important;
+}
+.garage-site-password-card .btn#garageChangeSitePasswordBtn:hover{
+  background:#246fd4!important;
+  border-color:#246fd4!important;
+  box-shadow:0 8px 20px rgba(47,128,237,.30)!important;
+  transform:translateY(-1px);
+}
+body:not(.light-theme) .garage-site-password-card .btn#garageChangeSitePasswordBtn{
+  background:#3b82f6!important;
+  border-color:#5b9cff!important;
+  color:#fff!important;
+  box-shadow:0 0 0 1px rgba(91,156,255,.10),0 7px 18px rgba(0,0,0,.30)!important;
+}
+body:not(.light-theme) .garage-site-password-card .btn#garageChangeSitePasswordBtn:hover{
+  background:#5595ff!important;
+  border-color:#7db5ff!important;
+  box-shadow:0 0 0 3px rgba(91,156,255,.16),0 9px 22px rgba(0,0,0,.38)!important;
+}
+.garage-site-password-dialog .garage-restore-icon{background:rgba(47,128,237,.14);border:1px solid rgba(47,128,237,.20)}
+.garage-site-password-dialog .garage-password-hint{margin:0 0 16px;color:var(--muted,#718096);font-size:13px;line-height:1.5}
+.garage-site-password-dialog .garage-restore-error{margin:8px 0 0;min-height:20px}
+.garage-site-password-dialog .garage-restore-actions{margin-top:18px}
+.garage-site-password-dialog .garage-password-cancel{background:transparent!important;border:1px solid var(--line,#64748b)!important;color:var(--text,#edf2f7)!important}
+.garage-site-password-dialog .garage-password-save{background:#2f80ed!important;border:1px solid #2f80ed!important;color:#fff!important;box-shadow:0 6px 14px rgba(47,128,237,.18)!important}
+.garage-site-password-dialog .garage-password-save:hover{background:#246fd4!important;border-color:#246fd4!important}
+body.light-theme .garage-site-password-dialog .garage-password-cancel{border-color:#cbd5e1!important;color:#334155!important;background:#fff!important}
+body.light-theme .garage-site-password-dialog .garage-password-save{background:#2f80ed!important;border-color:#2f80ed!important;color:#fff!important}
+</style>
+
+
+<style id="garage-password-notice-style">
+.garage-password-notice{position:fixed;right:22px;bottom:22px;z-index:100001;max-width:min(360px,calc(100vw - 44px));padding:13px 16px;border:1px solid #b8dfc5;border-radius:12px;background:#effaf2;color:#216b3a;box-shadow:0 10px 28px rgba(31,98,52,.16);font-weight:700;font-size:14px;opacity:0;transform:translateY(10px);transition:opacity .2s ease,transform .2s ease}
+.garage-password-notice.show{opacity:1;transform:translateY(0)}
+body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#173326;color:#a9efc2;box-shadow:0 10px 28px rgba(0,0,0,.34)}
+</style>
+
+
+<style id="garage-mobile-order-layout-fix">
+/* Мобильная версия: карточки клиентов и блок оплаты располагаются без наложений. */
+@media (max-width: 760px) {
+  .home-order-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .home-order-toggle {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .home-order-toggle > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .home-order-toggle > div:last-child {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .home-order-toggle .order-payment-summary,
+  .home-order-toggle .order-payment-summary.compact {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .home-order-toggle .order-payment-grid {
+    min-width: 0 !important;
+  }
+
+  .home-order-toggle .order-payment-head,
+  .home-order-toggle .order-payment-grid {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .home-order-toggle .home-order-chevron {
+    margin-top: 8px !important;
+  }
+
+  .home-order-details {
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .home-order-list,
+  .home-order-list .rowcard {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .order-payment-summary,
+  .order-payment-summary.compact {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .home-order-toggle {
+    padding: 12px !important;
+  }
+
+  .home-order-toggle > div:first-child {
+    gap: 10px !important;
+  }
+
+  .order-payment-summary,
+  .order-payment-summary.compact {
+    padding: 9px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .order-payment-head {
+    gap: 8px !important;
+  }
+
+  .order-payment-grid {
+    gap: 5px 8px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3895,7 +4116,76 @@ function restoreGarageBackup(event) {
   reader.readAsText(file, 'utf-8');
 }
 </script>
-</body>
+<script id="garage-site-login-script">
+(function(){
+ const KEY='garageSitePassword';
+ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function gate(mode){
+  let old=document.getElementById('garageSiteGate'); if(old)old.remove();
+  const first=mode==='setup';
+  const el=document.createElement('div');el.id='garageSiteGate';
+  el.innerHTML=`<div class="gate-card"><div style="font-size:42px">🔐</div><h2>${first?'Создание пароля GARAGE':'Вход в GARAGE'}</h2><p>${first?'Создайте общий пароль для всех пользователей сайта.':'Введите общий пароль для продолжения работы.'}</p>${first?'<input id="gsNew" type="password" placeholder="Новый пароль (от 6 символов)"><input id="gsRepeat" type="password" placeholder="Повторите пароль">':'<input id="gsPass" type="password" placeholder="Пароль" autocomplete="current-password">'}<div id="gsError" style="color:#d94848;font-size:13px;min-height:18px"></div><button class="btn primary" id="gsSubmit">${first?'Сохранить пароль':'Войти'}</button></div>`;
+  document.body.appendChild(el);
+  const err=el.querySelector('#gsError');
+  el.querySelector('#gsSubmit').onclick=()=>{if(first){let a=el.querySelector('#gsNew').value,b=el.querySelector('#gsRepeat').value;if(a.length<6){err.textContent='Минимум 6 символов.';return}if(a!==b){err.textContent='Пароли не совпадают.';return}localStorage.setItem(KEY,a);el.remove();document.body.classList.add('garage-authenticated');}else{if(el.querySelector('#gsPass').value!==localStorage.getItem(KEY)){err.textContent='Неверный пароль.';return}el.remove();document.body.classList.add('garage-authenticated');}};
+  el.querySelector('input').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gsSubmit').click()});
+ }
+ function change(){
+  let oldModal=document.getElementById('garageSitePasswordModal');if(oldModal)oldModal.remove();
+  const modal=document.createElement('div');
+  modal.id='garageSitePasswordModal';
+  modal.className='garage-restore-overlay garage-site-password-dialog';
+  modal.innerHTML=`<div class="garage-restore-dialog" role="dialog" aria-modal="true" aria-labelledby="garageSitePasswordTitle">
+    <div class="garage-restore-icon">🔐</div>
+    <h3 id="garageSitePasswordTitle">Изменение пароля входа</h3>
+    <p class="garage-password-hint">Введите текущий пароль, затем задайте новый пароль для всех пользователей GARAGE.</p>
+    <input id="garageSiteCurrentPassword" type="password" placeholder="Текущий пароль" autocomplete="current-password">
+    <input id="garageSiteNewPassword" type="password" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password">
+    <input id="garageSiteRepeatPassword" type="password" placeholder="Повторите новый пароль" autocomplete="new-password">
+    <div id="garageSitePasswordError" class="garage-restore-error" role="alert"></div>
+    <div class="garage-restore-actions">
+      <button type="button" class="btn garage-password-cancel">Отмена</button>
+      <button type="button" class="btn garage-password-save">Сохранить пароль</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.remove();
+  const error=modal.querySelector('#garageSitePasswordError');
+  const current=modal.querySelector('#garageSiteCurrentPassword');
+  const next=modal.querySelector('#garageSiteNewPassword');
+  const repeat=modal.querySelector('#garageSiteRepeatPassword');
+  const save=()=>{
+    const currentValue=current.value;
+    const nextValue=next.value;
+    const repeatValue=repeat.value;
+    error.textContent='';
+    if(currentValue!==localStorage.getItem(KEY)){error.textContent='Неверный текущий пароль.';current.focus();return;}
+    if(nextValue.length<6){error.textContent='Новый пароль должен содержать минимум 6 символов.';next.focus();return;}
+    if(nextValue!==repeatValue){error.textContent='Пароли не совпадают.';repeat.focus();return;}
+    localStorage.setItem(KEY,nextValue);
+    close();
+    showGaragePasswordNotice('Пароль входа успешно изменён.');
+  };
+  modal.querySelector('.garage-password-cancel').onclick=close;
+  modal.querySelector('.garage-password-save').onclick=save;
+  [current,next,repeat].forEach(input=>input.addEventListener('keydown',e=>{if(e.key==='Enter')save();if(e.key==='Escape')close();}));
+  current.focus();
+ }
+ function showGaragePasswordNotice(message){
+  let old=document.getElementById('garagePasswordNotice');if(old)old.remove();
+  const notice=document.createElement('div');notice.id='garagePasswordNotice';notice.className='garage-password-notice';notice.textContent=message;
+  document.body.appendChild(notice);
+  setTimeout(()=>notice.classList.add('show'),10);
+  setTimeout(()=>{notice.classList.remove('show');setTimeout(()=>notice.remove(),220);},2600);
+ }
+ function init(){
+  if(!localStorage.getItem(KEY))gate('setup');else gate('login');
+  const settings=document.getElementById('settings');
+  if(settings&&!document.getElementById('garageChangeSitePasswordBtn')){let card=document.createElement('div');card.className='card garage-site-password-card';card.style.maxWidth='720px';card.innerHTML='<h3 style="margin:0 0 8px;">🔐 Пароль входа на сайт</h3><p style="margin:0 0 12px;opacity:.8;">Изменение общего пароля GARAGE. Сначала потребуется ввести текущий пароль.</p><div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="garageChangeSitePasswordBtn" class="btn" type="button">🔐 Изменить пароль входа</button></div>';settings.appendChild(card);card.querySelector('button').onclick=change;}
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script></body>
 
 <!-- v70.52 main history next/prev refresh fix -->
 <script id="v7052-main-history-refresh-fix">
