@@ -31,7 +31,7 @@ h1{margin:0;font-size:30px}.subtitle{color:var(--muted);margin:5px 0 22px}.grid{
 .client-badge.friend{background:#e8f1fb;color:#2f6fae;border:1px solid #c9ddf2}.client-badge.regular{background:#e4f3ee;color:#2f8f75;border:1px solid #bfe0d4}.client-badge.annoying{background:#fff0e2;color:#bd7441;border:1px solid #f1d1b5}.badge-toggle{border:1px solid #dbe2ea;background:#fff;color:#64748b;border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer}.badge-toggle.active{border-color:#7aa9d8;background:#eef6ff;color:#356eaa}.badge-toggle.friend-toggle.active{border-color:#8fb9df;background:#e8f1fb;color:#2f6fae}.badge-toggle.regular-toggle.active{border-color:#8fc8b6;background:#e4f3ee;color:#2f8f75}.badge-toggle.annoying-toggle.active{border-color:#e7b98f;background:#fff0e2;color:#bd7441}
 
 .page{display:none}.page.active{display:block}.list{display:grid;gap:10px}.rowcard{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}.rowcard b{display:block}.rowcard small{color:var(--muted)}
-.modal{position:fixed;inset:0;background:#07111dcc;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}.modalbox{background:#fff;border-radius:14px;width:min(650px,100%);max-height:90vh;overflow:auto;padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{background:#eef2f6;border-radius:8px;padding:8px 11px}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}.form label{font-size:13px;color:#64748b;font-weight:600}.form input,.form select,.form textarea{width:100%;margin-top:6px;padding:11px;border:1px solid #dce3eb;border-radius:8px;outline:none}.form textarea{min-height:80px;resize:vertical}.formfoot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.smallbtn{padding:9px 12px;border-radius:8px;background:#edf2f7}.win-card{min-width:230px;flex:1;border:2px solid #dbe5f0;background:#f7fafc;border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s}.win-card:hover{border-color:#2f80ed;background:#eef6ff}.win-card.has-win{border-color:#2f80ed;background:#f4f8ff}.win-card .win-title{font-size:18px;font-weight:750;color:#25364d}.win-card .win-value{margin-top:8px;font-size:14px;font-weight:700;color:#1769aa;word-break:break-all}.win-card .win-hint{margin-top:7px;font-size:12px;color:#718096}.smallbtn.primary{background:var(--blue);color:#fff}.toast{position:fixed;right:22px;bottom:22px;background:#13283d;color:#fff;padding:13px 16px;border-radius:9px;display:none;z-index:20}.toast.show{display:block}
+.modal{position:fixed;inset:0;background:#07111dcc;display:none;align-items:center;justify-content:center;padding:20px;z-index:2000}.modal.show{display:flex}.modalbox{background:#fff;border-radius:14px;width:min(650px,100%);max-height:90vh;overflow:auto;padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{background:#eef2f6;border-radius:8px;padding:8px 11px}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}.form label{font-size:13px;color:#64748b;font-weight:600}.form input,.form select,.form textarea{width:100%;margin-top:6px;padding:11px;border:1px solid #dce3eb;border-radius:8px;outline:none}.form textarea{min-height:80px;resize:vertical}.formfoot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.smallbtn{padding:9px 12px;border-radius:8px;background:#edf2f7}.win-card{min-width:230px;flex:1;border:2px solid #dbe5f0;background:#f7fafc;border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s}.win-card:hover{border-color:#2f80ed;background:#eef6ff}.win-card.has-win{border-color:#2f80ed;background:#f4f8ff}.win-card .win-title{font-size:18px;font-weight:750;color:#25364d}.win-card .win-value{margin-top:8px;font-size:14px;font-weight:700;color:#1769aa;word-break:break-all}.win-card .win-hint{margin-top:7px;font-size:12px;color:#718096}.smallbtn.primary{background:var(--blue);color:#fff}.toast{position:fixed;right:22px;bottom:22px;background:#13283d;color:#fff;padding:13px 16px;border-radius:9px;display:none;z-index:20}.toast.show{display:block}
 @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.sidebar{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}}@media(max-width:720px){.sidebar{position:static;width:100%;min-height:auto}.app{display:block}.main{margin:0;width:100%;padding:15px}.grid{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.form .full{grid-column:auto}.top{flex-wrap:wrap}.user{display:none}}
 
 .cars-search-card{padding:18px}.cars-search{position:relative;display:flex;align-items:center;width:100%;background:#f7f9fc;border:1.5px solid #dbe3ee;border-radius:14px;transition:.18s;box-sizing:border-box}.cars-search:focus-within{background:#fff;border-color:#287df5;box-shadow:0 0 0 4px rgba(40,125,245,.10)}.cars-search-icon{width:48px;display:grid;place-items:center;font-size:25px;color:#718096;flex:none}.cars-search input{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:14px 44px 14px 0!important;font-size:15px;color:#172033}.cars-search input::placeholder{color:#8a97a8}.cars-search-clear{display:none;position:absolute;right:10px;width:30px;height:30px;border:0;border-radius:50%;background:#e7edf5;color:#64748b;font-size:22px;line-height:28px;cursor:pointer}.cars-search-clear:hover{background:#dce5f0;color:#172033}.cars-search.has-value .cars-search-clear{display:block}.cars-search-hint{margin:8px 4px 0;color:#8a97a8;font-size:12px}
@@ -375,23 +375,7 @@ body:not(.light-theme) #sales .card>div[style*="background:#eef6ff"] div[style*=
 body:not(.light-theme) #sales .card>div[style*="background:#eef6ff"] div[style*="color:#475569"]{color:#7f8c9b!important}
 body:not(.light-theme) #sales #salesTotal{background:#0d151e!important;border-color:#202c38!important;color:#e7edf5!important}
 </style>
-<style id="clients-search-dark-final">
-body:not(.light-theme) #clients #clientSearch{
-  background:#0a1119!important;
-  color:#e7edf5!important;
-  border:1px solid #202c38!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.015)!important;
-  color-scheme:dark;
-}
-body:not(.light-theme) #clients #clientSearch::placeholder{color:#596878!important}
-body:not(.light-theme) #clients #clientSearch:focus{
-  background:#0c141e!important;
-  color:#edf2f7!important;
-  border-color:rgba(59,130,246,.62)!important;
-  outline:none!important;
-  box-shadow:0 0 0 3px rgba(59,130,246,.10), inset 0 1px 0 rgba(255,255,255,.02)!important;
-}
-</style>
+
 
 <style id="dark-order-dividers">
 body:not(.light-theme) #allorders .rowcard,
@@ -2111,6 +2095,143 @@ body:not(.light-theme) #cars .cars-search-clear:hover {
 }
 </style>
 
+
+
+<style id="garage-backup-layout-fix">
+/* Резервная копия — отдельный блок, не соединяется с нижней панелью продавца */
+#settings .settings-backup-card{
+  display:block;
+  width:100%;
+  max-width:720px;
+  box-sizing:border-box;
+  margin:18px 0 34px 0 !important;
+  clear:both;
+  position:relative;
+  z-index:1;
+}
+#settings .settings-backup-card h3{
+  margin:0 0 8px 0 !important;
+}
+#settings .settings-backup-card p{
+  margin:0 0 12px 0 !important;
+}
+#settings{
+  padding-bottom:10px;
+}
+</style>
+
+
+<style id="garage-backup-color-theme">
+/* Аккуратное оформление блока резервной копии */
+.settings-backup-card{
+  background: linear-gradient(135deg, rgba(20,42,68,.96), rgba(13,27,45,.98)) !important;
+  border: 1px solid rgba(76,170,255,.65) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04);
+  color: #eaf4ff;
+  overflow: hidden;
+}
+.settings-backup-card h3{
+  color: #f2f8ff !important;
+  letter-spacing: .1px;
+}
+.settings-backup-card p{
+  color: #a9c2dc !important;
+}
+.settings-backup-card button{
+  background: linear-gradient(135deg, #287fe0, #175bb1) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(133,202,255,.65) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(16,94,181,.28);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+.settings-backup-card button:hover{
+  filter: brightness(1.08);
+  box-shadow: 0 6px 16px rgba(16,94,181,.4);
+  transform: translateY(-1px);
+}
+.settings-backup-card button:active{
+  transform: translateY(0);
+}
+</style>
+
+
+<style id="garage-backup-light-theme">
+/* Светлая тема: отдельная светлая карточка резервной копии */
+body.light-theme .settings-backup-card{
+  background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%) !important;
+  border: 1px solid #cbdcf2 !important;
+  box-shadow: 0 8px 22px rgba(30, 64, 175, .08), inset 0 1px 0 rgba(255,255,255,.95);
+  color: #172033 !important;
+}
+body.light-theme .settings-backup-card h3{
+  color: #1e3a5f !important;
+}
+body.light-theme .settings-backup-card p{
+  color: #64748b !important;
+}
+body.light-theme .settings-backup-card button{
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #1d4ed8 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 5px 12px rgba(37,99,235,.20);
+}
+body.light-theme .settings-backup-card button:hover{
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  box-shadow: 0 7px 16px rgba(37,99,235,.28);
+}
+</style>
+
+
+<style id="garage-backup-dark-theme-refined">
+/* Тёмная тема: оформление в общей стилистике Garage */
+body:not(.light-theme) .settings-backup-card{
+  background: linear-gradient(145deg, #202b3a 0%, #182231 100%) !important;
+  border: 1px solid #35465c !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035);
+  color: #e7edf5 !important;
+}
+body:not(.light-theme) .settings-backup-card h3{
+  color: #f1f5f9 !important;
+  font-weight: 700;
+}
+body:not(.light-theme) .settings-backup-card p{
+  color: #9eafc3 !important;
+}
+body:not(.light-theme) .settings-backup-card button{
+  background: linear-gradient(180deg, #344b66 0%, #293c53 100%) !important;
+  border: 1px solid #4c6683 !important;
+  border-radius: 9px !important;
+  color: #eaf3ff !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+}
+body:not(.light-theme) .settings-backup-card button:hover{
+  background: linear-gradient(180deg, #405b79 0%, #304963 100%) !important;
+  border-color: #6485a8 !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,.28);
+  transform: translateY(-1px);
+}
+body:not(.light-theme) .settings-backup-card button:active{
+  transform: translateY(0);
+}
+</style>
+
+
+<style id="garage-restore-password-modal-style">
+.garage-restore-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,10,18,.68);backdrop-filter:blur(5px)}
+.garage-restore-dialog{width:min(430px,100%);box-sizing:border-box;padding:28px;border:1px solid var(--line,#3b4758);border-radius:20px;background:var(--card,#202936);color:var(--text,#edf2f7);box-shadow:0 20px 70px rgba(0,0,0,.38)}
+.garage-restore-icon{width:54px;height:54px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(76,130,180,.18);font-size:26px;margin-bottom:16px}
+.garage-restore-dialog h3{margin:0 0 9px;font-size:21px}
+.garage-restore-dialog p{margin:0 0 20px;color:var(--muted,#9eafc3);line-height:1.5}
+.garage-restore-dialog input{display:block;width:100%;box-sizing:border-box;margin:10px 0;padding:13px 14px;border:1px solid var(--line,#3b4758);border-radius:11px;background:var(--field,#151d28);color:var(--text,#edf2f7);outline:none}
+.garage-restore-dialog input:focus{border-color:#6b91b5;box-shadow:0 0 0 3px rgba(107,145,181,.14)}
+.garage-restore-error{min-height:20px;margin:8px 0;color:#fca5a5;font-size:13px}
+.garage-restore-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+.garage-restore-actions button{border-radius:10px;padding:11px 15px}
+.garage-restore-save{background:#405b79!important;border:1px solid #6485a8!important;color:#fff!important}
+</style>
 </head>
 <body>
 <div class="app">
@@ -2125,7 +2246,19 @@ body:not(.light-theme) #cars .cars-search-clear:hover {
   </div>
 </aside>
 <main class="main">
-<section id="settings" class="page"><h1>Настройки</h1><div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div><div class="card" style="max-width:720px;margin-top:16px"><h2>📊 Анализ размера данных</h2><p style="color:var(--muted);margin-top:-6px">Оценка текущего объёма локальных данных и примерный прогноз для будущей облачной базы.</p><div id="garageStorageStats" style="margin-top:14px;color:var(--text)">Нажмите «Обновить расчёт».</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="renderGarageStorageStats()">↻ Обновить расчёт</button><button class="btn" type="button" onclick="copyGarageStorageReport()">⧉ Скопировать отчёт</button></div><small style="display:block;color:var(--muted);margin-top:12px">Расчёт приблизительный: учитывает JSON-данные из текущего localStorage. Размер SQL-базы после миграции может отличаться.</small></div></section>
+<section id="settings" class="page"><h1>Настройки</h1>
+
+<div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div><div class="card" style="max-width:720px;margin-top:16px"><h2>📊 Анализ размера данных</h2><p style="color:var(--muted);margin-top:-6px">Оценка текущего объёма локальных данных и примерный прогноз для будущей облачной базы.</p><div id="garageStorageStats" style="margin-top:14px;color:var(--text)">Нажмите «Обновить расчёт».</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="renderGarageStorageStats()">↻ Обновить расчёт</button><button class="btn" type="button" onclick="copyGarageStorageReport()">⧉ Скопировать отчёт</button></div><small style="display:block;color:var(--muted);margin-top:12px">Расчёт приблизительный: учитывает JSON-данные из текущего localStorage. Размер SQL-базы после миграции может отличаться.</small></div>
+<div class="settings-backup-card" style="margin-top:18px;padding:16px;border:1px solid var(--border,#d8dee9);border-radius:14px;">
+  <h3 style="margin:0 0 8px;">Резервная копия данных</h3>
+  <p style="margin:0 0 12px;opacity:.8;">Сохраните копию данных или восстановите ранее сохранённый файл.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="button" class="btn" onclick="requestGarageBackupDownload()">🔒 Скачать резервную копию</button>
+    <button type="button" class="btn" onclick="requestGarageBackupRestore()">🔐 Восстановить данные</button>
+  </div>
+  <input id="garageBackupFileInput" type="file" accept=".json,application/json" style="display:none" onchange="restoreGarageBackup(event)">
+</div>
+</section>
 
   <div class="top">
     <div class="search"><span>⌕</span><input id="search" placeholder="Введите телефон, фамилию или госномер..."></div><div id="globalSearchResults" style="margin-top:10px"></div>
@@ -2157,7 +2290,7 @@ body:not(.light-theme) #cars .cars-search-clear:hover {
     </div>
   </section>
 
-  <section id="clients" class="page"><h1>Клиенты</h1><div class="subtitle">Клиенты и их автомобили</div><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:14px"><input id="clientSearch" placeholder="Поиск по номеру клиента, номеру машины, имени клиента или WIN..." style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px"><button class="smallbtn primary" onclick="openClient()">＋ Добавить</button></div><div id="clientList" class="list"></div></div></section>
+  <section id="clients" class="page"><h1>Клиенты</h1><div class="subtitle">Клиенты и их автомобили</div><div class="card"><div class="client-search-field"><div class="client-search-box"><span class="client-search-icon" aria-hidden="true">⌕</span><input id="clientSearch" placeholder="Поиск по номеру клиента, номеру машины, имени клиента или WIN..."></div><button class="smallbtn primary" onclick="openClient()">＋ Добавить</button></div><div id="clientList" class="list"></div></div></section>
   <section id="cars" class="page"><h1>Список авто</h1><div class="subtitle">Все автомобили клиентов</div><div class="card cars-search-card"><div class="cars-search"><span class="cars-search-icon">⌕</span><input id="carsSearch" placeholder="Поиск по номеру клиента, номеру машины, имени клиента или WIN..." autocomplete="off"><button type="button" class="cars-search-clear" id="carsSearchClear" aria-label="Очистить поиск">×</button></div><div class="cars-search-hint">Можно искать по марке и модели, WIN, имени клиента или номеру телефона</div><div id="carList" class="list"></div></div></section>
   <section id="allorders" class="page"><h1>Заказы</h1><div class="subtitle">Все активные заказы: оплаченные и не оплаченные</div><div class="card"><div class="search" style="margin-bottom:14px"><span>⌕</span><input id="allOrdersSearch" placeholder="Поиск по номеру клиента, номеру машины, имени клиента или WIN..."></div><div id="combinedOrdersList" class="list"></div></div></section>
   <section id="orders" class="page"><h1>Оплаченные заказы</h1><div class="subtitle">Заказы, оплаченные полностью</div><div class="card"><div class="search" style="margin-bottom:14px"><span>⌕</span><input id="ordersSearch" placeholder="Поиск по номеру клиента, номеру машины, имени клиента или WIN..."></div><div id="allOrders" class="list"></div></div></section>
@@ -2434,7 +2567,7 @@ function openClientClosedOrderDetails(id){
 }
 
 function miniOrderHistory(o){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}</div></div>`}
-function miniOrder(o,sectionKey=null){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta" style="display:block;margin-top:5px;color:#2563eb;font-weight:800">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${eta}${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`}
+function miniOrder(o,sectionKey=null){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${eta}${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`}
 function refreshFullPayModal(){let id=window._payFullOrderId,o=data.orders.find(x=>x.id===id);if(!o)return;let base=Number(o.baseTotal??o.total??0)||0;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pctInput=document.getElementById('orderPayDiscount');let personalInput=document.getElementById('orderPayPersonalDiscount');let pct=canDiscount?Math.min(100,Math.max(0,Number(pctInput?.value||0))):0;if(method==='card')pct=0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=Math.max(0,Math.min(percentTotal,Number(personalInput?.value||0)));let newTotal=Math.max(0,percentTotal-personal);let remaining=Math.max(0,newTotal-(Number(o.paid)||0));let discAmt=Math.max(0,(Number(o.total)||0)-newTotal);if(pctInput){pctInput.disabled=!canDiscount||method==='card';if(method==='card')pctInput.value='';}if(personalInput){personalInput.disabled=false;personalInput.removeAttribute('disabled');}let t=document.getElementById('orderPayRemaining');if(t)t.value=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});let final=document.getElementById('orderPayAfterDiscount');if(final)final.textContent=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent=discAmt>0?('Всего скидка: '+discAmt.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'):'';let info=document.getElementById('orderPayDiscountInfo');if(info){if(canDiscount)info.textContent=method==='card'?'Для оплаты картой процентная скидка отключена.':'Можно применить скидку и персональную скидку для округления.';else{let oldPct=Number(o.discount||0);let oldBase=Number((o.baseTotal??o.total)??0)||0;let oldAmount=oldBase*oldPct/100;info.textContent='Скидка по этому заказу уже была применена: '+oldPct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'% (−'+oldAmount.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽) из '+oldBase.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽.'}}}
 function payOrderFully(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));if(remaining<=0)return toast('Заказ уже оплачен полностью');let c=client(o.clientId);let previous=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let prevPaid=previous.reduce((a,s)=>a+(Number(s.price)||0),0);let prevRows=previous.length?previous.map(s=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-top:7px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:3px">${s.date||''} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'}${s.paidBy?' · 👤 '+s.paidBy:''}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join(''):'<div style="padding:9px 10px;border-radius:10px;background:rgba(148,163,184,.08);color:var(--muted)">Предыдущих оплат не найдено</div>';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);window._payFullOrderId=id;openModal('Оплата остатка · заказ №'+o.id,`<div class="form"><label>Клиент<div><input value="${c?.name||'—'}" readonly></div></label><label>Остаток к оплате, ₽<div><input id="orderPayRemaining" value="${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})}" readonly></div></label><div id="orderPayAfterDiscountWrap" style="grid-column:1/-1;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--accent-soft,rgba(59,130,246,.28));display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:none"><span style="font-weight:700;color:var(--muted)">💳 Сумма к оплате после скидки</span><b id="orderPayAfterDiscount" style="font-size:24px">${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><label>Способ оплаты<div><select id="orderPayMethod" onchange="refreshFullPayModal()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label><label>Скидка %<div><input id="orderPayDiscount" type="number" min="0" max="100" step="0.01" placeholder="Например: 5" ${canDiscount?'':'disabled'} oninput="refreshFullPayModal()"></div></label><label>Персональная скидка для округления, ₽<div><input id="orderPayPersonalDiscount" type="number" min="0" step="1" placeholder="Например: 30" oninput="refreshFullPayModal()"></div></label><small id="orderPayDiscountInfo" style="display:block;grid-column:1/-1;margin-top:-8px;color:var(--muted)">${canDiscount?'Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.':'Скидка по этому заказу уже была применена — изменение недоступно.'}</small><small id="orderPayDiscountAmount" style="display:block;grid-column:1/-1;margin-top:-4px;color:#b7791f;font-weight:700"></small></div><div style="margin-top:14px"><b>Что было оплачено до этого</b><div class="previously-paid-total"><span class="previously-paid-total-label">Всего ранее оплачено:</span> <b>${prevPaid.toLocaleString('ru-RU')} ₽</b></div>${prevRows}</div><div style="margin-top:12px;color:#64748b;font-size:13px">После подтверждения остаток будет добавлен в «Продажи» как доплата по заказу №${o.id}.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-pay-all" onclick="completeOrderPayment(${o.id})">Оплатил все</button></div>`);refreshFullPayModal()}
 function completeOrderPayment(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pct=canDiscount?Math.min(100,Math.max(0,Number(document.getElementById('orderPayDiscount')?.value||0))):0;if(method==='card')pct=0;let personal=Math.max(0,Number(document.getElementById('orderPayPersonalDiscount')?.value||0));let base=Number(o.baseTotal??o.total??0)||0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);personal=Math.max(0,Math.min(percentTotal,personal));let finalTotal=canDiscount?Math.max(0,percentTotal-personal):Math.max(0,Number(o.total||0)-personal);let finalRemaining=Math.max(0,finalTotal-(Number(o.paid)||0));window._payFullDraft={id,method,pct,personal,finalTotal,finalRemaining};openModal('Подтверждение оплаты',`<div class="payment-confirm-modal"><div class="payment-confirm-icon">?</div><div class="payment-confirm-title">Подтвердить операцию?</div><div class="payment-confirm-text">Вы действительно хотите провести оплату остатка по заказу №${o.id}?</div><div class="payment-confirm-amount"><span>К оплате</span><b>${finalRemaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div>${(pct>0||personal>0)?`<div class="payment-confirm-method"><span>Скидка</span><b>${pct>0?pct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'%':''}${pct>0&&personal>0?' · ':''}${personal>0?'−'+personal.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽':''}</b></div>`:''}<div class="payment-confirm-method"><span>Способ оплаты</span><b>${method==='card'?'💳 Карта':'💵 Наличные'}</b></div><div class="payment-confirm-actions"><button class="smallbtn" onclick="payConfirmCancel()">Отмена</button><button class="smallbtn primary" onclick="payConfirmYes()">Подтвердить оплату</button></div></div>`)}
@@ -2443,8 +2576,8 @@ function payConfirmYes(){let d=window._payFullDraft;if(!d)return;let o=data.orde
 function openDebt(o){let debt=Math.max(0,(+o.total||0)-(+o.paid||0));openModal('Изменить долг · заказ №'+o.id,`<div class="form"><label>Стоимость заказа, ₽<div><input value="${o.total}" readonly></div></label><label>Текущий долг, ₽<div><input id="editDebt" type="number" min="0" max="${o.total}" step="0.01" value="${debt}"></div></label></div><div style="margin-top:12px;color:#64748b;font-size:13px">После сохранения сумма оплаты автоматически пересчитается.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-edit-debt" onclick="saveDebt(${o.id})">Сохранить</button></div>`)}
 function saveDebt(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let input=document.getElementById('editDebt');if(!input)return;let debt=Number(String(input.value).replace(/\s/g,'').replace(/[^0-9.\-]/g,''));if(!Number.isFinite(debt)||debt<0)return toast('Некорректная сумма долга');o.debt=debt;save();refreshOpenOrderViews();if(typeof currentCarHistoryState!=='undefined'&&currentCarHistoryState){window.__garageLastHistoryState={...currentCarHistoryState}};closeModal();if(window.__garageLastHistoryState&&typeof showCar==='function'){showCar(window.__garageLastHistoryState.cid,window.__garageLastHistoryState.vid)};toast('Долг изменён')}
 let currentClientProfileId=null;
-function openModal(title,body){currentClientProfileId=null;let modal=document.getElementById('modal'),box=modal.querySelector('.modalbox'),titleText=String(title);box.classList.toggle('cart-modal-box',titleText.includes('Корзина клиента')||titleText.includes('Оформление заказа'));box.classList.toggle('cart-only-modal',titleText.includes('Корзина клиента'));document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;box.classList.remove('client-profile-box');modal.classList.add('show')}
-function closeModal(){currentClientProfileId=null;document.getElementById('modal').classList.remove('show')}
+function openModal(title,body){currentClientProfileId=null;const globalSearchResults=document.getElementById('globalSearchResults');if(globalSearchResults)globalSearchResults.style.display='none';let modal=document.getElementById('modal'),box=modal.querySelector('.modalbox'),titleText=String(title);box.classList.toggle('cart-modal-box',titleText.includes('Корзина клиента')||titleText.includes('Оформление заказа'));box.classList.toggle('cart-only-modal',titleText.includes('Корзина клиента'));document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;box.classList.remove('client-profile-box');modal.classList.add('show')}
+function closeModal(){currentClientProfileId=null;document.getElementById('modal').classList.remove('show');const globalSearchResults=document.getElementById('globalSearchResults');if(globalSearchResults){globalSearchResults.style.display='';if(typeof renderGlobalSearch==='function')renderGlobalSearch();}}
 function openClient(){openModal('Новый клиент',`<div class="form"><label>ФИО<div><input id="fName"></div></label><label>Телефон<div><input id="fPhone"></div></label><label>Марка автомобиля<div><input id="fBrand" placeholder="Например: Toyota"></div></label><label>Модель автомобиля<div><input id="fModel" placeholder="Например: Camry"></div></label><label>Год<div><input id="fYear" type="number"></div></label><label>Госномер<div><input id="fPlate"></div></label><label>VIN номера<div><input id="fWin"></div></label><label class="full">Значки клиента<div class="client-badges"><button type="button" id="newBadgeFriend" class="badge-toggle friend-toggle" onclick="this.classList.toggle('active')">🤝 Друг магазина</button><button type="button" id="newBadgeRegular" class="badge-toggle regular-toggle" onclick="this.classList.toggle('active')">⭐ Постоянный покупатель</button><button type="button" id="newBadgeAnnoying" class="badge-toggle annoying-toggle" onclick="this.classList.toggle('active')">😤 Назойливый клиент</button></div></label><label class="full">Комментарий<div><textarea id="fNote"></textarea></div></label></div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="addClient()">Сохранить</button></div>`) }
 function addClient(){let name=fName.value.trim(),phone=fPhone.value.trim();if(!name||!phone)return toast('Заполните ФИО и телефон');let now=Date.now(),brand=fBrand.value.trim(),model=fModel.value.trim(),plate=fPlate.value.trim(),year=fYear.value.trim(),win=fWin.value.trim();data.clients.push({id:now,name,phone,note:fNote.value.trim(),friendStore:!!document.getElementById('newBadgeFriend')?.classList.contains('active'),regularBuyer:!!document.getElementById('newBadgeRegular')?.classList.contains('active'),annoyingClient:!!document.getElementById('newBadgeAnnoying')?.classList.contains('active'),cars:(brand||model||plate||year||win)?[{id:now+1,brand,model,plate,year,vin:win}]:[]});closeModal();save();toast('Клиент добавлен')}
 function openCar(){let opts=data.clients.map(c=>`<option value="${c.id}">${c.name} — ${c.phone}</option>`).join('');openModal('Новый автомобиль',`<div class="form"><label class="full">Клиент<div><select id="cClient">${opts}</select></div></label><label>Марка<div><input id="cBrand"></div></label><label>Модель<div><input id="cModel"></div></label><label>Госномер<div><input id="cPlate"></div></label><label>Год<div><input id="cYear" type="number"></div></label><label>VIN (необязательно)<div><input id="cVin"></div></label></div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="addCar()">Сохранить</button></div>`)}
@@ -2631,6 +2764,7 @@ function toggleProfileSection(btn){
   if(arrow) arrow.textContent=body.classList.contains('open')?'⌃':'⌄';
 }
 function showClient(id){
+  const globalSearchInput=document.getElementById('search');
   let c=client(id);if(!c)return;
 
   let carsHtml=c.cars.map(v=>{
@@ -2681,6 +2815,11 @@ function showClient(id){
   </section>`);
   currentClientProfileId=id;
   document.querySelector('.modalbox')?.classList.add('client-profile-box');
+  // Reset the main global search after selecting a client profile.
+  if(globalSearchInput){
+    globalSearchInput.value='';
+    if(typeof renderGlobalSearch==='function') renderGlobalSearch();
+  }
 }
 function deleteClient(id){
   let c=client(id);
@@ -3561,6 +3700,201 @@ body:not(.light-theme) #home #homeSearchResults .rowcard .smallbtn { flex:0 0 au
  body:not(.light-theme) #home #homeSearchResults .rowcard > div:last-child { width:100% !important; flex-wrap:wrap !important; }
 }
 </style>
+
+
+
+
+<script>
+function downloadGarageBackup() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    localStorage: data
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'garage-backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+
+function showGarageRestorePasswordModal(mode = 'restore') {
+  const old = document.getElementById('garageRestorePasswordModal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'garageRestorePasswordModal';
+  modal.innerHTML = `
+    <div class="garage-restore-overlay">
+      <div class="garage-restore-dialog" role="dialog" aria-modal="true" aria-labelledby="garageRestoreTitle">
+        <div class="garage-restore-icon">🔐</div>
+        <h3 id="garageRestoreTitle">Создайте пароль восстановления</h3>
+        <p>Этот пароль будет запрашиваться перед восстановлением резервной копии.</p>
+        <input id="garageRestoreNewPassword" type="password" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password">
+        <input id="garageRestoreRepeatPassword" type="password" placeholder="Повторите пароль" autocomplete="new-password">
+        <div id="garageRestorePasswordError" class="garage-restore-error"></div>
+        <div class="garage-restore-actions">
+          <button type="button" class="btn garage-restore-cancel">Отмена</button>
+          <button type="button" class="btn garage-restore-save">Сохранить пароль</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const close = () => modal.remove();
+  modal.querySelector('.garage-restore-cancel').onclick = close;
+  modal.querySelector('.garage-restore-save').onclick = () => {
+    const first = modal.querySelector('#garageRestoreNewPassword').value;
+    const second = modal.querySelector('#garageRestoreRepeatPassword').value;
+    const error = modal.querySelector('#garageRestorePasswordError');
+    if (first.length < 6) { error.textContent = 'Пароль должен содержать минимум 6 символов.'; return; }
+    if (first !== second) { error.textContent = 'Пароли не совпадают.'; return; }
+    localStorage.setItem('garageRestorePassword', first);
+    close();
+    if (mode === 'download') {
+      downloadGarageBackup();
+    } else {
+      document.getElementById('garageBackupFileInput').click();
+    }
+  };
+}
+
+function showGarageRestoreAccessModal() {
+  const old = document.getElementById('garageRestoreAccessModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'garageRestoreAccessModal';
+  modal.innerHTML = `
+    <div class="garage-restore-overlay"><div class="garage-restore-dialog" role="dialog" aria-modal="true">
+      <div class="garage-restore-icon">🔐</div><h3>Восстановление данных</h3>
+      <p>Введите пароль для продолжения или измените его в этом окне.</p>
+      <input id="garageAccessPassword" type="password" placeholder="Текущий пароль" autocomplete="current-password">
+      <div id="garageAccessError" class="garage-restore-error"></div>
+      <div class="garage-restore-actions">
+        <button type="button" class="btn garage-restore-cancel">Отмена</button>
+        <button type="button" class="btn garage-restore-change">Изменить пароль</button>
+        <button type="button" class="btn garage-restore-login">Продолжить</button>
+      </div>
+    </div></div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.remove();
+  const input=modal.querySelector('#garageAccessPassword');
+  const error=modal.querySelector('#garageAccessError');
+  modal.querySelector('.garage-restore-cancel').onclick=close;
+  modal.querySelector('.garage-restore-login').onclick=()=>{
+    if(input.value!==localStorage.getItem('garageRestorePassword')){error.textContent='Неверный пароль.'; input.value=''; input.focus(); return;}
+    close(); document.getElementById('garageBackupFileInput').click();
+  };
+  modal.querySelector('.garage-restore-change').onclick=()=>{
+    if(input.value!==localStorage.getItem('garageRestorePassword')){error.textContent='Сначала введите верный текущий пароль.'; return;}
+    close(); showGarageChangePasswordModal();
+  };
+  setTimeout(()=>input.focus(),0);
+}
+
+function showGarageChangePasswordModal(){
+  const modal=document.createElement('div'); modal.id='garageChangePasswordModal';
+  modal.innerHTML=`<div class="garage-restore-overlay"><div class="garage-restore-dialog" role="dialog" aria-modal="true"><div class="garage-restore-icon">🔑</div><h3>Изменить пароль</h3><p>Задайте новый пароль восстановления.</p><input id="garageNewPassword" type="password" placeholder="Новый пароль (от 6 символов)"><input id="garageRepeatPassword" type="password" placeholder="Повторите новый пароль"><div id="garageChangeError" class="garage-restore-error"></div><div class="garage-restore-actions"><button type="button" class="btn garage-restore-cancel">Отмена</button><button type="button" class="btn garage-restore-login">Сохранить</button></div></div></div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.remove(); const error=modal.querySelector('#garageChangeError');
+  modal.querySelector('.garage-restore-cancel').onclick=close;
+  modal.querySelector('.garage-restore-login').onclick=()=>{const a=modal.querySelector('#garageNewPassword').value,b=modal.querySelector('#garageRepeatPassword').value;if(a.length<6){error.textContent='Минимум 6 символов.';return;}if(a!==b){error.textContent='Пароли не совпадают.';return;}localStorage.setItem('garageRestorePassword',a);close();};
+}
+
+function showGarageBackupDownloadAccessModal() {
+  const old = document.getElementById('garageBackupDownloadAccessModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'garageBackupDownloadAccessModal';
+  modal.innerHTML = `<div class="garage-restore-overlay"><div class="garage-restore-dialog" role="dialog" aria-modal="true"><div class="garage-restore-icon">🔐</div><h3>Создание резервной копии</h3><p>Введите пароль восстановления для сохранения копии данных.</p><input id="garageDownloadPassword" type="password" placeholder="Пароль" autocomplete="current-password"><div id="garageDownloadError" class="garage-restore-error"></div><div class="garage-restore-actions"><button type="button" class="btn garage-restore-cancel">Отмена</button><button type="button" class="btn garage-restore-login">Скачать</button></div></div></div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.remove(), input=modal.querySelector('#garageDownloadPassword'), error=modal.querySelector('#garageDownloadError');
+  modal.querySelector('.garage-restore-cancel').onclick=close;
+  modal.querySelector('.garage-restore-login').onclick=()=>{
+    if(input.value!==localStorage.getItem('garageRestorePassword')){error.textContent='Неверный пароль.';input.value='';input.focus();return;}
+    close(); downloadGarageBackup();
+  };
+  setTimeout(()=>input.focus(),0);
+}
+
+function requestGarageBackupDownload() {
+  if (!localStorage.getItem('garageRestorePassword')) {
+    showGarageRestorePasswordModal('download');
+    return;
+  }
+  showGarageBackupDownloadAccessModal();
+}
+
+function requestGarageBackupRestore() {
+  const savedPassword = localStorage.getItem('garageRestorePassword');
+  if (!savedPassword) {
+    showGarageRestorePasswordModal();
+    return;
+  }
+  showGarageRestoreAccessModal();
+}
+
+function restoreGarageBackup(event) {
+  const input = event && event.target;
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function() {
+    try {
+      const payload = JSON.parse(reader.result);
+      if (!payload || typeof payload !== 'object' ||
+          !payload.localStorage || typeof payload.localStorage !== 'object' ||
+          Array.isArray(payload.localStorage)) {
+        throw new Error('Неверный формат резервной копии');
+      }
+
+      const keys = Object.keys(payload.localStorage);
+      if (!keys.length) {
+        throw new Error('В резервной копии нет данных');
+      }
+
+      const dateText = payload.exportedAt
+        ? '\\nДата создания: ' + new Date(payload.exportedAt).toLocaleString()
+        : '';
+
+      const confirmed = confirm(
+        'Восстановить данные из выбранной копии?' + dateText +
+        '\\n\\nТекущие данные этого браузера будут заменены. Перед продолжением рекомендуется скачать текущую резервную копию.'
+      );
+      if (!confirmed) return;
+
+      localStorage.clear();
+      keys.forEach(function(key) {
+        const value = payload.localStorage[key];
+        localStorage.setItem(key, value == null ? '' : String(value));
+      });
+
+      alert('Данные успешно восстановлены. Приложение будет перезагружено.');
+      window.location.reload();
+    } catch (error) {
+      alert('Не удалось восстановить резервную копию. Проверьте, что выбран корректный JSON-файл Garage.');
+      console.error('Garage backup restore error:', error);
+    } finally {
+      if (input) input.value = '';
+    }
+  };
+  reader.onerror = function() {
+    alert('Не удалось прочитать файл резервной копии.');
+    if (input) input.value = '';
+  };
+  reader.readAsText(file, 'utf-8');
+}
+</script>
 </body>
 
 <!-- v70.52 main history next/prev refresh fix -->
@@ -3957,3 +4291,395 @@ body:not(.light-theme) #cars .cars-search-clear:hover {
 #globalSearchResults .rowcard small{display:block;color:var(--muted,#8b99aa);margin-top:4px;}
 @media(max-width:640px){#globalSearchResults{width:calc(100vw - 28px);top:52px;}#globalSearchResults .rowcard{align-items:flex-start;flex-direction:column;}#globalSearchResults .rowcard button{width:100%;}}
 </style>
+
+
+<!-- GARAGE v2.1 unified order payment status visual patch -->
+<style id="garage-unified-payment-v21">
+.order-payment-summary{margin-top:9px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(148,163,184,.055);color:var(--text);font-size:12px;line-height:1.3;min-width:230px}
+.order-payment-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:7px;margin-bottom:7px;border-bottom:1px solid var(--line)}
+.order-payment-head span{font-weight:800;color:var(--muted)}
+.order-payment-head b{font-size:15px;color:var(--text);white-space:nowrap}
+.order-payment-grid{display:grid;grid-template-columns:1fr auto;gap:5px 14px;align-items:center}
+.order-payment-grid span{color:var(--muted)}
+.order-payment-grid b{font-weight:800;text-align:right;white-space:nowrap}
+.order-payment-paid{color:#22c55e!important}
+.order-payment-debt{color:#ef6b6b!important}
+.order-payment-full{color:#22c55e!important}
+.order-payment-summary.is-debt{border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.055)}
+.order-payment-summary.is-paid{border-color:rgba(34,197,94,.32);background:rgba(34,197,94,.045)}
+.order-payment-summary .payment-state{grid-column:1/-1;margin-top:2px;padding-top:7px;border-top:1px dashed var(--line);font-weight:800}
+body.light-theme .order-payment-summary{background:#f8fafc;border-color:#dce4ec;color:#172033}
+body.light-theme .order-payment-head{border-color:#e3e8ee}
+body.light-theme .order-payment-head span,.body.light-theme .order-payment-grid span{color:#64748b}
+body.light-theme .order-payment-summary.is-debt{background:#fff7f7;border-color:#efb4b4}
+body.light-theme .order-payment-summary.is-paid{background:#f6fff9;border-color:#b7dfc5}
+body.light-theme .order-payment-debt{color:#b42318!important}
+body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:#16803c!important}
+.order-payment-summary.compact{min-width:210px;margin-top:7px;padding:9px 11px}
+.order-payment-summary.compact .order-payment-head{padding-bottom:6px;margin-bottom:6px}
+@media(max-width:760px){.order-payment-summary{width:100%;min-width:0}.order-payment-summary.compact{min-width:0}}
+</style>
+<script id="garage-unified-payment-v21-js">
+(function(){
+  function money(n){return Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:2})+' ₽'}
+  window.garagePaymentSummary=function(o,compact){
+    const total=Math.max(0,Number(o?.total)||0),paid=Math.max(0,Number(o?.paid)||0),debt=Math.max(0,total-paid),full=debt<=0;
+    return `<div class="order-payment-summary ${compact?'compact ':''}${full?'is-paid':'is-debt'}">
+      <div class="order-payment-head"><span>💰 Сумма заказа</span><b>${money(total)}</b></div>
+      <div class="order-payment-grid">
+        <span>Оплачено</span><b class="order-payment-paid">${money(Math.min(paid,total))}</b>
+        <span>${full?'Статус оплаты':'Не оплачено'}</span><b class="${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Оплачено полностью':money(debt)}</b>
+        <div class="payment-state ${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Заказ оплачен полностью':'⚠ Остаток к оплате: '+money(debt)}</div>
+      </div>
+    </div>`;
+  };
+
+  // Keep the existing order workflow intact; only unify the visual payment information.
+  window.miniOrder=function(o,sectionKey=null){
+    let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=d<=0,issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';
+    return `<div class="rowcard ${rowClass}"><div style="min-width:0;flex:1"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block">Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''}</small>${eta}${garagePaymentSummary(o,true)}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`;
+  };
+
+  window.orderGroupDetail=function(o){
+    let v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=d<=0,issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    return `<div class="${rowClass}" style="padding:12px 14px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="min-width:220px;flex:1"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small>${garagePaymentSummary(o,true)}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div></div>`;
+  };
+
+  window.homeOrderDetail=function(o){
+    const v=car(o.carId,o.clientId),debt=Math.max(0,(+o.total||0)-(+o.paid||0)),issued=o.status==='done',issueRaw=o.issuedAt||o.issueDate,issueDate=issueRaw?new Date(issueRaw+'T00:00:00').toLocaleDateString('ru-RU'):'—',fullyPaid=debt<=0,rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    const activity=[];
+    if(o.orderedBy)activity.push(`<span class="seller-action-item">🛒 Заказал ${sellerBadge(o.orderedBy)}</span>`);
+    if(o.receivedBy)activity.push(`<span class="seller-action-item">📦 Принял ${sellerBadge(o.receivedBy)}</span>`);
+    if(o.notifiedBy)activity.push(`<span class="seller-action-item">🔔 Оповестил ${sellerBadge(o.notifiedBy)}</span>`);
+    if(o.issuedBy)activity.push(`<span class="seller-action-item">✅ Выдал ${sellerBadge(o.issuedBy)}</span>`);
+    return `<div class="home-order-detail ${rowClass}" style="padding:12px 14px;border-radius:11px;margin-top:9px"><div class="home-order-main" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div style="min-width:220px;flex:1 1 360px"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:4px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small>${garagePaymentSummary(o,true)}</div><div class="home-order-actions">${status(o.status)}${issued?`<span class="home-issued-date" style="font-size:12px;color:var(--muted)">Выдан: ${issueDate}</span>`:''}${debt?`<button class="smallbtn primary" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">Далее →</button><button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>${issued?`<button class="smallbtn" onclick="showIssuedOrder(${o.id})">👁</button>`:''}${issued&&fullyPaid?`<button class="smallbtn" onclick="confirmDeleteOrder(${o.id})">🗑</button>`:''}</div></div>${activity.length?`<div class="home-order-activity">${activity.join('')}</div>`:''}</div>`;
+  };
+
+  window.notificationGroup=function(orders){
+    const c=client(orders[0].clientId),unlocked=true;
+    const items=orders.map(o=>{
+      const v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0));
+      const fullyPaid=d<=0,issued=o.status==='done',notifyColor=issued?'order-issued-green':(d>0?'order-debt-red':(fullyPaid?'order-paid-orange':''));
+      return `<div class="notify-detail ${notifyColor}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-top:7px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>№${o.id} · ${o.part||'—'}</b><small style="display:block">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''}</small>${garagePaymentSummary(o,true)}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">← Назад</button></div></div>`;
+    }).join('');
+    return `<div class="rowcard"><div style="width:100%"><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'деталь':orders.length<5?'детали':'деталей'}</small>${items}</div></div>`;
+  };
+
+  window.orderRow=function(o){
+    let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=d<=0,issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    return `<tr class="${rowClass}"><td>${o.id}</td><td><b>${c?.name||'—'}</b><small style="display:block;color:#7b8796">${c?.phone||''}</small></td><td>${v?.brand||''} ${v?.model||''}<small style="display:block;color:#7b8796">${v?.plate||''}</small></td><td>${o.part}<small style="display:block;color:#7b8796">Код: ${o.partNumber||o.code||'—'} · ${o.qty} шт.</small></td><td>${garagePaymentSummary(o,true)}</td><td>${status(o.status)}${o.status==='wait'&&o.date?`<small style="display:block;color:#7b8796;margin-top:4px">Привоз: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:''}</td><td><button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button> <button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">Далее →</button> <button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>${issued?` <button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</td></tr>`;
+  };
+
+  // Home customer header: keep its existing total/debt logic, but make it visually explicit.
+  window.homeOrderGroup=function(orders){
+    const c=client(orders[0].clientId),total=orders.reduce((sum,o)=>sum+(Number(o.total)||0),0),paid=orders.reduce((sum,o)=>sum+(Number(o.paid)||0),0),debt=Math.max(0,total-paid),details=orders.map(o=>homeOrderDetail(o)).join('');
+    const fake={total,paid};
+    return `<div class="home-order-group rowcard" data-client-id="${c?.id||orders[0].clientId}" style="display:block;padding:0;overflow:hidden;margin-bottom:12px"><div class="home-order-toggle" onclick="toggleHomeOrderGroup(this.parentElement)" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;cursor:pointer"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(59,130,246,.14);color:#60a5fa;font-weight:800;flex:0 0 auto">${(c?.name||'—').slice(0,1)}</div><div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${orders.length}</small></div></div><div style="min-width:250px;max-width:330px">${garagePaymentSummary(fake,true)}<span class="home-order-chevron" style="display:block;text-align:right;font-size:18px;color:#7aaef8">⌄</span></div></div><div class="home-order-details" style="display:none;padding:0 12px 12px;border-top:1px solid var(--line)"><div class="home-order-list">${details}</div></div></div>`;
+  };
+
+  // Initial repaint so existing data immediately receives the new blocks.
+  try{if(typeof render==='function')render();}catch(e){try{if(typeof renderCombinedOrders==='function')renderCombinedOrders()}catch(_){}}
+})();
+</script>
+
+<!-- GARAGE v2.2 payment card sizing and typography refinement -->
+<style id="garage-unified-payment-v22">
+.order-payment-summary,
+.order-payment-summary.compact{
+  box-sizing:border-box;
+  width:246px;
+  min-width:246px;
+  max-width:246px;
+  height:116px;
+  min-height:116px;
+  max-height:116px;
+  margin-top:8px;
+  padding:9px 11px;
+  border-radius:10px;
+  font-size:11px;
+  line-height:1.2;
+  overflow:hidden;
+}
+.order-payment-head{
+  height:23px;
+  min-height:23px;
+  padding:0 0 6px;
+  margin:0 0 6px;
+  gap:8px;
+}
+.order-payment-head span,
+.order-payment-grid span{
+  color:var(--muted);
+  font-weight:650;
+  letter-spacing:.05px;
+}
+.order-payment-head b{
+  font-size:13px;
+  font-weight:800;
+  color:var(--text);
+}
+.order-payment-grid{
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:16px 16px 27px;
+  gap:3px 10px;
+}
+.order-payment-grid b{
+  font-size:11px;
+  font-weight:800;
+}
+.order-payment-paid{color:#29945d!important}
+.order-payment-debt{color:#c65b58!important}
+.order-payment-full{color:#29945d!important}
+.order-payment-summary.is-debt{border-color:rgba(198,91,88,.34);background:rgba(198,91,88,.045)}
+.order-payment-summary.is-paid{border-color:rgba(41,148,93,.30);background:rgba(41,148,93,.04)}
+.order-payment-summary .payment-state{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  height:27px;
+  margin-top:1px;
+  padding-top:5px;
+  border-top:1px dashed var(--line);
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body.light-theme .order-payment-head span,
+body.light-theme .order-payment-grid span{color:#6b7280}
+body.light-theme .order-payment-head b{color:#263244}
+body.light-theme .order-payment-debt{color:#b4534f!important}
+body.light-theme .order-payment-paid,
+body.light-theme .order-payment-full{color:#277b50!important}
+@media(max-width:760px){
+  .order-payment-summary,
+  .order-payment-summary.compact{
+    width:246px;
+    min-width:246px;
+    max-width:246px;
+  }
+}
+</style>
+
+
+<!-- GARAGE v2.3 arrival date refinement -->
+<style id="garage-arrival-date-v23">
+.dark-eta{
+  display:flex!important;
+  align-items:center;
+  gap:7px;
+  width:fit-content;
+  max-width:100%;
+  box-sizing:border-box;
+  margin-top:8px!important;
+  padding:6px 10px;
+  border:1px solid rgba(74,144,226,.22);
+  border-radius:8px;
+  background:rgba(74,144,226,.075);
+  color:#4b83bd!important;
+  font-size:11px!important;
+  font-weight:650!important;
+  line-height:1.35!important;
+  letter-spacing:.05px;
+  white-space:normal;
+}
+.dark-eta::first-letter{font-size:12px}
+body.light-theme .dark-eta{
+  color:#426f9f!important;
+  background:#f1f6fc;
+  border-color:#d6e4f4;
+}
+body:not(.light-theme) .dark-eta{
+  color:#8db9e8!important;
+  background:rgba(73,132,197,.10);
+  border-color:rgba(105,160,220,.23);
+}
+/* Separate the date visually from the payment card without increasing the card height. */
+.order-payment-summary{margin-top:7px!important}
+@media(max-width:760px){
+  .dark-eta{font-size:10.5px!important;padding:6px 9px}
+}
+</style>
+
+
+<!-- GARAGE search repair: isolate Clients search and preserve original typography -->
+<style id="garage-cars-light-theme-final-cleanup">
+/* Автомобили: изолированный стиль поиска только для светлой темы. */
+body.light-theme #cars .cars-search-card .cars-search{
+  display:flex!important;
+  align-items:center!important;
+  position:relative!important;
+  width:100%!important;
+  min-height:46px!important;
+  height:46px!important;
+  box-sizing:border-box!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#ffffff!important;
+  border:1px solid #d8e1ec!important;
+  border-radius:12px!important;
+  box-shadow:0 2px 8px rgba(31,55,88,.045)!important;
+}
+body.light-theme #cars .cars-search-card .cars-search:focus-within{
+  background:#ffffff!important;
+  border-color:#287df5!important;
+  box-shadow:0 0 0 3px rgba(40,125,245,.12)!important;
+}
+body.light-theme #cars .cars-search-card .cars-search .cars-search-icon{
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  padding:0!important;
+  color:#7b8ba1!important;
+  background:transparent!important;
+  font-size:20px!important;
+  line-height:1!important;
+  pointer-events:none!important;
+}
+body.light-theme #cars .cars-search-card .cars-search input#carsSearch{
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:44px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0 10px 0 0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#172033!important;
+  -webkit-text-fill-color:#172033!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  box-shadow:none!important;
+}
+body.light-theme #cars .cars-search-card .cars-search input#carsSearch::placeholder{
+  color:#8a97a8!important;
+  opacity:1!important;
+}
+body.light-theme #cars .cars-search-card .cars-search .cars-search-clear{
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  margin:0 5px 0 0!important;
+  padding:0!important;
+  display:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  color:#8a97a8!important;
+  box-shadow:none!important;
+}
+body.light-theme #cars .cars-search-card .cars-search .cars-search-clear:hover{
+  background:#f1f5f9!important;
+  color:#52657d!important;
+}
+body.light-theme #cars .cars-search-card .cars-search-hint{
+  color:#8a97a8!important;
+}
+</style>
+
+<!-- FINAL CLIENT SEARCH LAYOUT FIX: no overlap, icon integrated, Add button independent -->
+
+
+
+<style id="clients-search-single-layer">
+/* Единственный слой оформления поиска клиентов. Кнопка добавления намеренно не затрагивается. */
+#clients .client-search-field{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:0;background:transparent;border:0;box-shadow:none;box-sizing:border-box;}
+#clients .client-search-box{position:relative;display:flex;align-items:center;flex:1 1 auto;min-width:0;height:44px;box-sizing:border-box;overflow:hidden;border:1px solid #d7dee8;border-radius:12px;background:#f7f9fc;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease;}
+#clients .client-search-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:100%;margin:0;padding:0;background:transparent;border:0;color:#718096;font-size:22px;line-height:1;pointer-events:none;}
+#clients #clientSearch{display:block;flex:1 1 auto;min-width:0;width:100%;height:100%;box-sizing:border-box;margin:0;padding:0 12px 0 0;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#172033!important;-webkit-text-fill-color:#172033!important;font-size:14px;}
+#clients #clientSearch::placeholder{color:#8a97a8;opacity:1;}
+#clients .client-search-box:focus-within{background:#fff;border-color:#287df5;box-shadow:0 0 0 3px rgba(40,125,245,.12);}
+#clients .client-search-box:focus-within .client-search-icon{color:#287df5;}
+#clients .client-search-field>.smallbtn{flex:0 0 auto;width:auto;min-width:max-content;height:36px;min-height:36px;margin:0;box-sizing:border-box;white-space:nowrap;transform:none;}
+body:not(.light-theme) #clients .client-search-box{background:#10161e;border-color:#2b3744;}
+body:not(.light-theme) #clients #clientSearch{color:#edf2f7!important;-webkit-text-fill-color:#edf2f7!important;}
+body:not(.light-theme) #clients #clientSearch::placeholder{color:#687687;}
+body:not(.light-theme) #clients .client-search-box:focus-within{background:#121b26;border-color:rgba(59,130,246,.72);box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+body:not(.light-theme) #clients .client-search-icon{color:#8d9aaa;}
+body:not(.light-theme) #clients .client-search-box:focus-within .client-search-icon{color:#5aa4ff;}
+@media(max-width:640px){#clients .client-search-field{gap:8px;}#clients .client-search-field>.smallbtn{padding-left:10px;padding-right:10px;}}
+</style>
+
+<!-- GARAGE: canonical light-theme search styling (single authoritative layer) -->
+<style id="garage-light-search-canonical">
+body.light-theme .search,
+body.light-theme .cars-search,
+body.light-theme .client-search-box{
+  box-sizing:border-box!important;
+  background:#f7f9fc!important;
+  border:1px solid #d7dee8!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  color:#172033!important;
+}
+body.light-theme .search input,
+body.light-theme .cars-search input,
+body.light-theme .client-search-box input{
+  box-sizing:border-box!important;
+  background:transparent!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  color:#172033!important;
+}
+body.light-theme .search input::placeholder,
+body.light-theme .cars-search input::placeholder,
+body.light-theme .client-search-box input::placeholder{
+  color:#8a97a8!important;
+  opacity:1!important;
+}
+body.light-theme .search:focus-within,
+body.light-theme .cars-search:focus-within,
+body.light-theme .client-search-box:focus-within{
+  background:#fff!important;
+  border-color:#287df5!important;
+  box-shadow:0 0 0 3px rgba(40,125,245,.12)!important;
+}
+body.light-theme .search span,
+body.light-theme .cars-search .cars-search-icon,
+body.light-theme .client-search-icon{
+  color:#718096!important;
+}
+body.light-theme .search:focus-within span,
+body.light-theme .cars-search:focus-within .cars-search-icon,
+body.light-theme .client-search-box:focus-within .client-search-icon{
+  color:#287df5!important;
+}
+body.light-theme .cars-search-clear{
+  background:#e7edf5!important;
+  color:#64748b!important;
+}
+body.light-theme .cars-search-clear:hover{
+  background:#dce5f0!important;
+  color:#172033!important;
+}
+body.light-theme #clients .client-search-field>.smallbtn{
+  background:var(--blue,#287df5)!important;
+  border-color:var(--blue,#287df5)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+</style>
+
+<style id="garage-cars-gray-to-white-light">
+/* Автомобили: серый фон в обычном состоянии, белый при фокусе */
+body.light-theme #cars .cars-search-card .cars-search{
+  background:#f7f9fc!important;
+}
+body.light-theme #cars .cars-search-card .cars-search:focus-within{
+  background:#ffffff!important;
+}
+</style>
+
+
