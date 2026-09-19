@@ -2453,6 +2453,225 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 }
 </style>
 
+
+<style id="garage-mobile-orders-sales-layout-fix">
+/* Только мобильная адаптация: ожидаемые, оплаченные, неоплаченные заказы и продажи. */
+@media (max-width:760px){
+  /* Общие карточки списков */
+  #waiting .card,
+  #orders .card,
+  #debts .card,
+  #sales > .card{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #waiting .list,
+  #orders .list,
+  #debts .list,
+  #sales .list{
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  #waiting .rowcard,
+  #orders .rowcard,
+  #debts .rowcard,
+  #sales .rowcard{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #waiting .rowcard > div,
+  #orders .rowcard > div,
+  #debts .rowcard > div,
+  #sales .rowcard > div{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  #waiting .rowcard > div:last-child,
+  #orders .rowcard > div:last-child,
+  #debts .rowcard > div:last-child,
+  #sales .rowcard > div:last-child{
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    flex-wrap:wrap!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+
+  #waiting .rowcard button,
+  #orders .rowcard button,
+  #debts .rowcard button,
+  #sales .rowcard button{
+    max-width:100%!important;
+    white-space:normal!important;
+  }
+
+  /* Карточка оплаты больше не имеет фиксированной ширины на телефоне. */
+  #waiting .order-payment-summary,
+  #orders .order-payment-summary,
+  #debts .order-payment-summary,
+  #waiting .order-payment-summary.compact,
+  #orders .order-payment-summary.compact,
+  #debts .order-payment-summary.compact,
+  #sales .order-payment-summary,
+  #sales .order-payment-summary.compact{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+
+  #waiting .order-payment-grid,
+  #orders .order-payment-grid,
+  #debts .order-payment-grid{
+    min-width:0!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+  }
+
+  /* Продажи: верхняя панель без наложения баланса на выручку. */
+  #sales > .card:first-child > div:first-child{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+
+  #sales > .card:first-child label{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales > .card:first-child label > div,
+  #sales #salesDate,
+  #sales #storeBalanceStartInput,
+  #sales #storeBalanceEndInput{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales > .card:first-child > div:first-child > button{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:52px!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales > .card:first-child > div:nth-child(2){
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:14px!important;
+    padding:16px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #sales > .card:first-child > div:nth-child(2) > div[style*="position:absolute"]{
+    position:static!important;
+    right:auto!important;
+    top:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    text-align:left!important;
+    order:-1!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales > .card:first-child > div:nth-child(2) > div[style*="position:absolute"] > div{
+    justify-content:space-between!important;
+    flex-wrap:wrap!important;
+    text-align:left!important;
+    gap:8px!important;
+  }
+
+  #sales > .card:first-child > div:nth-child(2) > div[style*="position:absolute"] > div > button{
+    max-width:100%!important;
+    white-space:normal!important;
+  }
+
+  #sales #dayRevenue,
+  #sales #dayExpenses{
+    font-size:clamp(25px,8vw,34px)!important;
+    line-height:1.12!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  #sales .sales-debt-line{
+    width:100%!important;
+    box-sizing:border-box!important;
+    overflow-wrap:anywhere!important;
+    white-space:normal!important;
+    text-align:left!important;
+  }
+
+  #sales > .card:nth-of-type(2){
+    padding:14px!important;
+  }
+
+  #sales .sales-filter-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+
+  #sales .sales-filter-panel label,
+  #sales .sales-filter-panel select,
+  #sales .sales-filter-clear{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales .cars-search{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  #sales .cars-search input{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  #sales #salesTotal{
+    text-align:left!important;
+    overflow-wrap:anywhere!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
