@@ -3046,6 +3046,12 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 
 <script>
 const KEY='auto_parts_demo_v1';
+const GARAGE_API_URL=window.GARAGE_API_URL||'/api/state';
+const GARAGE_API_PASSWORD_KEY='garageApiPassword';
+let cloudReady=false;
+let cloudSyncTimer=null;
+let cloudSyncInFlight=false;
+let cloudSyncQueued=false;
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  clients:[
   {id:1,name:'Иван Петров',phone:'+41 79 123 45 67',note:'',cars:[{id:11,brand:'BMW',model:'320i',plate:'ZH 123456',year:'2018',vin:''},{id:12,brand:'VW',model:'Golf',plate:'ZH 654321',year:'2016',vin:''}]},
@@ -3062,58 +3068,80 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
   {id:1044,clientId:2,carId:21,part:'Тормозные колодки',qty:1,total:150,paid:50,status:'notify',date:'11.09.2026'},
   {id:1043,clientId:3,carId:31,part:'Ремень ГРМ',qty:1,total:200,paid:100,status:'wait',date:'10.09.2026'}
  ]};
-let garageCloudSaveTimer = null;
-let garageCloudHydrating = false;
-
-function garageCloudHeaders(extra = {}) {
-  const password = localStorage.getItem('garageSitePassword') || '';
-  return Object.assign({'content-type': 'application/json', 'x-garage-password': password}, extra);
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
+function getGarageApiPassword(){return localStorage.getItem(GARAGE_API_PASSWORD_KEY)||''}
+function setGarageApiPassword(value){if(value)localStorage.setItem(GARAGE_API_PASSWORD_KEY,value);}
+function cloudToast(message){if(typeof toast==='function')toast(message);}
+async function cloudFetch(method,body){
+  const password=getGarageApiPassword();
+  if(!password) throw new Error('Cloud API password is not configured');
+  const options={method,headers:{'content-type':'application/json','x-garage-password':password,'cache-control':'no-cache'}};
+  if(body!==undefined)options.body=JSON.stringify(body);
+  const response=await fetch(GARAGE_API_URL,options);
+  let payload=null;
+  try{payload=await response.json()}catch(e){}
+  if(!response.ok)throw new Error(payload?.error||('Cloud API error '+response.status));
+  return payload;
 }
-
-function scheduleGarageCloudSave() {
-  if (garageCloudHydrating) return;
-  clearTimeout(garageCloudSaveTimer);
-  garageCloudSaveTimer = setTimeout(() => {
-    const state = data && typeof data === 'object' ? data : {};
-    fetch('/api/state', {
-      method: 'PUT',
-      headers: garageCloudHeaders(),
-      body: JSON.stringify({state})
-    }).then(response => {
-      if (!response.ok) throw new Error('Cloud save failed: ' + response.status);
-      return response.json();
-    }).catch(error => console.warn('Garage cloud sync is unavailable; local data was kept.', error));
-  }, 450);
-}
-
-function save(){
-  localStorage.setItem(KEY,JSON.stringify(data));
-  scheduleGarageCloudSave();
-  render();
-}
-
-async function hydrateGarageFromCloud() {
-  if (garageCloudHydrating) return;
-  garageCloudHydrating = true;
-  try {
-    const response = await fetch('/api/state', {cache: 'no-store', headers: garageCloudHeaders()});
-    if (!response.ok) throw new Error('Cloud load failed: ' + response.status);
-    const payload = await response.json();
-    if (payload && payload.state && typeof payload.state === 'object' && !Array.isArray(payload.state)) {
-      data = payload.state;
-      localStorage.setItem(KEY, JSON.stringify(data));
-      render();
-    } else if (!payload || !payload.state) {
-      scheduleGarageCloudSave();
-    }
-  } catch (error) {
-    console.warn('Garage cloud data is unavailable; using local data.', error);
-  } finally {
-    garageCloudHydrating = false;
+async function pushCloudState(){
+  if(!cloudReady)return;
+  if(cloudSyncInFlight){cloudSyncQueued=true;return;}
+  cloudSyncInFlight=true;
+  try{
+    await cloudFetch('PUT',{state:data});
+  }catch(error){
+    console.error('Garage cloud save error:',error);
+    cloudToast('⚠️ Облако: не удалось сохранить данные');
+  }finally{
+    cloudSyncInFlight=false;
+    if(cloudSyncQueued){cloudSyncQueued=false;queueCloudSave();}
   }
 }
-
-window.addEventListener('load', () => setTimeout(hydrateGarageFromCloud, 350));
+function queueCloudSave(){
+  if(!cloudReady)return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer=setTimeout(pushCloudState,350);
+}
+function save(){saveLocal();render();queueCloudSave()}
+async function initializeGarageCloud(){
+  if(location.protocol==='file:'){
+    console.warn('Garage cloud sync requires the site to be served over HTTP(S).');
+    return;
+  }
+  let password=getGarageApiPassword();
+  if(!password){
+    password=window.prompt('Пароль Cloudflare Worker для синхронизации Garage:')||'';
+    if(password)setGarageApiPassword(password);
+  }
+  if(!password){
+    cloudToast('☁️ Облако не подключено: не задан пароль Worker');
+    return;
+  }
+  try{
+    const result=await cloudFetch('GET');
+    if(result && result.state && typeof result.state==='object' && !Array.isArray(result.state)){
+      data=result.state;
+      saveLocal();
+      cloudReady=true;
+      render();
+      cloudToast('☁️ Данные загружены из облака');
+    }else{
+      cloudReady=true;
+      await pushCloudState();
+      render();
+      cloudToast('☁️ Облачное хранилище инициализировано');
+    }
+  }catch(error){
+    console.error('Garage cloud load error:',error);
+    cloudReady=false;
+    if(/Unauthorized|password|API password|401|403/i.test(String(error.message||error))){
+      localStorage.removeItem(GARAGE_API_PASSWORD_KEY);
+      cloudToast('⚠️ Неверный пароль Cloudflare Worker');
+    }else{
+      cloudToast('⚠️ Облако недоступно — работаем локально');
+    }
+  }
+}
 function today(){return new Date().toISOString().slice(0,10)}
 function openOrderSaleDetails(saleId){let x=data.sales.find(s=>s.id==saleId);if(!x||!x.sourceOrderId)return;let o=data.orders.find(z=>z.id==x.sourceOrderId),c=o?client(o.clientId):null,v=o?car(o.carId,o.clientId):null;if(!o)return toast('Исходный заказ не найден');let all=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let totalPaid=all.reduce((a,s)=>a+(Number(s.price)||0),0);let rows=all.map(s=>`<div class="rowcard" style="margin-top:8px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:4px">${s.date} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'} · 👤 ${s.paidBy||s.orderedBy||'—'}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join('')||'<div class="empty">Платежей нет</div>';openModal('Заказ №'+o.id,`<div class="rowcard"><div><b>${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:4px">${c?.name||'—'} · ${c?.phone||''}</small><small style="display:block;color:var(--muted);margin-top:4px">${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div><div style="text-align:right"><b>${Number(o.total||0).toLocaleString('ru-RU')} ₽</b><small style="display:block;color:var(--muted);margin-top:4px">Оплачено по продажам: ${totalPaid.toLocaleString('ru-RU')} ₽</small></div></div><h3 style="margin:16px 0 8px">История оплаты</h3>${rows}<div class="formfoot"><button class="smallbtn primary" onclick="closeModal()">Закрыть</button></div>`)}
 function renderSales(){let d=document.getElementById('salesDate')?.value||today();let expenses=(data.expenses||[]).filter(x=>x.date===d);let daySales=(data.sales||[]).filter(x=>x.date===d).filter(x=>{let o=x.sourceOrderId?data.orders.find(z=>z.id===x.sourceOrderId):null;return !o||!o.deleted});let rev=daySales.reduce((a,x)=>a+(+x.price||0),0);let cash=daySales.filter(x=>x.paymentMethod!=='card').reduce((a,x)=>a+(+x.price||0),0);let card=daySales.filter(x=>x.paymentMethod==='card').reduce((a,x)=>a+(+x.price||0),0);let exp=expenses.reduce((a,x)=>a+(+x.amount||0),0);let orderDebtTotal=(data.orders||[]).filter(o=>!o.deleted).reduce((a,o)=>a+Math.max(0,(+o.total||0)-(+o.paid||0)),0);document.getElementById('dayRevenue').textContent=rev.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';document.getElementById('dayExpenses').textContent=exp.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let cashEl=document.getElementById('dayCash');if(cashEl)cashEl.textContent=cash.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let debtEl=document.getElementById('orderDebtTotal');if(debtEl)debtEl.textContent=orderDebtTotal.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let cardEl=document.getElementById('dayCard');if(cardEl)cardEl.textContent=card.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let cashCardTotalEl=document.getElementById('dayCashCardTotal');if(cashCardTotalEl)cashCardTotalEl.textContent=(cash+card).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let q=(document.getElementById('salesSearch')?.value||'').toLowerCase().trim();let pf=document.getElementById('salesPaymentFilter')?.value||'all';let tf=document.getElementById('salesTypeFilter')?.value||'all';let sales=(data.sales||[]).filter(x=>x.date===d).filter(x=>{let o=x.sourceOrderId?data.orders.find(z=>z.id===x.sourceOrderId):null;if(o&&o.deleted)return false;if(pf==='card'&&x.paymentMethod!=='card')return false;if(pf==='cash'&&x.paymentMethod==='card')return false;if(tf==='manual'&&x.sourceOrderId)return false;if(tf==='order'&&!x.sourceOrderId)return false;if(tf==='expense')return false;if(tf==='income'){}if(q){let c=o?client(o.clientId):null,v=o?car(o.carId,o.clientId):null;let vals=[x.name,x.code,x.clientName,x.car,c?.name,c?.phone,v?.plate,v?.vin,v?.win,v?.brand,v?.model].map(z=>(z||'').toLowerCase());if(!vals.some(z=>z.includes(q)))return false}return true});if(tf==='expense'||tf==='all'){if(pf==='all'){expenses=expenses.filter(x=>!q||((x.name||'').toLowerCase().includes(q)))}else expenses=[]}else expenses=[];sales=sales.slice().sort((a,b)=>{let da=String(a.date||''),db=String(b.date||'');if(db!==da)return db.localeCompare(da);return (Number(b.id)||0)-(Number(a.id)||0);});document.getElementById('salesList').innerHTML=sales.map(x=>{let linkedOrder=x.sourceOrderId?data.orders.find(z=>z.id===x.sourceOrderId):null;let base=Number(linkedOrder?.baseTotal ?? x.basePrice ?? x.price ?? 0)||0;let final=Number(linkedOrder?.total ?? x.price ?? 0)||0;let pct=Number(linkedOrder?.discount ?? x.discount ?? 0)||0;let personal=Number(linkedOrder?.personalDiscount ?? x.personalDiscount ?? 0)||0;let pctAmount=Math.max(0,base*(pct/100));let totalDiscount=pctAmount+personal;let discountText=totalDiscount>0?`<div style="margin-top:5px;color:#b7791f;font-size:13px;font-weight:700">🏷 Скидка: ${pct>0?pct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'%':''}${pct>0&&personal>0?' · ':''}${personal>0?'Персональная: '+personal.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽':''} · Всего: ${totalDiscount.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</div>`:'<div style="margin-top:5px;color:var(--muted);font-size:13px">🏷 Скидка: 0 ₽</div>';return `<div class="rowcard"><div><b>${x.name}</b><small>Код: ${x.code||'—'} · ${x.date}${x.source?` · ${x.source}`:''}${x.orderedBy?` · ${sellerBadge(x.orderedBy)}`:''}${x.paymentLabel?` · <b style="color:#c47a4b">${x.paymentLabel}: ${(+x.price||0).toLocaleString('ru-RU')} ₽</b>`:''}${x.paymentMethod?(x.paymentMethod==='card'?' · 💳 Карта':' · 💵 Наличные'):''}</small>${discountText}</div><div style="display:flex;align-items:center;gap:12px"><div style="font-size:18px;font-weight:750">${(+x.price||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</div>${x.sourceOrderId?`<button class="smallbtn" onclick="openOrderSaleDetails(${x.id})">👁 Заказ</button>`:""}<button class="smallbtn" onclick="deleteSale(${x.id})" title="Удалить продажу">🗑 Удалить</button></div></div>`;}).join('')||'<div class="empty">Продаж по выбранным фильтрам не найдено</div>';document.getElementById('expenseList').innerHTML=expenses.map(x=>`<div class="rowcard"><div><b>↩️ ${x.name}</b><small>${x.date}</small></div><div style="display:flex;align-items:center;gap:12px"><div style="font-size:18px;font-weight:750">${(+x.amount||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</div><button class="smallbtn" onclick="deleteExpense(${x.id})">🗑 Удалить</button></div></div>`).join('')||'<div class="empty">Расходов по выбранным фильтрам не найдено</div>';if(tf==='manual'||tf==='order'||tf==='income'){document.getElementById('expenseList').innerHTML='';}if(tf==='expense'){document.getElementById('salesList').innerHTML='<div class="empty">Показываются только расходы</div>';}renderSalesTotal();}
@@ -3293,7 +3321,7 @@ function render(){
  const before=JSON.stringify(data.orders.map(o=>o.status));
  normalizeStatuses();
  const after=JSON.stringify(data.orders.map(o=>o.status));
- if(before!==after)localStorage.setItem(KEY,JSON.stringify(data));
+ if(before!==after){saveLocal();queueCloudSave();}
  data.orders.forEach(o=>{if(o.deleted===undefined)o.deleted=false});
  const active=activeOrders();
  if(!data.sales)data.sales=[]; migrateOrderPayments();
@@ -3377,7 +3405,7 @@ function syncOrderDiscount(){let m=document.getElementById('oPayMethod'),d=docum
 function openOrder(preselectedClientId=null){if(!data.clients.length)return toast('Сначала добавьте клиента');let selectedId=preselectedClientId!=null?preselectedClientId:data.clients[0].id;let co=data.clients.map(c=>`<option value="${c.id}" ${c.id==selectedId?'selected':''}>${c.name} — ${c.phone}</option>`).join('');openModal('Новый заказ',`<div class="form"><label>Клиент<div><select id="oClient" onchange="fillCars()">${co}</select></div></label><label>Автомобиль<div><select id="oCar"></select></div></label><label class="full">Наименование товара<div><input id="oPart" placeholder="Например: тормозные диски"></div></label><label>Код товара<div><input id="oCode" placeholder="Например: OC-384"></div></label><label>Количество<div><input id="oQty" type="number" value="1" min="1"></div></label><label>Стоимость, ₽<div><input id="oBaseTotal" type="number" value="0" min="0" step="0.01"></div></label><label>Предоплата, ₽<div><input id="oPaid" type="number" value="0" min="0" step="0.01"></div></label><label>Оплата<div><select id="oPayMethod"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label><label>Примерная дата доставки<div><input id="oDate" type="date" value="${today()}"></div></label><label class="full">Комментарий<div><textarea id="oNote"></textarea></div></label></div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="addOrder()">Создать заказ</button></div>`);fillCars()}
 function openOrderForClient(clientId){openClientCart(clientId)}
 function fillCars(){let c=client(oClient.value);oCar.innerHTML=(c?.cars||[]).map(v=>`<option value="${v.id}">${v.brand} ${v.model} — ${v.plate}</option>`).join('')||'<option value="">Сначала добавьте автомобиль</option>'}
-function migrateOrderPayments(){if(data._orderPaymentsMigrated)return;data.sales=data.sales||[];let changed=false;(data.orders||[]).filter(o=>!o.deleted).forEach(o=>{let paid=Number(o.paid)||0;if(paid<=0)return;let existing=(data.sales||[]).filter(x=>x.sourceOrderId===o.id).reduce((a,x)=>a+(Number(x.price)||0),0);let missing=Math.max(0,paid-existing);if(missing>0){addOrderSaleEntry(o,missing,o.paymentMethod,'prepayment');changed=true}});data._orderPaymentsMigrated=true;if(changed)localStorage.setItem(KEY,JSON.stringify(data))}
+function migrateOrderPayments(){if(data._orderPaymentsMigrated)return;data.sales=data.sales||[];let changed=false;(data.orders||[]).filter(o=>!o.deleted).forEach(o=>{let paid=Number(o.paid)||0;if(paid<=0)return;let existing=(data.sales||[]).filter(x=>x.sourceOrderId===o.id).reduce((a,x)=>a+(Number(x.price)||0),0);let missing=Math.max(0,paid-existing);if(missing>0){addOrderSaleEntry(o,missing,o.paymentMethod,'prepayment');changed=true}});data._orderPaymentsMigrated=true;if(changed){saveLocal();queueCloudSave()}}
 function addOrderSaleEntry(o,amount,method,paymentType='payment'){amount=Number(amount)||0;if(amount<=0)return;data.sales=data.sales||[];let source='Заказ №'+o.id;if(paymentType==='additional')source='Продажа из заказа №'+o.id+' · Доплата';let exists=data.sales.some(s=>s.sourceOrderId===o.id&&s.paymentType===paymentType&&Number(s.price)===amount);if(exists)return;data.sales.push({id:Date.now()+Math.random(),name:o.part,code:o.partNumber||'',price:amount,date:today(),paymentMethod:method||o.paymentMethod||'cash',source,sourceOrderId:o.id,orderPayment:true,paymentType,paymentLabel:paymentType==='additional'?'Доплата':paymentType==='prepayment'?'Предоплата':'Оплата',orderTotal:Number(o.total)||0,orderPaidBefore:Math.max(0,(Number(o.paid)||0)-amount),clientName:client(o.clientId)?.name||'',car:(()=>{let v=car(o.carId,o.clientId);return `${v?.brand||''} ${v?.model||''}`.trim()})(),orderedBy:o.orderedBy||getCurrentUser(),paidBy:getCurrentUser()});}
 function orderPaymentSync(o,oldPaid){let prev=Number(oldPaid)||0,now=Number(o.paid)||0,delta=now-prev;if(delta>0)addOrderSaleEntry(o,delta,o.paymentMethod,'additional');}
 function addOrder(){let c=client(oClient.value);if(!c||!oCar.value||!oPart.value.trim()||!oCode.value.trim())return toast('Заполните автомобиль, наименование и код товара');let total=+oBaseTotal.value||0,paid=Math.min(+oPaid.value||0,total),method=oPayMethod?.value||'cash';if(total<=0)return toast('Укажите стоимость товара');let o={id:Math.max(0,...data.orders.map(x=>x.id))+1,clientId:c.id,carId:+oCar.value,part:oPart.value.trim(),partNumber:oCode.value.trim(),qty:+oQty.value||1,total,baseTotal:total,discount:0,paid,paymentMethod:method,status:'wait',date:oDate.value||today(),note:oNote.value.trim(),orderedBy:getCurrentUser()};data.orders.unshift(o);addOrderSaleEntry(o,paid,method,'prepayment');closeModal();save();toast('Заказ создан — ожидаем поступление')}
@@ -4633,13 +4661,13 @@ function requestGarageBackupRestore() {
   showGarageRestoreAccessModal();
 }
 
-async function restoreGarageBackup(event) {
+function restoreGarageBackup(event) {
   const input = event && event.target;
   const file = input && input.files && input.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = async function() {
+  reader.onload = function() {
     try {
       const payload = JSON.parse(reader.result);
       if (!payload || typeof payload !== 'object' ||
@@ -4669,25 +4697,7 @@ async function restoreGarageBackup(event) {
         localStorage.setItem(key, value == null ? '' : String(value));
       });
 
-      let restoredState = null;
-      try {
-        restoredState = JSON.parse(localStorage.getItem('auto_parts_demo_v1') || 'null');
-      } catch (e) {
-        restoredState = null;
-      }
-      if (!restoredState || typeof restoredState !== 'object' || Array.isArray(restoredState)) {
-        throw new Error('В резервной копии отсутствует основное состояние Garage');
-      }
-      const cloudResponse = await fetch('/api/state', {
-        method: 'PUT',
-        headers: garageCloudHeaders(),
-        body: JSON.stringify({state: restoredState})
-      });
-      if (!cloudResponse.ok) {
-        throw new Error('Облачное восстановление не выполнено: ' + cloudResponse.status);
-      }
-
-      alert('Данные успешно восстановлены в облаке и на этом устройстве. Приложение будет перезагружено.');
+      alert('Данные успешно восстановлены. Приложение будет перезагружено.');
       window.location.reload();
     } catch (error) {
       alert('Не удалось восстановить резервную копию. Проверьте, что выбран корректный JSON-файл Garage.');
@@ -5720,3 +5730,5 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
   }
 }
 </style>
+
+<script>window.addEventListener('load',()=>{initializeGarageCloud();});</script>
