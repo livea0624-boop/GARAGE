@@ -3365,6 +3365,7 @@ let garageCloudSyncTimer=null;
 let garageCloudSyncBusy=false;
 let garageCloudSyncDirty=false;
 let garageCloudLastUpdatedAt='';
+let garageCloudSyncInitialized=false;
 const GARAGE_API_BASE=location.origin;
 async function garageCloudRequest(path,method,body,password){
   const headers={'content-type':'application/json'};
@@ -3381,6 +3382,31 @@ async function garageCloudSync(force=false){
   if(!pass||garageCloudSyncBusy)return;
   garageCloudSyncBusy=true;
   try{
+    const remote=await garageCloudRequest('/api/state','GET',null,pass);
+
+    // Первый обмен после входа: если в D1 уже есть данные — считаем их
+    // источником истины и загружаем на устройство. Если D1 пуст —
+    // один раз отправляем локальные данные в облако.
+    if(!garageCloudSyncInitialized){
+      garageCloudSyncInitialized=true;
+      if(remote.state&&remote.updatedAt){
+        data=remote.state;
+        localStorage.setItem(KEY,JSON.stringify(data));
+        garageCloudLastUpdatedAt=remote.updatedAt;
+        render();
+      }else{
+        garageCloudSyncDirty=true;
+        const snapshot=JSON.parse(JSON.stringify(data));
+        localStorage.setItem(KEY,JSON.stringify(snapshot));
+        const saved=await garageCloudRequest('/api/state','PUT',{state:snapshot},pass);
+        garageCloudSyncDirty=false;
+        garageCloudLastUpdatedAt=saved.updatedAt||'';
+      }
+      return;
+    }
+
+    // Сначала отправляем локальные изменения, затем проверяем актуальное
+    // состояние. Это единственный путь сохранения/получения данных.
     if(garageCloudSyncDirty){
       garageCloudSyncDirty=false;
       const snapshot=JSON.parse(JSON.stringify(data));
@@ -3388,15 +3414,12 @@ async function garageCloudSync(force=false){
       const saved=await garageCloudRequest('/api/state','PUT',{state:snapshot},pass);
       if(saved.updatedAt)garageCloudLastUpdatedAt=saved.updatedAt;
     }
-    const remote=await garageCloudRequest('/api/state','GET',null,pass);
-    if(!remote.state||!remote.updatedAt)return;
-    if(!garageCloudLastUpdatedAt){
-      garageCloudLastUpdatedAt=remote.updatedAt;
-      return;
-    }
-    if(remote.updatedAt!==garageCloudLastUpdatedAt && !garageCloudSyncDirty){
-      garageCloudLastUpdatedAt=remote.updatedAt;
-      data=remote.state;
+
+    const fresh=await garageCloudRequest('/api/state','GET',null,pass);
+    if(!fresh.state||!fresh.updatedAt)return;
+    if(fresh.updatedAt!==garageCloudLastUpdatedAt && !garageCloudSyncDirty){
+      garageCloudLastUpdatedAt=fresh.updatedAt;
+      data=fresh.state;
       localStorage.setItem(KEY,JSON.stringify(data));
       render();
     }
@@ -3405,9 +3428,10 @@ async function garageCloudSync(force=false){
     if(garageCloudSyncDirty)toast('Ошибка синхронизации с облаком');
   }finally{
     garageCloudSyncBusy=false;
-    if(garageCloudSyncDirty)garageCloudSync(true);
+    if(garageCloudSyncDirty)setTimeout(()=>garageCloudSync(true),0);
   }
 }
+
 function save(){
   localStorage.setItem(KEY,JSON.stringify(data));
   render();
@@ -5077,8 +5101,10 @@ async function garageCloudFinishAuth(password,created){
   localStorage.setItem('garageSitePassword',password);
   document.body.classList.add('garage-authenticated');
   try{
-    const hadCloud=await garageCloudLoad(password);
-    if(!hadCloud)await garageCloudSave(password);
+    // Используем только единую систему garageCloudSync. Старых
+    // garageCloudLoad/garageCloudSave/startGarageCloudPolling здесь больше нет.
+    garageCloudSyncInitialized=false;
+    garageCloudLastUpdatedAt='';
     startGarageCloudPolling();
   }catch(e){console.error('Garage cloud load error:',e);toast('Не удалось загрузить данные из облака');}
 }
