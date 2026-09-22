@@ -3382,7 +3382,7 @@ async function garageCloudSync(force=false){
   if(!pass||garageCloudSyncBusy)return;
   garageCloudSyncBusy=true;
   try{
-    const remote=await garageCloudRequest('/api/state','GET',null,pass);
+    const remote=await garageCloudRequest('/api/state?_gc='+Date.now(),'GET',null,pass);
 
     // Первый обмен после входа: если в D1 уже есть данные — считаем их
     // источником истины и загружаем на устройство. Если D1 пуст —
@@ -3415,7 +3415,7 @@ async function garageCloudSync(force=false){
       if(saved.updatedAt)garageCloudLastUpdatedAt=saved.updatedAt;
     }
 
-    const fresh=await garageCloudRequest('/api/state','GET',null,pass);
+    const fresh=await garageCloudRequest('/api/state?_gc='+Date.now(),'GET',null,pass);
     if(!fresh.state||!fresh.updatedAt)return;
     if(fresh.updatedAt!==garageCloudLastUpdatedAt && !garageCloudSyncDirty){
       garageCloudLastUpdatedAt=fresh.updatedAt;
@@ -3442,7 +3442,7 @@ function save(){
 }
 function startGarageCloudPolling(){
   if(garageCloudSyncTimer)clearInterval(garageCloudSyncTimer);
-  garageCloudSyncTimer=setInterval(()=>garageCloudSync(false),2000);
+  garageCloudSyncTimer=setInterval(()=>garageCloudSync(false),5000);
   garageCloudSync(true);
 }
 function today(){return new Date().toISOString().slice(0,10)}
@@ -3645,7 +3645,7 @@ function render(){
  const before=JSON.stringify(data.orders.map(o=>o.status));
  normalizeStatuses();
  const after=JSON.stringify(data.orders.map(o=>o.status));
- if(before!==after)localStorage.setItem(KEY,JSON.stringify(data));
+ if(before!==after){ localStorage.setItem(KEY,JSON.stringify(data)); garageCloudSyncDirty=true; }
  data.orders.forEach(o=>{if(o.deleted===undefined)o.deleted=false});
  const active=activeOrders();
  if(!data.sales)data.sales=[]; migrateOrderPayments();
@@ -3730,7 +3730,7 @@ function syncOrderDiscount(){let m=document.getElementById('oPayMethod'),d=docum
 function openOrder(preselectedClientId=null){if(!data.clients.length)return toast('Сначала добавьте клиента');let selectedId=preselectedClientId!=null?preselectedClientId:data.clients[0].id;let co=data.clients.map(c=>`<option value="${c.id}" ${c.id==selectedId?'selected':''}>${c.name} — ${c.phone}</option>`).join('');openModal('Новый заказ',`<div class="form"><label>Клиент<div><select id="oClient" onchange="fillCars()">${co}</select></div></label><label>Автомобиль<div><select id="oCar"></select></div></label><label class="full">Наименование товара<div><input id="oPart" placeholder="Например: тормозные диски"></div></label><label>Код товара<div><input id="oCode" placeholder="Например: OC-384"></div></label><label>Количество<div><input id="oQty" type="number" value="1" min="1"></div></label><label>Стоимость, ₽<div><input id="oBaseTotal" type="number" value="0" min="0" step="0.01"></div></label><label>Предоплата, ₽<div><input id="oPaid" type="number" value="0" min="0" step="0.01"></div></label><label>Оплата<div><select id="oPayMethod"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label><label>Примерная дата доставки<div><input id="oDate" type="date" value="${today()}"></div></label><label class="full">Комментарий<div><textarea id="oNote"></textarea></div></label></div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="addOrder()">Создать заказ</button></div>`);fillCars()}
 function openOrderForClient(clientId){openClientCart(clientId)}
 function fillCars(){let c=client(oClient.value);oCar.innerHTML=(c?.cars||[]).map(v=>`<option value="${v.id}">${v.brand} ${v.model} — ${v.plate}</option>`).join('')||'<option value="">Сначала добавьте автомобиль</option>'}
-function migrateOrderPayments(){if(data._orderPaymentsMigrated)return;data.sales=data.sales||[];let changed=false;(data.orders||[]).filter(o=>!o.deleted).forEach(o=>{let paid=Number(o.paid)||0;if(paid<=0)return;let existing=(data.sales||[]).filter(x=>x.sourceOrderId===o.id).reduce((a,x)=>a+(Number(x.price)||0),0);let missing=Math.max(0,paid-existing);if(missing>0){addOrderSaleEntry(o,missing,o.paymentMethod,'prepayment');changed=true}});data._orderPaymentsMigrated=true;if(changed)localStorage.setItem(KEY,JSON.stringify(data))}
+function migrateOrderPayments(){if(data._orderPaymentsMigrated)return;data.sales=data.sales||[];let changed=false;(data.orders||[]).filter(o=>!o.deleted).forEach(o=>{let paid=Number(o.paid)||0;if(paid<=0)return;let existing=(data.sales||[]).filter(x=>x.sourceOrderId===o.id).reduce((a,x)=>a+(Number(x.price)||0),0);let missing=Math.max(0,paid-existing);if(missing>0){addOrderSaleEntry(o,missing,o.paymentMethod,'prepayment');changed=true}});data._orderPaymentsMigrated=true;if(changed){localStorage.setItem(KEY,JSON.stringify(data));garageCloudSyncDirty=true}}
 function addOrderSaleEntry(o,amount,method,paymentType='payment'){amount=Number(amount)||0;if(amount<=0)return;data.sales=data.sales||[];let source='Заказ №'+o.id;if(paymentType==='additional')source='Продажа из заказа №'+o.id+' · Доплата';let exists=data.sales.some(s=>s.sourceOrderId===o.id&&s.paymentType===paymentType&&Number(s.price)===amount);if(exists)return;data.sales.push({id:Date.now()+Math.random(),name:o.part,code:o.partNumber||'',price:amount,date:today(),paymentMethod:method||o.paymentMethod||'cash',source,sourceOrderId:o.id,orderPayment:true,paymentType,paymentLabel:paymentType==='additional'?'Доплата':paymentType==='prepayment'?'Предоплата':'Оплата',orderTotal:Number(o.total)||0,basePrice:Number(o.baseTotal??o.total)||0,discount:Number(o.discount)||0,personalDiscount:Number(o.personalDiscount)||0,orderPaidBefore:Math.max(0,(Number(o.paid)||0)-amount),clientName:client(o.clientId)?.name||'',car:(()=>{let v=car(o.carId,o.clientId);return `${v?.brand||''} ${v?.model||''}`.trim()})(),orderedBy:o.orderedBy||getCurrentUser(),paidBy:getCurrentUser()});}
 function orderPaymentSync(o,oldPaid){let prev=Number(oldPaid)||0,now=Number(o.paid)||0,delta=now-prev;if(delta>0)addOrderSaleEntry(o,delta,o.paymentMethod,'additional');}
 function addOrder(){let c=client(oClient.value);if(!c||!oCar.value||!oPart.value.trim()||!oCode.value.trim())return toast('Заполните автомобиль, наименование и код товара');let total=+oBaseTotal.value||0,paid=Math.min(+oPaid.value||0,total),method=oPayMethod?.value||'cash';if(total<=0)return toast('Укажите стоимость товара');let o={id:Math.max(0,...data.orders.map(x=>x.id))+1,clientId:c.id,carId:+oCar.value,part:oPart.value.trim(),partNumber:oCode.value.trim(),qty:+oQty.value||1,total,baseTotal:total,discount:0,paid,paymentMethod:method,status:'wait',date:oDate.value||today(),note:oNote.value.trim(),orderedBy:getCurrentUser()};data.orders.unshift(o);addOrderSaleEntry(o,paid,method,'prepayment');closeModal();save();toast('Заказ создан — ожидаем поступление')}
