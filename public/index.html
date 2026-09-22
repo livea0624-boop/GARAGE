@@ -3280,7 +3280,8 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 <main class="main">
 <section id="settings" class="page"><h1>Настройки</h1>
 
-<div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div><div class="card" style="max-width:720px;margin-top:16px"><h2>📊 Анализ размера данных</h2><p style="color:var(--muted);margin-top:-6px">Оценка текущего объёма локальных данных и примерный прогноз для будущей облачной базы.</p><div id="garageStorageStats" style="margin-top:14px;color:var(--text)">Нажмите «Обновить расчёт».</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="renderGarageStorageStats()">↻ Обновить расчёт</button><button class="btn" type="button" onclick="copyGarageStorageReport()">⧉ Скопировать отчёт</button></div><small style="display:block;color:var(--muted);margin-top:12px">Расчёт приблизительный: учитывает JSON-данные из текущего localStorage. Размер SQL-базы после миграции может отличаться.</small></div>
+<div class="subtitle">Настройки интерфейса «ГАРАЖ»</div><div class="card" style="max-width:720px"><h2>🎨 Тема оформления</h2><p style="color:var(--muted);margin-top:-6px">Выберите внешний вид CRM. Настройка сохраняется после перезагрузки.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="themeLightBtn" class="btn" onclick="setGarageTheme('light')">☀️ Светлая тема</button><button id="themeDarkBtn" class="btn primary" onclick="setGarageTheme('dark')">🌙 Тёмная тема</button></div></div><div class="card" style="max-width:720px;margin-top:16px"><h2>📱 Версия интерфейса</h2><p style="color:var(--muted);margin-top:-6px">Выберите, как «ГАРАЖ» должен отображаться на этом устройстве. Настройка сохраняется отдельно на каждом устройстве.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button id="interfaceAutoBtn" class="btn" type="button" onclick="setGarageInterfaceMode('auto')">⚙️ Авто</button><button id="interfaceMobileBtn" class="btn" type="button" onclick="setGarageInterfaceMode('mobile')">📱 Мобильная версия</button><button id="interfaceFullBtn" class="btn" type="button" onclick="setGarageInterfaceMode('full')">🖥️ Полная версия</button></div></div>
+<div class="card" style="max-width:720px;margin-top:16px"><h2>📊 Анализ размера данных</h2><p style="color:var(--muted);margin-top:-6px">Оценка текущего объёма локальных данных и примерный прогноз для будущей облачной базы.</p><div id="garageStorageStats" style="margin-top:14px;color:var(--text)">Нажмите «Обновить расчёт».</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="renderGarageStorageStats()">↻ Обновить расчёт</button><button class="btn" type="button" onclick="copyGarageStorageReport()">⧉ Скопировать отчёт</button></div><small style="display:block;color:var(--muted);margin-top:12px">Расчёт приблизительный: учитывает JSON-данные из текущего localStorage. Размер SQL-базы после миграции может отличаться.</small></div>
 <div class="settings-backup-card" style="margin-top:18px;padding:16px;border:1px solid var(--border,#d8dee9);border-radius:14px;">
   <h3 style="margin:0 0 8px;">Резервная копия данных</h3>
   <p style="margin:0 0 12px;opacity:.8;">Сохраните копию данных или восстановите ранее сохранённый файл.</p>
@@ -3360,10 +3361,10 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
   {id:1044,clientId:2,carId:21,part:'Тормозные колодки',qty:1,total:150,paid:50,status:'notify',date:'11.09.2026'},
   {id:1043,clientId:3,carId:31,part:'Ремень ГРМ',qty:1,total:200,paid:100,status:'wait',date:'10.09.2026'}
  ]};
-let garageCloudSaving=false;
-let garageCloudSaveQueued=false;
+let garageCloudSyncTimer=null;
+let garageCloudSyncBusy=false;
+let garageCloudSyncDirty=false;
 let garageCloudLastUpdatedAt='';
-let garageCloudPollTimer=null;
 const GARAGE_API_BASE=location.origin;
 async function garageCloudRequest(path,method,body,password){
   const headers={'content-type':'application/json'};
@@ -3373,55 +3374,52 @@ async function garageCloudRequest(path,method,body,password){
   if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));
   return j;
 }
-async function garageCloudLoad(password,quiet=false){
-  const j=await garageCloudRequest('/api/state','GET',null,password);
-  if(j.updatedAt)garageCloudLastUpdatedAt=j.updatedAt;
-  if(j.state&&typeof j.state==='object'){
-    data=j.state;
-    localStorage.setItem(KEY,JSON.stringify(data));
-    render();
-    return true;
-  }
-  return false;
-}
-async function garageCloudSave(password){
-  garageCloudSaveQueued=true;
-  if(garageCloudSaving)return;
-  garageCloudSaving=true;
+
+// ЕДИНАЯ система облачной синхронизации: одна очередь, один таймер и один обработчик.
+async function garageCloudSync(force=false){
+  const pass=window.garageCloudPassword;
+  if(!pass||garageCloudSyncBusy)return;
+  garageCloudSyncBusy=true;
   try{
-    while(garageCloudSaveQueued){
-      garageCloudSaveQueued=false;
+    if(garageCloudSyncDirty){
+      garageCloudSyncDirty=false;
       const snapshot=JSON.parse(JSON.stringify(data));
       localStorage.setItem(KEY,JSON.stringify(snapshot));
-      const j=await garageCloudRequest('/api/state','PUT',{state:snapshot},password);
-      if(j.updatedAt)garageCloudLastUpdatedAt=j.updatedAt;
+      const saved=await garageCloudRequest('/api/state','PUT',{state:snapshot},pass);
+      if(saved.updatedAt)garageCloudLastUpdatedAt=saved.updatedAt;
+    }
+    const remote=await garageCloudRequest('/api/state','GET',null,pass);
+    if(!remote.state||!remote.updatedAt)return;
+    if(!garageCloudLastUpdatedAt){
+      garageCloudLastUpdatedAt=remote.updatedAt;
+      return;
+    }
+    if(remote.updatedAt!==garageCloudLastUpdatedAt && !garageCloudSyncDirty){
+      garageCloudLastUpdatedAt=remote.updatedAt;
+      data=remote.state;
+      localStorage.setItem(KEY,JSON.stringify(data));
+      render();
     }
   }catch(e){
-    console.error('Garage cloud save error:',e);
-    toast('Ошибка синхронизации с облаком');
+    console.warn('Garage cloud sync error:',e);
+    if(garageCloudSyncDirty)toast('Ошибка синхронизации с облаком');
   }finally{
-    garageCloudSaving=false;
-    if(garageCloudSaveQueued)garageCloudSave(password);
+    garageCloudSyncBusy=false;
+    if(garageCloudSyncDirty)garageCloudSync(true);
   }
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(data));render();if(window.garageCloudPassword)garageCloudSave(window.garageCloudPassword)}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(data));
+  render();
+  if(window.garageCloudPassword){
+    garageCloudSyncDirty=true;
+    garageCloudSync(true);
+  }
+}
 function startGarageCloudPolling(){
-  if(garageCloudPollTimer)clearInterval(garageCloudPollTimer);
-  garageCloudPollTimer=setInterval(async()=>{
-    const pass=window.garageCloudPassword;
-    if(!pass||garageCloudSaving||garageCloudSaveQueued)return;
-    try{
-      const j=await garageCloudRequest('/api/state','GET',null,pass);
-      if(!j.state||!j.updatedAt)return;
-      if(!garageCloudLastUpdatedAt){garageCloudLastUpdatedAt=j.updatedAt;return;}
-      if(j.updatedAt!==garageCloudLastUpdatedAt){
-        garageCloudLastUpdatedAt=j.updatedAt;
-        data=j.state;
-        localStorage.setItem(KEY,JSON.stringify(data));
-        render();
-      }
-    }catch(e){console.warn('Garage cloud poll error:',e)}
-  },3000);
+  if(garageCloudSyncTimer)clearInterval(garageCloudSyncTimer);
+  garageCloudSyncTimer=setInterval(()=>garageCloudSync(false),2000);
+  garageCloudSync(true);
 }
 function today(){return new Date().toISOString().slice(0,10)}
 function openOrderSaleDetails(saleId){let x=data.sales.find(s=>s.id==saleId);if(!x||!x.sourceOrderId)return;let o=data.orders.find(z=>z.id==x.sourceOrderId),c=o?client(o.clientId):null,v=o?car(o.carId,o.clientId):null;if(!o)return toast('Исходный заказ не найден');let all=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let totalPaid=all.reduce((a,s)=>a+(Number(s.price)||0),0);let rows=all.map(s=>`<div class="rowcard" style="margin-top:8px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:4px">${s.date} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'} · 👤 ${s.paidBy||s.orderedBy||'—'}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join('')||'<div class="empty">Платежей нет</div>';openModal('Заказ №'+o.id,`<div class="rowcard"><div><b>${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:4px">${c?.name||'—'} · ${c?.phone||''}</small><small style="display:block;color:var(--muted);margin-top:4px">${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div><div style="text-align:right"><b>${Number(o.total||0).toLocaleString('ru-RU')} ₽</b><small style="display:block;color:var(--muted);margin-top:4px">Оплачено по продажам: ${totalPaid.toLocaleString('ru-RU')} ₽</small></div></div><h3 style="margin:16px 0 8px">История оплаты</h3>${rows}<div class="formfoot"><button class="smallbtn primary" onclick="closeModal()">Закрыть</button></div>`)}
@@ -3688,13 +3686,14 @@ function openClientClosedOrderDetails(id){
 
 function miniOrderHistory(o){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}</div></div>`}
 function miniOrder(o,sectionKey=null){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${eta}${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`}
-function refreshFullPayModal(){let id=window._payFullOrderId,o=data.orders.find(x=>x.id===id);if(!o)return;let base=Number(o.baseTotal??o.total??0)||0;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pctInput=document.getElementById('orderPayDiscount');let personalInput=document.getElementById('orderPayPersonalDiscount');let pct=canDiscount?Math.min(100,Math.max(0,Number(pctInput?.value||0))):0;if(method==='card')pct=0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=Math.max(0,Math.min(percentTotal,Number(personalInput?.value||0)));let newTotal=Math.max(0,percentTotal-personal);let remaining=Math.max(0,newTotal-(Number(o.paid)||0));let discAmt=Math.max(0,(Number(o.total)||0)-newTotal);if(pctInput){pctInput.disabled=!canDiscount||method==='card';if(method==='card')pctInput.value='';}if(personalInput){personalInput.disabled=false;personalInput.removeAttribute('disabled');}let t=document.getElementById('orderPayRemaining');if(t)t.value=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});let final=document.getElementById('orderPayAfterDiscount');if(final)final.textContent=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent=discAmt>0?('Всего скидка: '+discAmt.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'):'';let info=document.getElementById('orderPayDiscountInfo');if(info){if(canDiscount)info.textContent=method==='card'?'Для оплаты картой процентная скидка отключена.':'Можно применить скидку и персональную скидку для округления.';else{let oldPct=Number(o.discount||0);let oldBase=Number((o.baseTotal??o.total)??0)||0;let oldAmount=oldBase*oldPct/100;info.textContent='Скидка по этому заказу уже была применена: '+oldPct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'% (−'+oldAmount.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽) из '+oldBase.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽.'}}}
-function payOrderFully(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));if(remaining<=0)return toast('Заказ уже оплачен полностью');let c=client(o.clientId);let previous=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let prevPaid=previous.reduce((a,s)=>a+(Number(s.price)||0),0);let prevRows=previous.length?previous.map(s=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-top:7px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:3px">${s.date||''} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'}${s.paidBy?' · 👤 '+s.paidBy:''}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join(''):'<div style="padding:9px 10px;border-radius:10px;background:rgba(148,163,184,.08);color:var(--muted)">Предыдущих оплат не найдено</div>';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);window._payFullOrderId=id;openModal('Оплата остатка · заказ №'+o.id,`<div class="form"><label>Клиент<div><input value="${c?.name||'—'}" readonly></div></label><label>Остаток к оплате, ₽<div><input id="orderPayRemaining" value="${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})}" readonly></div></label><div id="orderPayAfterDiscountWrap" style="grid-column:1/-1;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--accent-soft,rgba(59,130,246,.28));display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:none"><span style="font-weight:700;color:var(--muted)">💳 Сумма к оплате после скидки</span><b id="orderPayAfterDiscount" style="font-size:24px">${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><label>Способ оплаты<div><select id="orderPayMethod" onchange="refreshFullPayModal()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label><label>Скидка %<div><input id="orderPayDiscount" type="number" min="0" max="100" step="0.01" placeholder="Например: 5" ${canDiscount?'':'disabled'} oninput="refreshFullPayModal()"></div></label><label>Персональная скидка для округления, ₽<div><input id="orderPayPersonalDiscount" type="number" min="0" step="1" placeholder="Например: 30" oninput="refreshFullPayModal()"></div></label><small id="orderPayDiscountInfo" style="display:block;grid-column:1/-1;margin-top:-8px;color:var(--muted)">${canDiscount?'Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.':'Скидка по этому заказу уже была применена — изменение недоступно.'}</small><small id="orderPayDiscountAmount" style="display:block;grid-column:1/-1;margin-top:-4px;color:#b7791f;font-weight:700"></small></div><div style="margin-top:14px"><b>Что было оплачено до этого</b><div class="previously-paid-total"><span class="previously-paid-total-label">Всего ранее оплачено:</span> <b>${prevPaid.toLocaleString('ru-RU')} ₽</b></div>${prevRows}</div><div style="margin-top:12px;color:#64748b;font-size:13px">После подтверждения остаток будет добавлен в «Продажи» как доплата по заказу №${o.id}.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-pay-all" onclick="completeOrderPayment(${o.id})">Оплатил все</button></div>`);refreshFullPayModal()}
-function completeOrderPayment(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pct=canDiscount?Math.min(100,Math.max(0,Number(document.getElementById('orderPayDiscount')?.value||0))):0;if(method==='card')pct=0;let personal=Math.max(0,Number(document.getElementById('orderPayPersonalDiscount')?.value||0));let base=Number(o.baseTotal??o.total??0)||0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);personal=Math.max(0,Math.min(percentTotal,personal));let finalTotal=canDiscount?Math.max(0,percentTotal-personal):Math.max(0,Number(o.total||0)-personal);let finalRemaining=Math.max(0,finalTotal-(Number(o.paid)||0));window._payFullDraft={id,method,pct,personal,finalTotal,finalRemaining};openModal('Подтверждение оплаты',`<div class="payment-confirm-modal"><div class="payment-confirm-icon">?</div><div class="payment-confirm-title">Подтвердить операцию?</div><div class="payment-confirm-text">Вы действительно хотите провести оплату остатка по заказу №${o.id}?</div><div class="payment-confirm-amount"><span>К оплате</span><b>${finalRemaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div>${(pct>0||personal>0)?`<div class="payment-confirm-method"><span>Скидка</span><b>${pct>0?pct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'%':''}${pct>0&&personal>0?' · ':''}${personal>0?'−'+personal.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽':''}</b></div>`:''}<div class="payment-confirm-method"><span>Способ оплаты</span><b>${method==='card'?'💳 Карта':'💵 Наличные'}</b></div><div class="payment-confirm-actions"><button class="smallbtn" onclick="payConfirmCancel()">Отмена</button><button class="smallbtn primary" onclick="payConfirmYes()">Подтвердить оплату</button></div></div>`)}
+function syncEditedPayRemaining(){let input=document.getElementById('orderPayRemaining');let final=document.getElementById('orderPayAfterDiscount');if(!input||!final)return;let v=Math.max(0,Number(String(input.value||0).replace(',','.'))||0);final.textContent=v.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent='';}
+function refreshFullPayModal(){let id=window._payFullOrderId,o=data.orders.find(x=>x.id===id);if(!o)return;let base=Number(o.baseTotal??o.total??0)||0;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pctInput=document.getElementById('orderPayDiscount');let personalInput=document.getElementById('orderPayPersonalDiscount');let pct=canDiscount?Math.min(100,Math.max(0,Number(pctInput?.value||0))):0;if(method==='card')pct=0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=Math.max(0,Math.min(percentTotal,Number(personalInput?.value||0)));let newTotal=Math.max(0,percentTotal-personal);let remaining=Math.max(0,newTotal-(Number(o.paid)||0));let discAmt=Math.max(0,(Number(o.total)||0)-newTotal);if(pctInput){pctInput.disabled=!canDiscount||method==='card';if(method==='card')pctInput.value='';}if(personalInput){personalInput.disabled=false;personalInput.removeAttribute('disabled');}let t=document.getElementById('orderPayRemaining');if(t&&document.activeElement!==t)t.value=remaining.toFixed(2);let final=document.getElementById('orderPayAfterDiscount');if(final)final.textContent=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent=discAmt>0?('Всего скидка: '+discAmt.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'):'';let info=document.getElementById('orderPayDiscountInfo');if(info){if(canDiscount)info.textContent=method==='card'?'Для оплаты картой процентная скидка отключена.':'Можно применить скидку и персональную скидку для округления.';else{let oldPct=Number(o.discount||0);let oldBase=Number((o.baseTotal??o.total)??0)||0;let oldAmount=oldBase*oldPct/100;info.textContent='Скидка по этому заказу уже была применена: '+oldPct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'% (−'+oldAmount.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽) из '+oldBase.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽.'}}}
+function payOrderFully(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let remaining=Math.max(0,(+o.total||0)-(+o.paid||0));if(remaining<=0)return toast('Заказ уже оплачен полностью');let c=client(o.clientId);let previous=(data.sales||[]).filter(s=>s.sourceOrderId===o.id);let prevPaid=previous.reduce((a,s)=>a+(Number(s.price)||0),0);let prevRows=previous.length?previous.map(s=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;margin-top:7px"><div><b>${s.paymentLabel||'Оплата'}</b><small style="display:block;color:var(--muted);margin-top:3px">${s.date||''} · ${s.paymentMethod==='card'?'💳 Карта':'💵 Наличные'}${s.paidBy?' · 👤 '+s.paidBy:''}</small></div><b>${Number(s.price||0).toLocaleString('ru-RU')} ₽</b></div>`).join(''):'<div style="padding:9px 10px;border-radius:10px;background:rgba(148,163,184,.08);color:var(--muted)">Предыдущих оплат не найдено</div>';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);window._payFullOrderId=id;openModal('Оплата остатка · заказ №'+o.id,`<div class="form"><label>Клиент<div><input value="${c?.name||'—'}" readonly></div></label><label>Остаток к оплате, ₽<div><input id="orderPayRemaining" type="number" min="0" step="0.01" value="${remaining.toFixed(2)}" oninput="syncEditedPayRemaining()"></div></label><div id="orderPayAfterDiscountWrap" style="grid-column:1/-1;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--accent-soft,rgba(59,130,246,.28));display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:none"><span style="font-weight:700;color:var(--muted)">💳 Сумма к оплате после скидки</span><b id="orderPayAfterDiscount" style="font-size:24px">${remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><label>Способ оплаты<div><select id="orderPayMethod" onchange="refreshFullPayModal()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label><label>Скидка %<div><input id="orderPayDiscount" type="number" min="0" max="100" step="0.01" placeholder="Например: 5" ${canDiscount?'':'disabled'} oninput="refreshFullPayModal()"></div></label><label>Персональная скидка для округления, ₽<div><input id="orderPayPersonalDiscount" type="number" min="0" step="1" placeholder="Например: 30" oninput="refreshFullPayModal()"></div></label><small id="orderPayDiscountInfo" style="display:block;grid-column:1/-1;margin-top:-8px;color:var(--muted)">${canDiscount?'Можно применить скидку и персональную скидку для округления, если ранее скидка не использовалась.':'Скидка по этому заказу уже была применена — изменение недоступно.'}</small><small id="orderPayDiscountAmount" style="display:block;grid-column:1/-1;margin-top:-4px;color:#b7791f;font-weight:700"></small></div><div style="margin-top:14px"><b>Что было оплачено до этого</b><div class="previously-paid-total"><span class="previously-paid-total-label">Всего ранее оплачено:</span> <b>${prevPaid.toLocaleString('ru-RU')} ₽</b></div>${prevRows}</div><div style="margin-top:12px;color:#64748b;font-size:13px">После подтверждения остаток будет добавлен в «Продажи» как доплата по заказу №${o.id}.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-pay-all" onclick="completeOrderPayment(${o.id})">Оплатил все</button></div>`);refreshFullPayModal()}
+function completeOrderPayment(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pct=canDiscount?Math.min(100,Math.max(0,Number(document.getElementById('orderPayDiscount')?.value||0))):0;if(method==='card')pct=0;let personal=Math.max(0,Number(document.getElementById('orderPayPersonalDiscount')?.value||0));let base=Number(o.baseTotal??o.total??0)||0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);personal=Math.max(0,Math.min(percentTotal,personal));let calculatedTotal=canDiscount?Math.max(0,percentTotal-personal):Math.max(0,Number(o.total||0)-personal);let paidNow=Number(o.paid)||0;let editedInput=document.getElementById('orderPayRemaining');let editedRemaining=editedInput?Math.max(0,Number(String(editedInput.value||0).replace(',','.'))||0):Math.max(0,calculatedTotal-paidNow);let finalRemaining=editedRemaining;let finalTotal=Math.max(0,paidNow+finalRemaining);window._payFullDraft={id,method,pct,personal,finalTotal,finalRemaining};openModal('Подтверждение оплаты',`<div class="payment-confirm-modal"><div class="payment-confirm-icon">?</div><div class="payment-confirm-title">Подтвердить операцию?</div><div class="payment-confirm-text">Вы действительно хотите провести оплату остатка по заказу №${o.id}?</div><div class="payment-confirm-amount"><span>К оплате</span><b>${finalRemaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div>${(pct>0||personal>0)?`<div class="payment-confirm-method"><span>Скидка</span><b>${pct>0?pct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'%':''}${pct>0&&personal>0?' · ':''}${personal>0?'−'+personal.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽':''}</b></div>`:''}<div class="payment-confirm-method"><span>Способ оплаты</span><b>${method==='card'?'💳 Карта':'💵 Наличные'}</b></div><div class="payment-confirm-actions"><button class="smallbtn" onclick="payConfirmCancel()">Отмена</button><button class="smallbtn primary" onclick="payConfirmYes()">Подтвердить оплату</button></div></div>`)}
 function payConfirmCancel(){let id=window._payFullOrderId;let draft=window._payFullDraft;window._payFullDraft=null;if(id)payOrderFully(id);}
 function payConfirmYes(){let d=window._payFullDraft;if(!d)return;let o=data.orders.find(x=>x.id===d.id);if(!o){closeModal();return}let oldPaid=Number(o.paid)||0;let hadPct=Number(o.discount)||0;let hadPersonal=Number(o.personalDiscount)||0;if(d.pct>0&&!hadPct&&!hadPersonal){o.discount=d.pct;}if(d.personal>0){o.personalDiscount=Number(d.personal)||0;}o.total=Math.max(0,Number(d.finalTotal)||0);o.paid=o.total;o.paymentMethod=d.method;o.paidBy=getCurrentUser();o.paidAt=today();orderPaymentSync(o,oldPaid);window._payFullDraft=null;closeModal();save();toast((d.pct>0||d.personal>0)?'Скидки применены, заказ оплачен полностью':'Доплата '+d.finalRemaining.toLocaleString('ru-RU')+' ₽ добавлена в продажи')}
-function openDebt(o){let debt=Math.max(0,(+o.total||0)-(+o.paid||0));openModal('Изменить долг · заказ №'+o.id,`<div class="form"><label>Стоимость заказа, ₽<div><input value="${o.total}" readonly></div></label><label>Текущий долг, ₽<div><input id="editDebt" type="number" min="0" max="${o.total}" step="0.01" value="${debt}"></div></label></div><div style="margin-top:12px;color:#64748b;font-size:13px">После сохранения сумма оплаты автоматически пересчитается.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-edit-debt" onclick="saveDebt(${o.id})">Сохранить</button></div>`)}
-function saveDebt(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let input=document.getElementById('editDebt');if(!input)return;let debt=Number(String(input.value).replace(/\s/g,'').replace(/[^0-9.\-]/g,''));if(!Number.isFinite(debt)||debt<0)return toast('Некорректная сумма долга');o.debt=debt;save();refreshOpenOrderViews();if(typeof currentCarHistoryState!=='undefined'&&currentCarHistoryState){window.__garageLastHistoryState={...currentCarHistoryState}};closeModal();if(window.__garageLastHistoryState&&typeof showCar==='function'){showCar(window.__garageLastHistoryState.cid,window.__garageLastHistoryState.vid)};toast('Долг изменён')}
+function openDebt(o){let debt=Math.max(0,(+o.total||0)-(+o.paid||0));openModal('Изменить долг · заказ №'+o.id,`<div class="form"><label>Стоимость заказа, ₽<div><input value="${o.total}" readonly></div></label><label>Текущий долг, ₽<div><input id="editDebt" type="number" min="0" step="0.01" value="${debt}"></div></label></div><div style="margin-top:12px;color:#64748b;font-size:13px">После сохранения сумма оплаты автоматически пересчитается.</div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary btn-edit-debt" onclick="saveDebt(${o.id})">Сохранить</button></div>`)}
+function saveDebt(id){let o=data.orders.find(x=>x.id===id);if(!o)return;let input=document.getElementById('editDebt');if(!input)return;let debt=Number(String(input.value).replace(/\s/g,'').replace(/[^0-9.\-]/g,''));if(!Number.isFinite(debt)||debt<0)return toast('Некорректная сумма долга');let oldPaid=Number(o.paid)||0;let newTotal=Math.max(0,oldPaid+debt);o.total=newTotal;o.debt=debt;o.paid=oldPaid;orderPaymentSync(o,oldPaid);save();refreshOpenOrderViews();if(typeof currentCarHistoryState!=='undefined'&&currentCarHistoryState){window.__garageLastHistoryState={...currentCarHistoryState}};closeModal();if(window.__garageLastHistoryState&&typeof showCar==='function'){showCar(window.__garageLastHistoryState.cid,window.__garageLastHistoryState.vid)};toast('Остаток к оплате изменён')}
 let currentClientProfileId=null;
 function openModal(title,body){currentClientProfileId=null;const globalSearchResults=document.getElementById('globalSearchResults');if(globalSearchResults)globalSearchResults.style.display='none';let modal=document.getElementById('modal'),box=modal.querySelector('.modalbox'),titleText=String(title);box.classList.toggle('cart-modal-box',titleText.includes('Корзина клиента')||titleText.includes('Оформление заказа'));box.classList.toggle('cart-only-modal',titleText.includes('Корзина клиента'));document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;box.classList.remove('client-profile-box');modal.classList.add('show')}
 function closeModal(){currentClientProfileId=null;document.getElementById('modal').classList.remove('show');const globalSearchResults=document.getElementById('globalSearchResults');if(globalSearchResults){globalSearchResults.style.display='';if(typeof renderGlobalSearch==='function')renderGlobalSearch();}}
@@ -4039,7 +4038,61 @@ renderSalesTotal();
   document.querySelector('button[data-page="settings"]')?.addEventListener('click',()=>setTimeout(renderGarageStorageStats,0));
 })();
 </script>
-<script id="garage-theme-js">(function(){const t=localStorage.getItem('autoPartsTheme')||'dark';document.body.classList.toggle('light-theme',t==='light');window.setGarageTheme=function(theme){theme=theme==='light'?'light':'dark';localStorage.setItem('autoPartsTheme',theme);document.body.classList.toggle('light-theme',theme==='light');const l=document.getElementById('themeLightBtn'),d=document.getElementById('themeDarkBtn');if(l)l.classList.toggle('primary',theme==='light');if(d)d.classList.toggle('primary',theme==='dark')}})();</script><script>renderCurrentUser();</script>
+<style id="garage-interface-mode-style">
+/* Переключатель интерфейса: авто / мобильная / полная версия */
+body.garage-force-full{min-width:1000px;overflow-x:auto}
+body.garage-force-full .app{display:flex}
+body.garage-force-full .sidebar{position:fixed;width:240px;min-height:100vh;height:100vh;top:0;left:0;overflow-y:auto;z-index:100}
+body.garage-force-full .main{margin-left:240px;width:calc(100% - 240px);padding:22px 26px}
+body.garage-force-full .grid{grid-template-columns:repeat(4,1fr)}
+body.garage-force-full .layout{grid-template-columns:minmax(0,2fr) minmax(300px,1fr)}
+body.garage-force-full .form{grid-template-columns:1fr 1fr}
+body.garage-force-full .form .full{grid-column:1/-1}
+body.garage-force-full .top{flex-wrap:nowrap}
+body.garage-force-full .user{display:flex}
+body.garage-force-full .modal{padding:20px}
+body.garage-force-full .modalbox{width:min(650px,100%);max-height:90vh}
+body.garage-force-full .cart-modal-box{width:min(980px,calc(100vw - 40px))}
+body.garage-force-full .cart-fields{grid-template-columns:1fr 1fr}
+body.garage-force-full .checkout-summary{grid-template-columns:1fr 1fr}
+body.garage-force-full .checkout-actions{flex-direction:row}
+
+/* Явная мобильная версия. На телефоне совпадает с адаптивной, на широком экране тоже компактная. */
+body.garage-force-mobile .app{display:block}
+body.garage-force-mobile .sidebar{position:static;width:100%;min-height:auto;height:auto}
+body.garage-force-mobile .main{margin:0;width:100%;padding:15px}
+body.garage-force-mobile .grid{grid-template-columns:1fr 1fr}
+body.garage-force-mobile .layout{grid-template-columns:1fr}
+body.garage-force-mobile .form{grid-template-columns:1fr}
+body.garage-force-mobile .form .full{grid-column:auto}
+body.garage-force-mobile .top{flex-wrap:wrap}
+body.garage-force-mobile .user{display:none}
+body.garage-force-mobile .modal{padding:10px}
+body.garage-force-mobile .modalbox{width:100%;max-width:650px;max-height:calc(100vh - 20px);padding:16px}
+body.garage-force-mobile .cart-fields{grid-template-columns:1fr 1fr}
+body.garage-force-mobile .checkout-summary{grid-template-columns:1fr}
+body.garage-force-mobile .checkout-actions{flex-direction:column-reverse}
+@media(max-width:420px){
+ body.garage-force-mobile .cart-fields{grid-template-columns:1fr}
+ body.garage-force-mobile .modalbox{padding:13px}
+}
+</style>
+<div id="garage-interface-mode-anchor"></div><script id="garage-theme-js">(function(){const t=localStorage.getItem('autoPartsTheme')||'dark';document.body.classList.toggle('light-theme',t==='light');window.setGarageTheme=function(theme){theme=theme==='light'?'light':'dark';localStorage.setItem('autoPartsTheme',theme);document.body.classList.toggle('light-theme',theme==='light');const l=document.getElementById('themeLightBtn'),d=document.getElementById('themeDarkBtn');if(l)l.classList.toggle('primary',theme==='light');if(d)d.classList.toggle('primary',theme==='dark')}})();
+(function(){
+ const KEY='garage_interface_mode';
+ function apply(mode){
+   mode=['auto','mobile','full'].includes(mode)?mode:'auto';
+   document.body.classList.toggle('garage-force-mobile',mode==='mobile');
+   document.body.classList.toggle('garage-force-full',mode==='full');
+   const a=document.getElementById('interfaceAutoBtn'),m=document.getElementById('interfaceMobileBtn'),f=document.getElementById('interfaceFullBtn');
+   if(a)a.classList.toggle('primary',mode==='auto');
+   if(m)m.classList.toggle('primary',mode==='mobile');
+   if(f)f.classList.toggle('primary',mode==='full');
+   return mode;
+ }
+ window.setGarageInterfaceMode=function(mode){mode=apply(mode);localStorage.setItem(KEY,mode);toast(mode==='auto'?'Автоматическая версия включена':mode==='mobile'?'Мобильная версия включена':'Полная версия включена');};
+ apply(localStorage.getItem(KEY)||'auto');
+})();</script><script>renderCurrentUser();</script>
 <script id="seller-manager-events">
 document.addEventListener('click',function(e){
   const sel=e.target.closest('[data-seller-select]');
