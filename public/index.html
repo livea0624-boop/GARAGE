@@ -5617,6 +5617,10 @@ body.light-theme .order-payment-summary{background:#f8fafc;border-color:#dce4ec;
 body.light-theme .order-payment-head{border-color:#e3e8ee}
 body.light-theme .order-payment-head span,.body.light-theme .order-payment-grid span{color:#64748b}
 body.light-theme .order-payment-summary.is-debt{background:#fff7f7;border-color:#efb4b4}
+ .order-remaining-input{width:96px;max-width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit;font-weight:700;text-align:right;}
+.order-remaining-input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.order-payment-edit-wrap{display:flex;align-items:center;justify-content:flex-end;gap:4px;font-weight:700;}
+@media(max-width:760px){.order-remaining-input{width:88px}.order-payment-edit-wrap{min-width:0}}
 body.light-theme .order-payment-summary.is-paid{background:#f6fff9;border-color:#b7dfc5}
 body.light-theme .order-payment-debt{color:#b42318!important}
 body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:#16803c!important}
@@ -5633,10 +5637,25 @@ body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:
       <div class="order-payment-head"><span>💰 Сумма заказа</span><b>${money(total)}</b></div>
       <div class="order-payment-grid">
         <span>Оплачено</span><b class="order-payment-paid">${money(Math.min(paid,total))}</b>
-        <span>${full?'Статус оплаты':'Не оплачено'}</span><b class="${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Оплачено полностью':money(debt)}</b>
+        <span>Осталось</span><span class="order-payment-edit-wrap"><input class="order-remaining-input" type="number" min="0" step="0.01" value="${debt.toFixed(2)}" aria-label="Осталось" onchange="editOrderRemaining(${Number(o?.id)||0},this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" onclick="event.stopPropagation()"> ₽</span>
         <div class="payment-state ${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Заказ оплачен полностью':'⚠ Остаток к оплате: '+money(debt)}</div>
       </div>
     </div>`;
+  };
+
+  window.editOrderRemaining=function(id,value){
+    const o=(window.data&&Array.isArray(window.data.orders))?window.data.orders.find(x=>Number(x.id)===Number(id)):null;
+    if(!o)return;
+    const remaining=Number(String(value).replace(/\s/g,'').replace(',','.'));
+    if(!Number.isFinite(remaining)||remaining<0){toast('Некорректная сумма остатка');render();return;}
+    const paid=Math.max(0,Number(o.paid)||0);
+    o.total=paid+remaining;
+    o.debt=remaining;
+    if(remaining===0){o.paid=Math.max(paid,o.total);}
+    save();
+    if(typeof refreshOpenOrderViews==='function')refreshOpenOrderViews();
+    else if(typeof render==='function')render();
+    toast('Остаток к оплате изменён');
   };
 
   // Keep the existing order workflow intact; only unify the visual payment information.
