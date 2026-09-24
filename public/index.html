@@ -3308,6 +3308,22 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 .quick-actions-card .btn.primary{box-shadow:0 2px 7px rgba(40,125,245,.12)}
 @media(max-width:1100px){.layout{grid-template-columns:1fr}.quick-actions-card{max-width:420px;width:100%;box-sizing:border-box}}
 </style>
+
+<style id="client-cart-preview-width-fix">
+/* Только превью корзины в списке клиентов — внутренняя корзина не меняется */
+.client-row{grid-template-columns:minmax(240px,1fr) minmax(300px,420px) auto!important;}
+.client-cart-wrap{width:100%;min-width:0!important;max-width:420px!important;justify-self:end!important;}
+.client-cart-wrap .cart-pill{width:100%;min-width:0!important;max-width:420px;box-sizing:border-box;}
+@media(max-width:1100px){
+  .client-row{grid-template-columns:minmax(220px,1fr) minmax(280px,360px) auto!important;}
+  .client-cart-wrap,.client-cart-wrap .cart-pill{max-width:360px!important;}
+}
+@media(max-width:900px){
+  .client-row{grid-template-columns:1fr!important;}
+  .client-cart-wrap{width:100%;max-width:100%!important;justify-self:start!important;}
+  .client-cart-wrap .cart-pill{max-width:100%!important;}
+}
+</style>
 </head>
 <body>
 <div class="app">
