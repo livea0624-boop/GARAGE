@@ -3264,6 +3264,63 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
   .checkout-actions .smallbtn{min-height:44px!important}
 }
 </style>
+
+<style id="garage-cart-multi-fix">
+/* Корзина: стабильная ширина при большом количестве товаров */
+.modalbox.cart-modal-box{
+  width:min(1120px,calc(100vw - 40px))!important;
+  max-width:min(1120px,calc(100vw - 40px))!important;
+  max-height:calc(100dvh - 40px)!important;
+  overflow:hidden!important;
+}
+.modalbox.cart-modal-box #modalBody{
+  min-width:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.modalbox.cart-modal-box .cart-fields{
+  grid-template-columns:75px 120px 90px 130px 135px 125px minmax(128px,1fr) 42px!important;
+  min-width:0!important;
+}
+.modalbox.cart-modal-box .cart-fields>*{min-width:0!important}
+.modalbox.cart-modal-box .cart-fields label{min-width:0!important}
+.modalbox.cart-modal-box .cart-fields input,.modalbox.cart-modal-box .cart-fields select{max-width:100%!important;min-width:0!important}
+.modalbox.cart-modal-box .cart-item{min-width:0!important}
+.modalbox.cart-modal-box .cart-item-main{min-width:0!important;overflow-wrap:anywhere!important}
+
+/* Панель корзины в карточке клиента: много товаров не растягивают строку */
+.client-cart-wrap{min-width:0!important;max-width:100%!important}
+.client-cart-wrap .cart-pill{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.client-cart-wrap .cart-title{flex:0 0 auto!important}
+.client-cart-wrap .cart-mini-row{min-width:0!important;flex:1 1 auto!important;overflow:hidden!important}
+.client-cart-wrap .cart-mini-row span{min-width:0!important;max-width:210px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.client-cart-wrap .cart-total{flex:0 0 auto!important;min-width:max-content!important;margin-left:auto!important}
+
+@media(max-width:1100px) and (min-width:701px){
+  .modalbox.cart-modal-box{width:calc(100vw - 32px)!important;max-width:calc(100vw - 32px)!important}
+  .modalbox.cart-modal-box .cart-fields{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .modalbox.cart-modal-box .cart-sum{min-width:0!important}
+  .modalbox.cart-modal-box .cart-item-total-input{width:100%!important}
+}
+@media(max-width:900px) and (min-width:701px){
+  .client-row{grid-template-columns:1fr!important}
+  .client-cart-wrap{justify-self:start!important;width:100%!important}
+  .client-cart-wrap .cart-pill{justify-content:flex-start!important}
+}
+@media(max-width:700px){
+  .modalbox.cart-modal-box,.modalbox.cart-only-modal{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important}
+  .modalbox.cart-modal-box .cart-fields{grid-template-columns:1fr 1fr!important}
+  .client-cart-wrap{width:100%!important}
+  .client-cart-wrap .cart-pill{width:100%!important}
+  .client-cart-wrap .cart-mini-row span{max-width:170px!important}
+}
+@media(max-width:420px){
+  .client-cart-wrap .cart-pill{gap:6px!important;padding:7px 8px!important}
+  .client-cart-wrap .cart-mini-row{gap:5px!important}
+  .client-cart-wrap .cart-mini-row span{max-width:125px!important;padding:4px 6px!important;font-size:12px!important}
+  .client-cart-wrap .cart-total{font-size:12px!important}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3816,10 +3873,10 @@ function clientCartPill(cid){
  </div>`;
 }
 
-function setClientCartItemTotal(cid,i,value){let items=clientCart(cid),x=items[i];if(!x)return;let n=Number(String(value).replace(',','.'));if(!Number.isFinite(n)||n<0)return toast('Некорректная сумма');let paid=Math.max(0,Number(x.prepaid)||0);n=Math.max(n,paid);x.cartTotalOverride=Number(n.toFixed(2));save();renderClientCartModal(cid)}
+function setClientCartItemTotal(cid,i,value){let items=clientCart(cid),x=items[i];if(!x)return;let n=Number(String(value).replace(',','.'));if(!Number.isFinite(n)||n<0)return toast('Некорректная сумма');let paid=Math.max(0,Number(x.prepaid)||0);let q=Math.max(1,Number(x.qty)||1),price=Math.max(0,Number(x.price)||0),disc=Math.min(100,Math.max(0,Number(x.discount)||0)),personal=Math.max(0,Number(x.personalDiscount)||0);let calculated=Math.max(0,q*price*(1-disc/100)-personal);let oldTotal=Number.isFinite(Number(x.cartTotalOverride))?Math.max(paid,Number(x.cartTotalOverride)):Math.max(calculated,paid);n=Math.max(n,paid);if(Math.abs(paid-oldTotal)<0.000001&&Math.abs(n-oldTotal)>0.000001){x.prepaid=Number(n.toFixed(2));}x.cartTotalOverride=Number(n.toFixed(2));save();renderClientCartModal(cid)}
 function toggleCartExtraDiscount(cid){let box=document.getElementById('cartExtraDiscountBox_'+cid);if(!box)return;box.classList.toggle('open');let hint=box.querySelector('.cart-extra-discount-spoiler>span:last-child');if(hint)hint.textContent=box.classList.contains('open')?'Скрыть':'Раскрыть'}
 function updateCartExtraDiscountPreview(cid){let input=document.getElementById('cartExtraDiscount_'+cid),result=document.getElementById('cartExtraDiscountResult_'+cid);if(!input||!result)return;let base=Math.max(0,Number(input.dataset.base)||0),d=Math.min(100,Math.max(0,Number(input.value)||0)),value=Math.max(0,base*(1-d/100));result.textContent=money(value)}
-function applyCartExtraDiscountToAll(cid){let input=document.getElementById('cartExtraDiscount_'+cid),items=clientCart(cid);if(!input||!items.length)return;let d=Math.min(100,Math.max(0,Number(input.value)||0));items.forEach(x=>{x.discount=d});save();renderClientCartModal(cid);setTimeout(()=>{let box=document.getElementById('cartExtraDiscountBox_'+cid);if(box){box.classList.add('open');let hint=box.querySelector('.cart-extra-discount-spoiler>span:last-child');if(hint)hint.textContent='Скрыть'}let i=document.getElementById('cartExtraDiscount_'+cid);if(i){i.value=d;updateCartExtraDiscountPreview(cid)}},0);toast('Скидка '+d+'% выставлена всем товарам')}
+function applyCartExtraDiscountToAll(cid){let input=document.getElementById('cartExtraDiscount_'+cid),items=clientCart(cid);if(!input||!items.length)return;let d=Math.min(100,Math.max(0,Number(input.value)||0));items.forEach(x=>{x.discount=d;delete x.cartTotalOverride});save();renderClientCartModal(cid);setTimeout(()=>{let box=document.getElementById('cartExtraDiscountBox_'+cid);if(box){box.classList.add('open');let hint=box.querySelector('.cart-extra-discount-spoiler>span:last-child');if(hint)hint.textContent='Скрыть'}let i=document.getElementById('cartExtraDiscount_'+cid);if(i){i.value=d;updateCartExtraDiscountPreview(cid)}},0);toast('Скидка '+d+'% выставлена всем товарам')}
 function updateCartExtraDiscountPreview(cid){let inp=document.getElementById('cartExtraDiscount_'+cid),out=document.getElementById('cartExtraDiscountResult_'+cid);if(!inp||!out)return;let base=Number(inp.dataset.base)||0,pct=Math.min(100,Math.max(0,Number(String(inp.value).replace(',','.'))||0));let result=Math.max(0,base*(1-pct/100));out.textContent=money(result)}
 function renderClientCartModal(cid){let c=client(cid),items=clientCart(cid),t=cartCalc(items),payable=clientCartPayable(cid,t),selectedCar=selectedOrderCarId?car(selectedOrderCarId,cid):null;let rows=items.map((x,i)=>{let q=Math.max(1,Number(x.qty)||1),p=Number(x.price)||0,disc=Math.max(0,Number(x.discount)||0),paid=Math.max(0,Number(x.prepaid)||0),b=q*p,calculated=Math.max(0,b*(1-disc/100)-Math.max(0,Number(x.personalDiscount)||0)),total=Number.isFinite(Number(x.cartTotalOverride))?Math.max(paid,Number(x.cartTotalOverride)):Math.max(calculated,paid),rest=Math.max(0,total-paid);return `<div class="cart-item"><div class="cart-item-main"><b>${x.part||'Без названия'}</b><small>Код: ${x.code||'—'}</small></div><div class="cart-fields"><label>Кол-во<input type="number" min="1" value="${q}" onchange="updateCartItem(${cid},${i},'qty',this.value)"></label><label>Цена<input type="number" min="0" step="0.01" value="${p ? p : ''}" onchange="updateCartItem(${cid},${i},'price',this.value)"></label><label>Скидка %<input type="number" min="0" max="100" value="${disc}" onchange="updateCartItem(${cid},${i},'discount',this.value)"></label><label>Предоплата<input type="number" min="0" step="0.01" value="${paid}" onchange="updateCartItem(${cid},${i},'prepaid',this.value)"></label><label>Персональная скидка<input type="number" min="0" step="0.01" value="${Number(x.personalDiscount)||0}" onchange="updateCartItem(${cid},${i},'personalDiscount',this.value)"></label><label>Дата поступления<input type="date" value="${x.arrivalDate||''}" onchange="updateCartItem(${cid},${i},'arrivalDate',this.value)"></label><label>Оплата<select onchange="updateCartItem(${cid},${i},'paymentMethod',this.value)"><option value="cash" ${x.paymentMethod==='card'?'':'selected'}>💵 Наличные</option><option value="card" ${x.paymentMethod==='card'?'selected':''}>💳 Карта</option></select></label><div class="cart-sum"><small>${x.cartTotalOverride!==undefined?'Итог вручную':'Сумма'}</small><input class="cart-item-total-input${x.cartTotalOverride!==undefined?' manual':''}" type="number" min="${paid.toFixed(2)}" step="0.01" value="${Number(total).toFixed(2)}" onchange="setClientCartItemTotal(${cid},${i},this.value)" onkeydown="if(event.key==='Enter'){this.blur();}"></div><button class="smallbtn" onclick="removeCartItem(${cid},${i})">🗑</button></div><div style="margin-top:8px;font-size:14px"><span style="color:green">Оплачено: ${money(paid)}</span> · <span style="color:#d33">Осталось: ${money(rest)}</span></div></div>`}).join('')||'<div class="empty">В корзине пока нет деталей</div>';openModal('🛒 Корзина клиента',`<div class="cart-client-head"><div><b>${c?.name||'—'}</b><small>${c?.phone||''}${selectedCar?` · Автомобиль: ${selectedCar.brand||''} ${selectedCar.model||''} · ${selectedCar.plate||''}`:''}</small></div></div><div class="cart-add-box"><h3 style="margin:0 0 10px">Добавить деталь</h3><div class="form"><label>Наименование<div><input id="cartPart" placeholder="Например: тормозные колодки"></div></label><label>Код товара<div><input id="cartCode" placeholder="Например: BP-12345"></div></label><label>Количество<div><input id="cartQty" type="number" min="1" value="1"></div></label><label>Цена, ₽<div><input id="cartPrice" type="number" min="0" step="0.01" value=""></div></label></div><div class="formfoot"><button class="smallbtn primary" onclick="addCartItem(${cid})">＋ Добавить в корзину</button></div></div><div class="cart-list"><h3>Детали клиента</h3>${rows}</div><div class="cart-total"><div><span>Без скидки</span><b>${money(t.base)}</b></div><div><span>Скидка</span><b>${money(t.discount)}</b></div><div><span>Персональная скидка</span><b>${money(t.personal)}</b></div><div><span>Внесено предоплатой</span><b>${money(t.paid)}</b></div><div class="cart-total-final"><span>Итого сумма для оплаты к получению</span><b>${money(payable)}</b></div><div class="cart-extra-discount" id="cartExtraDiscountBox_${cid}"><div class="cart-extra-discount-spoiler" onclick="toggleCartExtraDiscount(${cid})"><span class="cart-extra-discount-spoiler-title"><span class="cart-extra-discount-arrow">▶</span>Сколько будет если применить скидку в %</span><span>Раскрыть</span></div><div class="cart-extra-discount-body"><div class="cart-extra-discount-panel"><div class="cart-extra-discount-controls"><div class="cart-extra-discount-field"><input id="cartExtraDiscount_${cid}" data-base="${Number(payable)||0}" type="number" min="0" max="100" step="1" value="" placeholder="0" oninput="updateCartExtraDiscountPreview(${cid})"><span>%</span></div><div class="cart-extra-discount-result"><small>Итог со скидкой</small><b id="cartExtraDiscountResult_${cid}">${money(payable)}</b></div></div><button class="smallbtn primary cart-extra-discount-apply" onclick="applyCartExtraDiscountToAll(${cid})">🏷 Выставить скидку ко всем товарам</button><div class="cart-extra-discount-note">Указанный процент будет установлен в поле «Скидка %» у каждого товара.</div></div></div></div><div style="margin-top:6px;color:var(--muted);font-size:12px">Итог рассчитывается автоматически с учётом скидок, персональных скидок и предоплаты.</div></div><div class="formfoot"><button class="smallbtn" onclick="clearClientCart(${cid})">🗑 Очистить корзину</button><button class="smallbtn primary" ${items.length?'':'disabled style="opacity:.45"'} onclick="openCheckoutConfirmModal(${cid})">🧾 Оформить заказ</button></div>`)}
 function openClientCart(cid,carId=null){selectedOrderCarId=carId?+carId:null;renderClientCartModal(cid)}
@@ -3897,26 +3954,18 @@ function finishClientCart(cid){
   data.orders=data.orders||[];
   let nextId=Math.max(0,...data.orders.map(x=>x.id||0))+1;
   let created=0;
-  const calc=cartCalc(items);
-  const requestedTotal=Math.max(Number(window.__garageCheckoutConfirmedTotal)||0,clientCartPayable(cid,calc));
-  const totalDelta=requestedTotal-calc.total;
-  const paidTotal=Math.max(0,Number(calc.paid)||0);
-  items.forEach((x,idx)=>{
+  items.forEach(x=>{
     let q=Math.max(1,Number(x.qty)||1);
-    let price=Number(x.price)||0;
+    let price=Math.max(0,Number(x.price)||0);
     let disc=Math.min(100,Math.max(0,Number(x.discount)||0));
     let personal=Math.max(0,Number(x.personalDiscount)||0);
-    let calculatedLineTotal=Math.max(0,q*price*(1-disc/100)-personal);
-    let total=Number.isFinite(Number(x.cartTotalOverride))?Math.max(Number(x.prepaid)||0,Number(x.cartTotalOverride)):calculatedLineTotal;
-    if(idx===0 && Math.abs(totalDelta)>0.000001 && !Number.isFinite(Number(x.cartTotalOverride))) total=Math.max(0,total+totalDelta);
-    // Если в корзине фактически внесено столько же или больше расчётной суммы,
-    // сумма самого заказа должна стать именно фактически внесённой суммой.
-    // Иначе дальше addOrderSaleEntry() получает ограничение 745,75 вместо 750.
-    if(idx===0 && paidTotal>=calc.calculatedTotal && paidTotal>0) total=Math.max(total,paidTotal);
+    let gross=q*price;
+    let discounted=Math.max(0,gross*(1-disc/100));
+    let calculatedLineTotal=Math.max(0,discounted-personal);
     let rawPaid=Math.max(0,Number(x.prepaid)||0);
-    let paid=(paidTotal>=calc.calculatedTotal && paidTotal>0 && idx===0)
-      ? paidTotal
-      : Math.min(total,rawPaid);
+    let hasOverride=Number.isFinite(Number(x.cartTotalOverride));
+    let total=hasOverride?Math.max(0,Number(x.cartTotalOverride)):calculatedLineTotal;
+    let paid=Math.min(total,rawPaid);
     data.orders.unshift({
       id:nextId++,
       clientId:cid,
@@ -3925,7 +3974,7 @@ function finishClientCart(cid){
       partNumber:x.code||'',
       qty:q,
       total,
-      baseTotal:q*price,
+      baseTotal:gross,
       paid,
       remaining:Math.max(0,total-paid),
       discount:disc,
@@ -5666,7 +5715,7 @@ body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:
       <div class="order-payment-head"><span>💰 Сумма заказа</span><b>${money(total)}</b></div>
       <div class="order-payment-grid">
         <span>Оплачено</span><b class="order-payment-paid">${money(Math.min(paid,total))}</b>
-        <span>Осталось</span><span class="order-payment-edit-wrap"><input class="order-remaining-input" type="number" min="0" step="0.01" value="${debt.toFixed(2)}" aria-label="Осталось" onchange="editOrderRemaining(${Number(o?.id)||0},this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" onclick="event.stopPropagation()"> ₽</span>
+        <span>Осталось</span><b class="order-payment-debt">${money(debt)}</b>
         <div class="payment-state ${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Заказ оплачен полностью':'⚠ Остаток к оплате: '+money(debt)}</div>
       </div>
     </div>`;
