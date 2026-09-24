@@ -3881,11 +3881,13 @@ function finishClientCart(cid){
     let personal=Math.max(0,Number(x.personalDiscount)||0);
     let total=Math.max(0,q*price*(1-disc/100)-personal);
     if(idx===0 && Math.abs(totalDelta)>0.000001) total=Math.max(0,total+totalDelta);
+    // Если в корзине фактически внесено столько же или больше расчётной суммы,
+    // сумма самого заказа должна стать именно фактически внесённой суммой.
+    // Иначе дальше addOrderSaleEntry() получает ограничение 745,75 вместо 750.
+    if(idx===0 && paidTotal>=calc.calculatedTotal && paidTotal>0) total=Math.max(total,paidTotal);
     let rawPaid=Math.max(0,Number(x.prepaid)||0);
-    // Если фактическая предоплата покрывает весь расчётный итог, продажа должна
-    // отражать именно фактически внесённую сумму, включая округление вверх.
     let paid=(paidTotal>=calc.calculatedTotal && paidTotal>0 && idx===0)
-      ? Math.min(total,paidTotal)
+      ? paidTotal
       : Math.min(total,rawPaid);
     data.orders.unshift({
       id:nextId++,
