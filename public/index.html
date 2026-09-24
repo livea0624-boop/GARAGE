@@ -3265,62 +3265,7 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 }
 </style>
 
-<style id="garage-cart-multi-fix">
-/* Корзина: стабильная ширина при большом количестве товаров */
-.modalbox.cart-modal-box{
-  width:min(1120px,calc(100vw - 40px))!important;
-  max-width:min(1120px,calc(100vw - 40px))!important;
-  max-height:calc(100dvh - 40px)!important;
-  overflow:hidden!important;
-}
-.modalbox.cart-modal-box #modalBody{
-  min-width:0!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-}
-.modalbox.cart-modal-box .cart-fields{
-  grid-template-columns:75px 120px 90px 130px 135px 125px minmax(128px,1fr) 42px!important;
-  min-width:0!important;
-}
-.modalbox.cart-modal-box .cart-fields>*{min-width:0!important}
-.modalbox.cart-modal-box .cart-fields label{min-width:0!important}
-.modalbox.cart-modal-box .cart-fields input,.modalbox.cart-modal-box .cart-fields select{max-width:100%!important;min-width:0!important}
-.modalbox.cart-modal-box .cart-item{min-width:0!important}
-.modalbox.cart-modal-box .cart-item-main{min-width:0!important;overflow-wrap:anywhere!important}
 
-/* Панель корзины в карточке клиента: много товаров не растягивают строку */
-.client-cart-wrap{min-width:0!important;max-width:100%!important}
-.client-cart-wrap .cart-pill{min-width:0!important;max-width:100%!important;overflow:hidden!important}
-.client-cart-wrap .cart-title{flex:0 0 auto!important}
-.client-cart-wrap .cart-mini-row{min-width:0!important;flex:1 1 auto!important;overflow:hidden!important}
-.client-cart-wrap .cart-mini-row span{min-width:0!important;max-width:210px!important;overflow:hidden!important;text-overflow:ellipsis!important}
-.client-cart-wrap .cart-total{flex:0 0 auto!important;min-width:max-content!important;margin-left:auto!important}
-
-@media(max-width:1100px) and (min-width:701px){
-  .modalbox.cart-modal-box{width:calc(100vw - 32px)!important;max-width:calc(100vw - 32px)!important}
-  .modalbox.cart-modal-box .cart-fields{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-  .modalbox.cart-modal-box .cart-sum{min-width:0!important}
-  .modalbox.cart-modal-box .cart-item-total-input{width:100%!important}
-}
-@media(max-width:900px) and (min-width:701px){
-  .client-row{grid-template-columns:1fr!important}
-  .client-cart-wrap{justify-self:start!important;width:100%!important}
-  .client-cart-wrap .cart-pill{justify-content:flex-start!important}
-}
-@media(max-width:700px){
-  .modalbox.cart-modal-box,.modalbox.cart-only-modal{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important}
-  .modalbox.cart-modal-box .cart-fields{grid-template-columns:1fr 1fr!important}
-  .client-cart-wrap{width:100%!important}
-  .client-cart-wrap .cart-pill{width:100%!important}
-  .client-cart-wrap .cart-mini-row span{max-width:170px!important}
-}
-@media(max-width:420px){
-  .client-cart-wrap .cart-pill{gap:6px!important;padding:7px 8px!important}
-  .client-cart-wrap .cart-mini-row{gap:5px!important}
-  .client-cart-wrap .cart-mini-row span{max-width:125px!important;padding:4px 6px!important;font-size:12px!important}
-  .client-cart-wrap .cart-total{font-size:12px!important}
-}
-</style>
 </head>
 <body>
 <div class="app">
