@@ -4211,7 +4211,14 @@ function renderHomeSearch(){
  el.innerHTML=rows.slice(0,20).join('')||'<div class="empty">По вашему запросу ничего не найдено</div>';
 }
 function toast(t){let x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
-document.querySelectorAll('.nav button[data-page]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.body.classList.toggle('settings-open',b.dataset.page==='settings')});
+function resetOpenedSectionPanels(){
+  // При переходе между разделами сбрасываем раскрытые группы на Главной и в Заказах.
+  document.querySelectorAll('#home .home-order-details').forEach(el=>{el.style.display='none'});
+  document.querySelectorAll('#home .home-order-chevron').forEach(el=>{el.textContent='⌄'});
+  document.querySelectorAll('#allorders .orders-client-details').forEach(el=>{el.style.display='none'});
+  document.querySelectorAll('#allorders .orders-client-chevron').forEach(el=>{el.textContent='⌄'});
+}
+document.querySelectorAll('.nav button[data-page]').forEach(b=>b.onclick=()=>{resetOpenedSectionPanels();document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.body.classList.toggle('settings-open',b.dataset.page==='settings')});
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentFilter=b.dataset.filter;render()});
 function renderGlobalSearch(){
  let el=document.getElementById('globalSearchResults'); if(!el)return;
@@ -6508,3 +6515,89 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
   }
 }
 </style>
+
+<style id="garage-payment-center-final">
+/* Единая компоновка заказов: информация слева, оплата по центру, действия справа. */
+.order-payment-center-row{
+  display:grid!important;
+  grid-template-columns:minmax(260px,1fr) 230px minmax(360px,auto)!important;
+  align-items:center!important;
+  gap:14px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding:10px 12px!important;
+}
+.order-payment-center-info{min-width:0!important;align-self:center!important}
+.order-payment-center-info b{display:block}
+.order-payment-center-info small{display:block;margin-top:3px;color:var(--muted)}
+.order-payment-center-box{display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important}
+.order-payment-center-box .order-payment-summary,
+.order-payment-center-box .order-payment-summary.compact{width:220px!important;min-width:220px!important;max-width:220px!important;margin:0!important;box-sizing:border-box!important}
+.order-payment-center-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:wrap!important;min-width:0!important}
+.order-payment-center-actions .status{flex:0 0 auto}
+@media(max-width:1180px){
+  .order-payment-center-row{grid-template-columns:minmax(220px,1fr) 220px minmax(300px,auto)!important;gap:10px!important}
+  .order-payment-center-box .order-payment-summary,
+  .order-payment-center-box .order-payment-summary.compact{width:210px!important;min-width:210px!important;max-width:210px!important}
+}
+@media(max-width:900px){
+  .order-payment-center-row{grid-template-columns:minmax(200px,1fr) 210px!important}
+  .order-payment-center-actions{grid-column:1/-1!important;justify-content:flex-end!important}
+}
+@media(max-width:760px){
+  .order-payment-center-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important;padding:10px!important}
+  .order-payment-center-box{justify-content:stretch!important;width:100%!important}
+  .order-payment-center-box .order-payment-summary,
+  .order-payment-center-box .order-payment-summary.compact{width:100%!important;min-width:0!important;max-width:100%!important}
+  .order-payment-center-actions{justify-content:flex-start!important;width:100%!important}
+}
+</style>
+<script id="garage-payment-center-final-js">
+(function(){
+  function escMoney(n){return Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:2})+' ₽'}
+  window.miniOrder=function(o,sectionKey=null){
+    let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';
+    return `<div class="rowcard ${rowClass} order-payment-center-row">
+      <div class="order-payment-center-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small>${eta}</div>
+      <div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div>
+      <div class="order-payment-center-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div>
+    </div>`;
+  };
+
+  window.orderGroupDetail=function(o){
+    let v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=d<=0,issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    return `<div class="${rowClass} order-payment-center-row" data-order-id="${o.id}">
+      <div class="order-payment-center-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div>
+      <div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div>
+      <div class="order-payment-center-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div>
+    </div>`;
+  };
+
+  window.homeOrderDetail=function(o){
+    const v=car(o.carId,o.clientId),debt=Math.max(0,(+o.total||0)-(+o.paid||0)),issued=o.status==='done',issueRaw=o.issuedAt||o.issueDate,issueDate=issueRaw?new Date(issueRaw+'T00:00:00').toLocaleDateString('ru-RU'):'—',fullyPaid=debt<=0,rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    const activity=[];
+    if(o.orderedBy)activity.push(`<span class="seller-action-item">🛒 Заказал ${sellerBadge(o.orderedBy)}</span>`);
+    if(o.receivedBy)activity.push(`<span class="seller-action-item">📦 Принял ${sellerBadge(o.receivedBy)}</span>`);
+    if(o.notifiedBy)activity.push(`<span class="seller-action-item">🔔 Оповестил ${sellerBadge(o.notifiedBy)}</span>`);
+    if(o.issuedBy)activity.push(`<span class="seller-action-item">✅ Выдал ${sellerBadge(o.issuedBy)}</span>`);
+    return `<div class="home-order-detail ${rowClass} order-payment-center-row" style="margin-top:9px;border-radius:11px">
+      <div class="order-payment-center-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div>
+      <div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div>
+      <div class="order-payment-center-actions">${status(o.status)}${issued?`<span class="home-issued-date" style="font-size:12px;color:var(--muted)">Выдан: ${issueDate}</span>`:''}${debt?`<button class="smallbtn primary" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">Далее →</button><button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>${issued?`<button class="smallbtn" onclick="showIssuedOrder(${o.id})">👁</button>`:''}${issued&&fullyPaid?`<button class="smallbtn" onclick="confirmDeleteOrder(${o.id})">🗑</button>`:''}</div>
+      ${activity.length?`<div class="home-order-activity" style="grid-column:1/-1">${activity.join('')}</div>`:''}
+    </div>`;
+  };
+
+  window.notificationGroup=function(orders){
+    const c=client(orders[0].clientId),unlocked=true;
+    const items=orders.map(o=>{
+      const v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=d<=0,issued=o.status==='done',notifyColor=issued?'order-issued-green':(d>0?'order-debt-red':(fullyPaid?'order-paid-orange':''));
+      return `<div class="notify-detail ${notifyColor} order-payment-center-row" style="margin-top:7px;border-radius:10px"><div class="order-payment-center-info"><b>№${o.id} · ${o.part||'—'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div><div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div><div class="order-payment-center-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">← Назад</button></div></div>`;
+    }).join('');
+    return `<div class="rowcard"><div style="width:100%"><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'деталь':orders.length<5?'детали':'деталей'}</small>${items}</div></div>`;
+  };
+
+  try{if(typeof render==='function')render();}catch(e){console.warn('payment center final repaint',e)}
+})();
+</script>
