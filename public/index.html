@@ -3324,6 +3324,73 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
   .client-cart-wrap .cart-pill{max-width:100%!important;}
 }
 </style>
+
+<style id="garage-home-customer-card-compact">
+/* Компактнее только свернутая карточка клиента на Главной. Внутренние заказы не меняем. */
+#home .home-order-group{
+  min-height:0!important;
+}
+#home .home-order-toggle{
+  padding:10px 14px!important;
+  gap:12px!important;
+  min-height:74px!important;
+}
+#home .home-order-toggle > div:first-child{
+  gap:10px!important;
+}
+#home .home-order-toggle > div:first-child > div:first-child{
+  width:34px!important;
+  height:34px!important;
+}
+#home .home-order-toggle > div:first-child b{
+  font-size:15px!important;
+}
+#home .home-order-toggle > div:first-child small{
+  margin-top:2px!important;
+}
+#home .home-order-toggle > div:last-child{
+  min-width:220px!important;
+  max-width:280px!important;
+}
+#home .home-order-toggle .order-payment-summary,
+#home .home-order-toggle .order-payment-summary.compact{
+  width:220px!important;
+  min-width:220px!important;
+  max-width:220px!important;
+  height:90px!important;
+  min-height:90px!important;
+  max-height:90px!important;
+  margin-top:0!important;
+  padding:7px 9px!important;
+}
+#home .home-order-toggle .order-payment-head{
+  height:19px!important;
+  min-height:19px!important;
+  padding-bottom:4px!important;
+  margin-bottom:4px!important;
+}
+#home .home-order-toggle .order-payment-grid{
+  grid-template-rows:14px 14px 22px!important;
+  gap:2px 8px!important;
+}
+#home .home-order-toggle .order-payment-summary .payment-state{
+  height:22px!important;
+  min-height:22px!important;
+  padding-top:3px!important;
+}
+#home .home-order-toggle .home-order-chevron{
+  font-size:16px!important;
+  line-height:16px!important;
+}
+@media(max-width:760px){
+  #home .home-order-toggle{padding:10px 12px!important;min-height:0!important}
+  #home .home-order-toggle > div:last-child{min-width:0!important;max-width:100%!important}
+  #home .home-order-toggle .order-payment-summary,
+  #home .home-order-toggle .order-payment-summary.compact{
+    width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+  }
+}
+</style>
 </head>
 <body>
 <div class="app">
