@@ -6601,3 +6601,48 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
   try{if(typeof render==='function')render();}catch(e){console.warn('payment center final repaint',e)}
 })();
 </script>
+
+<!-- GARAGE v2.3: Главная — карточки заказов приведены к точной компоновке раздела «Заказы» -->
+<style id="garage-home-match-orders-final">
+#home .home-order-details{padding:0 12px 12px!important}
+#home .home-order-list{display:grid!important;gap:9px!important;padding-top:2px!important;width:100%!important;margin-top:0!important}
+#home .home-order-detail.order-payment-center-row{
+  margin-top:0!important;
+  padding:12px 14px!important;
+  border-radius:12px!important;
+  min-height:0!important;
+  height:auto!important;
+  align-items:center!important;
+}
+#home .home-order-detail .order-payment-center-info{min-width:0!important;align-self:center!important}
+#home .home-order-detail .order-payment-center-actions{min-width:0!important}
+#home .home-order-detail .home-order-activity{display:none!important}
+</style>
+<script id="garage-home-match-orders-final-js">
+(function(){
+  window.homeOrderDetail=function(o){
+    const v=car(o.carId,o.clientId),
+      d=Math.max(0,(+o.total||0)-(+o.paid||0)),
+      unlocked=true,
+      fullyPaid=Number(o.total||0)<=Number(o.paid||0),
+      issued=o.status==='done',
+      rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    return `<div class="${rowClass} home-order-detail order-payment-center-row" data-order-id="${o.id}">
+      <div class="order-payment-center-info">
+        <b>№${o.id} · ${o.part||'Без названия'}</b>
+        <small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small>
+      </div>
+      <div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div>
+      <div class="order-payment-center-actions">
+        ${status(o.status)}
+        ${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплатить</button>`:''}
+        <button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button>
+        <button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button>
+        <button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>
+        ${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}
+      </div>
+    </div>`;
+  };
+  try{ if(typeof render==='function') render(); }catch(e){ console.warn('garage home match orders repaint',e); }
+})();
+</script>
