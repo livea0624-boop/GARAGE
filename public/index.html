@@ -4078,6 +4078,27 @@ function showClient(id){
     if(typeof renderGlobalSearch==='function') renderGlobalSearch();
   }
 }
+function filterClientHistory(){
+  const list=document.getElementById('clientHistoryList');
+  if(!list||currentClientProfileId===null)return;
+  const q=(document.getElementById('clientHistorySearch')?.value||'').toLowerCase().trim();
+  const orders=data.orders.filter(o=>o.clientId===currentClientProfileId);
+  const filtered=orders.filter(o=>{
+    if(!q)return true;
+    const vals=[
+      o.id,
+      o.part,
+      o.partNumber,
+      o.code,
+      o.date,
+      o.issueDate,
+      o.issuedAt
+    ].map(v=>(v??'').toString().toLowerCase());
+    return vals.some(v=>v.includes(q));
+  });
+  list.innerHTML=filtered.map(o=>clientClosedOrderView(o)).join('') || '<div class="empty">По вашему запросу заказы не найдены</div>';
+}
+
 function deleteClient(id){
   let c=client(id);
   if(!c)return;
@@ -4097,7 +4118,34 @@ function saveCarToClient(cid){let c=client(cid);if(!c)return;if(!ncBrand.value.t
 function deleteCar(cid,vid){let c=client(cid);if(!c)return;let v=c.cars.find(x=>x.id==vid);if(!v)return;if(!confirm('Удалить этот автомобиль?'))return;if(!confirm('Подтвердите удаление автомобиля ещё раз. Данные автомобиля будут удалены из карточки клиента.'))return;c.cars=c.cars.filter(x=>x.id!=vid);save();showClient(cid);toast('Автомобиль удалён')}
 function editCar(cid,vid){let c=client(cid),v=car(vid,cid);if(!c||!v)return;openModal('Редактирование автомобиля',`<div class="form"><label>Марка<div><input id="eCarBrand" value="${v.brand||''}"></div></label><label>Модель<div><input id="eCarModel" value="${v.model||''}"></div></label><label>Госномер<div><input id="eCarPlate" value="${v.plate||''}"></div></label><label>Год<div><input id="eCarYear" type="number" value="${v.year||''}"></div></label><label class="full">WIN номера<div><input id="eCarVin" value="${v.vin||v.win||''}"></div></label></div><div class="formfoot"><button class="smallbtn" onclick="showCar(${cid},${vid})">Отмена</button><button class="smallbtn primary" onclick="saveCarEdit(${cid},${vid})">Сохранить</button></div>`)}
 function saveCarEdit(cid,vid){let c=client(cid),v=car(vid,cid);if(!c||!v)return;let brand=eCarBrand.value.trim(),model=eCarModel.value.trim(),plate=eCarPlate.value.trim(),year=eCarYear.value.trim(),vin=eCarVin.value.trim();if(!brand||!model)return toast('Укажите марку и модель');v.brand=brand;v.model=model;v.plate=plate;v.year=year;v.vin=vin;delete v.win;save();showClient(cid);toast('Данные автомобиля сохранены')}
-function showCar(cid,vid){currentCarHistoryState={cid,vid};let c=client(cid),v=car(vid,cid);let body=`<p><b>${v.plate}</b> · ${v.year||'год не указан'}<br><span style="color:#718096">${c.name} · ${c.phone}</span></p><h3>Закрытые заказы</h3>${data.orders.filter(o=>o.clientId===cid&&o.carId===vid).map(o=>{let fresh=data.orders.find(x=>x.id===o.id)||o;return `<div class="history-order-card" data-history-order-id="${fresh.id}">${miniOrderHistory(fresh)}</div>`}).join('')||'<p>Заказов по этой машине нет.</p>'}`;let modal=document.getElementById('modal'),modalBody=document.getElementById('modalBody'),modalTitle=document.getElementById('modalTitle');if(modal&&modal.classList.contains('show')&&modalBody){if(modalTitle)modalTitle.textContent=`${v.brand} ${v.model}`;modalBody.innerHTML=body;}else{openModal(`${v.brand} ${v.model}`,body)}}
+function renderCarHistoryBody(cid,vid,query=''){
+  let c=client(cid),v=car(vid,cid);
+  if(!c||!v)return '<p>Автомобиль не найден.</p>';
+  let q=String(query||'').toLowerCase().trim();
+  let orders=(data.orders||[]).filter(o=>o.clientId===cid&&o.carId===vid);
+  if(q){
+    orders=orders.filter(o=>{
+      let vals=[o.id,o.part,o.partNumber,o.code,o.date,o.issueDate,o.issuedAt,o.total,o.paid,c?.name,c?.phone,v?.brand,v?.model,v?.plate,v?.vin,v?.win]
+        .map(x=>(x??'').toString().toLowerCase());
+      return vals.some(x=>x.includes(q));
+    });
+  }
+  let list=orders.map(o=>{let fresh=data.orders.find(x=>x.id===o.id)||o;return `<div class="history-order-card" data-history-order-id="${fresh.id}">${miniOrderHistory(fresh)}</div>`}).join('');
+  return `<p><b>${v.plate||'Без госномера'}</b> · ${v.year||'год не указан'}<br><span style="color:#718096">${c.name} · ${c.phone}</span></p><h3>Закрытые заказы</h3><div class="history-search-wrap car-history-search">🔎 <input id="carHistorySearch" value="${String(query||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" placeholder="Поиск по детали, номеру, коду или дате заказа" onclick="event.stopPropagation()" oninput="filterCarHistory()"></div><div id="carHistoryList" class="history-list">${list||`<div class="empty">${q?'По вашему запросу заказы не найдены':'Заказов по этой машине нет.'}</div>`}</div>`;
+}
+function filterCarHistory(){
+  if(!window.currentCarHistoryState)return;
+  let q=document.getElementById('carHistorySearch')?.value||'';
+  let list=document.getElementById('carHistoryList');
+  if(!list)return;
+  let c=client(currentCarHistoryState.cid),v=car(currentCarHistoryState.vid,currentCarHistoryState.cid);
+  if(!c||!v)return;
+  let orders=(data.orders||[]).filter(o=>o.clientId===currentCarHistoryState.cid&&o.carId===currentCarHistoryState.vid);
+  let qq=q.toLowerCase().trim();
+  if(qq)orders=orders.filter(o=>[o.id,o.part,o.partNumber,o.code,o.date,o.issueDate,o.issuedAt,o.total,o.paid,c?.name,c?.phone,v?.brand,v?.model,v?.plate,v?.vin,v?.win].map(x=>(x??'').toString().toLowerCase()).some(x=>x.includes(qq)));
+  list.innerHTML=orders.map(o=>{let fresh=data.orders.find(x=>x.id===o.id)||o;return `<div class="history-order-card" data-history-order-id="${fresh.id}">${miniOrderHistory(fresh)}</div>`}).join('')||`<div class="empty">${qq?'По вашему запросу заказы не найдены':'Заказов по этой машине нет.'}</div>`;
+}
+function showCar(cid,vid){let oldSearch=document.getElementById('carHistorySearch')?.value||'';currentCarHistoryState={cid,vid};let c=client(cid),v=car(vid,cid);if(!c||!v)return;let body=renderCarHistoryBody(cid,vid,oldSearch);let modal=document.getElementById('modal'),modalBody=document.getElementById('modalBody'),modalTitle=document.getElementById('modalTitle');if(modal&&modal.classList.contains('show')&&modalBody){if(modalTitle)modalTitle.textContent=`${v.brand} ${v.model}`;modalBody.innerHTML=body;}else{openModal(`${v.brand} ${v.model}`,body)}}
 
 function renderSalesTotal(){
   const el=document.getElementById('salesTotal');
