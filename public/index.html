@@ -3606,27 +3606,41 @@ function orderSearchMatch(o,q){if(!q)return true;let c=client(o.clientId),v=car(
 function confirmDeleteOrder(id,sectionKey=null){let o=data.orders.find(x=>x.id==id);if(sectionKey&&sectionLocks.has(sectionKey))return toast('Раздел заблокирован: удаление заказа запрещено');if(!o||o.status!=='done')return toast('Удалить можно только после выдачи заказа');if(Number(o.total||0)>Number(o.paid||0))return toast('Сначала полностью оплатите заказ');if(!confirm(`Удалить заказ №${o.id} «${o.part}»?\n\nЗаказ будет перемещён в «Закрытые заказы».`))return;o.deleted=true;o.deletedAt=new Date().toISOString();save();toast('Заказ перемещён в историю')}
 function restoreOrder(id){let o=data.orders.find(x=>x.id==id);if(!o)return;o.deleted=false;delete o.deletedAt;save();toast('Заказ восстановлен')}
 function renderCombinedOrders(){
+ const opened=[...document.querySelectorAll('.orders-client-group[data-client-id]')].filter(g=>g.querySelector('.orders-client-details')?.style.display!=='none').map(g=>String(g.dataset.clientId));
  let q=(document.getElementById('allOrdersSearch')?.value||'').toLowerCase().trim();
  let list=activeOrders().filter(o=>orderSearchMatch(o,q));
  let groups=Object.values(list.reduce((g,o)=>{(g[o.clientId]||(g[o.clientId]=[])).push(o);return g},{}));
- document.getElementById('combinedOrdersList').innerHTML=groups.map(orderGroup).join('')||(q?'<div class="empty">По вашему запросу заказы не найдены</div>':'<div class="empty">Активных заказов нет</div>')
+ document.getElementById('combinedOrdersList').innerHTML=groups.map(orderGroup).join('')||(q?'<div class="empty">По вашему запросу заказы не найдены</div>':'<div class="empty">Активных заказов нет</div>');
+ opened.forEach(id=>{const g=document.querySelector(`.orders-client-group[data-client-id="${id}"]`);if(g){const d=g.querySelector('.orders-client-details'),ch=g.querySelector('.orders-client-chevron');if(d)d.style.display='block';if(ch)ch.textContent='⌃';}});
 }
 function restoreOrder(id){let o=data.orders.find(x=>x.id==id);if(!o)return;o.deleted=false;delete o.deletedAt;save();toast('Заказ восстановлен')}
-function renderCombinedOrders(){
- let q=(document.getElementById('allOrdersSearch')?.value||'').toLowerCase().trim();
- let list=activeOrders().filter(o=>orderSearchMatch(o,q));
- let groups=Object.values(list.reduce((g,o)=>{(g[o.clientId]||(g[o.clientId]=[])).push(o);return g},{}));
- document.getElementById('combinedOrdersList').innerHTML=groups.map(orderGroup).join('')||(q?'<div class="empty">По вашему запросу заказы не найдены</div>':'<div class="empty">Активных заказов нет</div>')
-}
 function orderGroup(orders){
- let first=orders[0],c=client(first.clientId);
- let details=orders.map(o=>orderGroupDetail(o)).join('');
- return `<div class="rowcard" style="display:block;margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #e5e7eb"><div><b style="font-size:17px">${c?.name||'—'}</b><small style="display:block;color:#718096;margin-top:3px">${c?.phone||''}</small></div><span style="font-size:12px;color:#718096">Деталей: ${orders.length}</span></div><div style="display:grid;gap:10px;margin-top:10px">${details}</div></div>`
+ const c=client(orders[0].clientId);
+ const total=orders.reduce((sum,o)=>sum+(Number(o.total)||0),0);
+ const paid=orders.reduce((sum,o)=>sum+(Number(o.paid)||0),0);
+ const debt=Math.max(0,total-paid);
+ const details=orders.map(o=>orderGroupDetail(o)).join('');
+ return `<div class="orders-client-group rowcard" data-client-id="${c?.id||orders[0].clientId}" style="display:block;padding:0;overflow:hidden;margin-bottom:12px">
+   <div class="orders-client-toggle" onclick="toggleOrdersClientGroup(this.parentElement)" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;cursor:pointer">
+     <div style="display:flex;align-items:center;gap:12px;min-width:0">
+       <div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(59,130,246,.14);color:#60a5fa;font-weight:800;flex:0 0 auto">${(c?.name||'—').slice(0,1)}</div>
+       <div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${orders.length}</small></div>
+     </div>
+     <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;flex-wrap:wrap">
+       <div style="text-align:right"><b>${total.toLocaleString('ru-RU')} ₽</b><small style="display:block;color:${debt?'#ef6b6b':'#2f8f5b'};margin-top:3px">${debt?`Долг: ${debt.toLocaleString('ru-RU')} ₽`:'Оплачено полностью'}</small></div>
+       <span class="orders-client-chevron" style="font-size:18px;color:#7aaef8">⌄</span>
+     </div>
+   </div>
+   <div class="orders-client-details" style="display:none;padding:0 12px 12px;border-top:1px solid var(--line)">
+     <div class="orders-client-list" style="display:grid;gap:9px;padding-top:2px">${details}</div>
+   </div>
+ </div>`;
 }
 function orderGroupDetail(o){
- let v=car(o.carId,o.clientId),d=Math.max(0,o.total-o.paid),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
- return `<div class="${rowClass}" style="padding:12px 14px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:#718096;margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''} · ${o.paid}/${o.total} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div></div>`
+ let v=car(o.carId,o.clientId),d=Math.max(0,(Number(o.total)||0)-(Number(o.paid)||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+ return `<div class="${rowClass}" style="padding:12px 14px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''} · ${Number(o.paid||0).toLocaleString('ru-RU')}/${Number(o.total||0).toLocaleString('ru-RU')} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div></div>`
 }
+function toggleOrdersClientGroup(el){if(!el)return;let d=el.querySelector('.orders-client-details');if(!d)return;let open=d.style.display!=='none';d.style.display=open?'none':'block';let ch=el.querySelector('.orders-client-chevron');if(ch)ch.textContent=open?'⌄':'⌃';}
 
 function homeOrderGroup(orders){
   const c=client(orders[0].clientId);
