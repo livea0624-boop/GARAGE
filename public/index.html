@@ -3324,25 +3324,6 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
   .client-cart-wrap .cart-pill{max-width:100%!important;}
 }
 </style>
-<style id="garage-orders-match-home-safe">
-/* Только визуальное оформление раздела «Заказы» — логика группировки и заказов не меняется. */
-#allorders .orders-client-group{overflow:hidden!important;border-radius:12px!important}
-#allorders .orders-client-toggle{min-height:74px!important;padding:10px 14px!important;gap:12px!important}
-#allorders .orders-client-toggle > div:first-child{gap:10px!important}
-#allorders .orders-client-toggle > div:first-child > div:first-child{width:34px!important;height:34px!important}
-#allorders .orders-client-toggle > div:first-child b{font-size:15px!important}
-#allorders .orders-client-toggle > div:first-child small{margin-top:2px!important}
-#allorders .orders-client-toggle > div:last-child{min-width:220px!important;max-width:280px!important}
-#allorders .orders-client-toggle > div:last-child > div:first-child{padding:7px 9px!important;border:1px solid var(--line)!important;border-radius:10px!important;background:var(--card)!important;min-width:210px!important;box-sizing:border-box}
-#allorders .orders-client-toggle > div:last-child > div:first-child b{font-size:13px!important}
-#allorders .orders-client-toggle > div:last-child > div:first-child small{display:block!important;margin-top:3px!important}
-#allorders .orders-client-chevron{font-size:16px!important;line-height:16px!important}
-@media(max-width:760px){
-  #allorders .orders-client-toggle{padding:10px 12px!important;min-height:0!important;flex-wrap:wrap!important}
-  #allorders .orders-client-toggle > div:last-child{min-width:0!important;max-width:100%!important;width:100%!important}
-  #allorders .orders-client-toggle > div:last-child > div:first-child{min-width:0!important;width:100%!important}
-}
-</style>
 </head>
 <body>
 <div class="app">
@@ -5462,6 +5443,83 @@ async function garageCloudFinishAuth(password,created){
   };
 })();
 </script>
+
+<style id="home-client-card-compact-final">
+/* Только карточка клиента на Главной: убираем лишнюю высоту, не меняя логику. */
+#home .home-order-group{
+  margin-bottom:8px!important;
+}
+#home .home-order-toggle{
+  min-height:0!important;
+  padding:8px 12px!important;
+  gap:10px!important;
+}
+#home .home-order-toggle > div:first-child{
+  gap:9px!important;
+}
+#home .home-order-toggle > div:first-child > div:first-child{
+  width:32px!important;
+  height:32px!important;
+}
+#home .home-order-toggle > div:first-child b{
+  font-size:14px!important;
+}
+#home .home-order-toggle > div:first-child small{
+  margin-top:1px!important;
+  font-size:11px!important;
+}
+#home .home-order-toggle > div:last-child{
+  min-width:220px!important;
+  max-width:260px!important;
+}
+#home .home-order-toggle .order-payment-summary,
+#home .home-order-toggle .order-payment-summary.compact{
+  width:220px!important;
+  min-width:220px!important;
+  max-width:220px!important;
+  height:88px!important;
+  min-height:88px!important;
+  max-height:88px!important;
+  margin-top:0!important;
+  padding:7px 9px!important;
+  border-radius:9px!important;
+  font-size:10px!important;
+  line-height:1.1!important;
+}
+#home .home-order-toggle .order-payment-head{
+  height:18px!important;
+  min-height:18px!important;
+  padding-bottom:4px!important;
+  margin-bottom:4px!important;
+  gap:6px!important;
+}
+#home .home-order-toggle .order-payment-head b{font-size:12px!important}
+#home .home-order-toggle .order-payment-grid{
+  grid-template-rows:14px 14px 21px!important;
+  gap:2px 7px!important;
+}
+#home .home-order-toggle .order-payment-grid b{font-size:10px!important}
+#home .home-order-toggle .order-payment-summary .payment-state{
+  height:21px!important;
+  margin-top:0!important;
+  padding-top:4px!important;
+  font-size:9px!important;
+}
+#home .home-order-toggle .home-order-chevron{
+  margin-top:2px!important;
+  font-size:15px!important;
+}
+@media(max-width:760px){
+  #home .home-order-toggle{padding:10px!important}
+  #home .home-order-toggle > div:last-child,
+  #home .home-order-toggle .order-payment-summary,
+  #home .home-order-toggle .order-payment-summary.compact{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+}
+</style>
 </html>
 <script>
 document.getElementById('salesDate')?.addEventListener('change', renderSalesTotal);
@@ -5750,6 +5808,7 @@ body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:
       <div class="order-payment-head"><span>💰 Сумма заказа</span><b>${money(total)}</b></div>
       <div class="order-payment-grid">
         <span>Оплачено</span><b class="order-payment-paid">${money(Math.min(paid,total))}</b>
+        <span>Осталось</span><b class="order-payment-debt">${money(debt)}</b>
         <div class="payment-state ${full?'order-payment-full':'order-payment-debt'}">${full?'✓ Заказ оплачен полностью':'⚠ Остаток к оплате: '+money(debt)}</div>
       </div>
     </div>`;
@@ -5827,9 +5886,9 @@ body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:
   width:246px;
   min-width:246px;
   max-width:246px;
-  height:96px;
-  min-height:96px;
-  max-height:96px;
+  height:116px;
+  min-height:116px;
+  max-height:116px;
   margin-top:8px;
   padding:9px 11px;
   border-radius:10px;
@@ -5857,7 +5916,7 @@ body.light-theme .order-payment-paid,body.light-theme .order-payment-full{color:
 }
 .order-payment-grid{
   grid-template-columns:minmax(0,1fr) auto;
-  grid-template-rows:16px 27px;
+  grid-template-rows:16px 16px 27px;
   gap:3px 10px;
 }
 .order-payment-grid b{
