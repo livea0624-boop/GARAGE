@@ -3324,6 +3324,10 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
   .client-cart-wrap .cart-pill{max-width:100%!important;}
 }
 </style>
+
+<style id="history-go-order-highlight">
+.order-history-target{box-shadow:0 0 0 2px rgba(37,99,235,.55),0 8px 24px rgba(37,99,235,.16)!important;transition:box-shadow .2s ease}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3638,9 +3642,40 @@ function orderGroup(orders){
 }
 function orderGroupDetail(o){
  let v=car(o.carId,o.clientId),d=Math.max(0,(Number(o.total)||0)-(Number(o.paid)||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
- return `<div class="${rowClass}" style="padding:12px 14px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''} · ${Number(o.paid||0).toLocaleString('ru-RU')}/${Number(o.total||0).toLocaleString('ru-RU')} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div></div>`
+ return `<div class="${rowClass}" data-order-id="${o.id}" style="padding:12px 14px;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''} · ${Number(o.paid||0).toLocaleString('ru-RU')}/${Number(o.total||0).toLocaleString('ru-RU')} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div></div>`
 }
 function toggleOrdersClientGroup(el){if(!el)return;let d=el.querySelector('.orders-client-details');if(!d)return;let open=d.style.display!=='none';d.style.display=open?'none':'block';let ch=el.querySelector('.orders-client-chevron');if(ch)ch.textContent=open?'⌄':'⌃';}
+function goToOrderFromHistory(orderId){
+  const o=data.orders.find(x=>x.id==orderId);
+  if(!o)return toast('Заказ не найден');
+  if(o.deleted)return toast('Этот заказ уже закрыт');
+  document.querySelectorAll('.nav button[data-page]').forEach(b=>b.classList.remove('active'));
+  const nav=document.querySelector('.nav button[data-page="allorders"]');
+  if(nav)nav.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('allorders');
+  if(page)page.classList.add('active');
+  document.body.classList.remove('settings-open');
+  const search=document.getElementById('allOrdersSearch');
+  if(search)search.value='';
+  renderCombinedOrders();
+  setTimeout(()=>{
+    const group=document.querySelector(`.orders-client-group[data-client-id="${o.clientId}"]`);
+    if(!group)return toast('Группа клиента не найдена');
+    const details=group.querySelector('.orders-client-details');
+    const chevron=group.querySelector('.orders-client-chevron');
+    if(details)details.style.display='block';
+    if(chevron)chevron.textContent='⌃';
+    const target=group.querySelector(`[data-order-id="${o.id}"]`);
+    if(target){
+      target.classList.add('order-history-target');
+      target.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(()=>target.classList.remove('order-history-target'),2200);
+    }else{
+      group.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  },50);
+}
 
 function homeOrderGroup(orders){
   const c=client(orders[0].clientId);
@@ -3764,6 +3799,7 @@ function notificationGroup(orders){
 
 function clientClosedOrderView(o){
  let c=client(o.clientId),v=car(o.carId,o.clientId);
+ let goButton=(!o.deleted&&o.status!=='done')?`<button class="smallbtn primary" onclick="goToOrderFromHistory(${o.id})">📦 Перейти к заказу</button>`:'';
  return `<div class="rowcard order-issued-green">
  <div>
   <b>№${o.id} · ${o.part||'—'}</b>
@@ -3771,6 +3807,7 @@ function clientClosedOrderView(o){
  </div>
  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
   ${status(o.status)}
+  ${goButton}
   ${v?`<button class="smallbtn primary" onclick="openClientClosedOrderDetails(${o.id})">Список заказов на этот автомобиль</button>`:''}
  </div>
  </div>`;
@@ -3782,7 +3819,7 @@ function openClientClosedOrderDetails(id){
  showCar(o.clientId,o.carId);
 }
 
-function miniOrderHistory(o){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}</div></div>`}
+function miniOrderHistory(o){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red'),goButton=(!o.deleted&&o.status!=='done')?`<button class="smallbtn primary" onclick="goToOrderFromHistory(${o.id})">📦 Перейти к заказу</button>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${goButton}</div></div>`}
 function miniOrder(o,sectionKey=null){let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';return `<div class="rowcard ${rowClass}"><div><b>№${o.id} · ${o.part}</b><small>Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''} · ${o.paid}/${o.total} ₽</small>${eta}${d?`<small class="dark-unpaid" style="display:block;margin-top:5px;color:#c2410c;font-weight:800">💳 Не оплачено: ${d.toLocaleString('ru-RU')} ₽</small>`:`<small class="dark-paid" style="display:block;margin-top:5px;color:#2f8f5b;font-weight:700">✓ Оплачено полностью</small>`}</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплачено</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div></div>`}
 function syncEditedPayRemaining(){let input=document.getElementById('orderPayRemaining');let final=document.getElementById('orderPayAfterDiscount');if(!input||!final)return;let v=Math.max(0,Number(String(input.value||0).replace(',','.'))||0);final.textContent=v.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent='';}
 function refreshFullPayModal(){let id=window._payFullOrderId,o=data.orders.find(x=>x.id===id);if(!o)return;let base=Number(o.baseTotal??o.total??0)||0;let method=document.getElementById('orderPayMethod')?.value||'cash';let canDiscount=!Number(o.discount||0)&&!Number(o.personalDiscount||0);let pctInput=document.getElementById('orderPayDiscount');let personalInput=document.getElementById('orderPayPersonalDiscount');let pct=canDiscount?Math.min(100,Math.max(0,Number(pctInput?.value||0))):0;if(method==='card')pct=0;let percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):Number(o.total||0);let personal=Math.max(0,Math.min(percentTotal,Number(personalInput?.value||0)));let newTotal=Math.max(0,percentTotal-personal);let remaining=Math.max(0,newTotal-(Number(o.paid)||0));let discAmt=Math.max(0,(Number(o.total)||0)-newTotal);if(pctInput){pctInput.disabled=!canDiscount||method==='card';if(method==='card')pctInput.value='';}if(personalInput){personalInput.disabled=false;personalInput.removeAttribute('disabled');}let t=document.getElementById('orderPayRemaining');if(t&&document.activeElement!==t)t.value=remaining.toFixed(2);let final=document.getElementById('orderPayAfterDiscount');if(final)final.textContent=remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';let da=document.getElementById('orderPayDiscountAmount');if(da)da.textContent=discAmt>0?('Всего скидка: '+discAmt.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'):'';let info=document.getElementById('orderPayDiscountInfo');if(info){if(canDiscount)info.textContent=method==='card'?'Для оплаты картой процентная скидка отключена.':'Можно применить скидку и персональную скидку для округления.';else{let oldPct=Number(o.discount||0);let oldBase=Number((o.baseTotal??o.total)??0)||0;let oldAmount=oldBase*oldPct/100;info.textContent='Скидка по этому заказу уже была применена: '+oldPct.toLocaleString('ru-RU',{maximumFractionDigits:2})+'% (−'+oldAmount.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽) из '+oldBase.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽.'}}}
@@ -5568,6 +5605,91 @@ async function garageCloudFinishAuth(password,created){
   }
 }
 </style>
+
+
+<style id="garage-order-payment-center-layout">
+/* Компактный горизонтальный список заказов: информация слева, оплата по центру, действия справа. */
+.order-list-row{
+  display:grid!important;
+  grid-template-columns:minmax(260px,1fr) 246px auto!important;
+  align-items:center!important;
+  gap:14px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding:10px 12px!important;
+}
+.order-list-row .order-list-info,
+.order-list-row .order-list-payment,
+.order-list-row .order-list-actions{
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.order-list-row .order-list-info{align-self:center}
+.order-list-row .order-list-payment{display:flex;align-items:center;justify-content:center}
+.order-list-row .order-list-payment .order-payment-summary,
+.order-list-row .order-list-payment .order-payment-summary.compact{
+  margin:0!important;
+}
+.order-list-row .order-list-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+}
+.order-list-row .order-list-actions .status{flex:0 0 auto}
+@media(max-width:1050px){
+  .order-list-row{grid-template-columns:minmax(220px,1fr) 220px auto!important;gap:10px!important}
+  .order-list-row .order-list-payment .order-payment-summary,
+  .order-list-row .order-list-payment .order-payment-summary.compact{width:220px!important;min-width:220px!important;max-width:220px!important}
+}
+@media(max-width:760px){
+  .order-list-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important;padding:10px!important}
+  .order-list-row .order-list-payment{justify-content:stretch!important}
+  .order-list-row .order-list-payment .order-payment-summary,
+  .order-list-row .order-list-payment .order-payment-summary.compact{width:100%!important;min-width:0!important;max-width:100%!important}
+  .order-list-row .order-list-actions{justify-content:flex-start!important;width:100%!important}
+}
+</style>
+<script id="garage-order-payment-center-layout-js">
+(function(){
+  if(typeof garagePaymentSummary!=='function')return;
+  window.miniOrder=function(o,sectionKey=null){
+    let c=client(o.clientId),v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=Number(o.total||0)<=Number(o.paid||0),issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    let eta=(sectionKey==='waiting'&&o.date)?`<small class="dark-eta" style="display:block;margin-top:4px">📅 Примерная дата поступления: ${new Date(o.date+'T00:00:00').toLocaleDateString('ru-RU')}</small>`:'';
+    return `<div class="rowcard ${rowClass} order-list-row">
+      <div class="order-list-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block">Код: ${o.partNumber||o.code||'—'} · ${c?.name||''} · ${v?.brand||''} ${v?.model||''}</small>${eta}</div>
+      <div class="order-list-payment">${garagePaymentSummary(o,true)}</div>
+      <div class="order-list-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала откройте замочек\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="confirmDeleteOrder(${o.id})"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div>
+    </div>`;
+  };
+
+  window.orderGroupDetail=function(o){
+    let v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),unlocked=true,fullyPaid=d<=0,issued=o.status==='done',rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    return `<div class="${rowClass} order-list-row" data-order-id="${o.id}">
+      <div class="order-list-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:3px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div>
+      <div class="order-list-payment">${garagePaymentSummary(o,true)}</div>
+      <div class="order-list-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="event.stopPropagation();payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn btn-edit-debt" onclick="event.stopPropagation();openDebt(data.orders.find(x=>x.id===${o.id}))">💰 Изменить долг</button><button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="event.stopPropagation();${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:'toast(\'Сначала разрешите изменение статуса\')'}">← Назад</button>${issued?`<button class="smallbtn" ${fullyPaid?`onclick="event.stopPropagation();confirmDeleteOrder(${o.id},'allorders')"`:`disabled title="Сначала полностью оплатите заказ" style="opacity:.45;cursor:not-allowed"`}>🗑 Удалить</button>`:''}</div>
+    </div>`;
+  };
+
+  window.homeOrderDetail=function(o){
+    const v=car(o.carId,o.clientId),debt=Math.max(0,(+o.total||0)-(+o.paid||0)),issued=o.status==='done',issueRaw=o.issuedAt||o.issueDate,issueDate=issueRaw?new Date(issueRaw+'T00:00:00').toLocaleDateString('ru-RU'):'—',fullyPaid=debt<=0,rowClass=issued?'order-issued-green':(fullyPaid?'order-paid-orange':'order-debt-red');
+    const activity=[];
+    if(o.orderedBy)activity.push(`<span class="seller-action-item">🛒 Заказал ${sellerBadge(o.orderedBy)}</span>`);
+    if(o.receivedBy)activity.push(`<span class="seller-action-item">📦 Принял ${sellerBadge(o.receivedBy)}</span>`);
+    if(o.notifiedBy)activity.push(`<span class="seller-action-item">🔔 Оповестил ${sellerBadge(o.notifiedBy)}</span>`);
+    if(o.issuedBy)activity.push(`<span class="seller-action-item">✅ Выдал ${sellerBadge(o.issuedBy)}</span>`);
+    return `<div class="home-order-detail ${rowClass} order-list-row" style="margin-top:9px;border-radius:11px">
+      <div class="order-list-info"><b>№${o.id} · ${o.part||'Без названия'}</b><small style="display:block;color:var(--muted);margin-top:4px">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div>
+      <div class="order-list-payment">${garagePaymentSummary(o,true)}</div>
+      <div class="order-list-actions">${status(o.status)}${issued?`<span class="home-issued-date" style="font-size:12px;color:var(--muted)">Выдан: ${issueDate}</span>`:''}${debt?`<button class="smallbtn primary" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">Далее →</button><button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>${issued?`<button class="smallbtn" onclick="showIssuedOrder(${o.id})">👁</button>`:''}${issued&&fullyPaid?`<button class="smallbtn" onclick="confirmDeleteOrder(${o.id})">🗑</button>`:''}</div>
+      ${activity.length?`<div class="home-order-activity" style="grid-column:1/-1">${activity.join('')}</div>`:''}
+    </div>`;
+  };
+  try{if(typeof render==='function')render()}catch(e){console.warn('order payment layout repaint',e)}
+})();
+</script>
 </html>
 <script>
 document.getElementById('salesDate')?.addEventListener('change', renderSalesTotal);
