@@ -3328,6 +3328,9 @@ body:not(.light-theme) .garage-password-notice{border-color:#2e7650;background:#
 <style id="history-go-order-highlight">
 .order-history-target{box-shadow:0 0 0 2px rgba(37,99,235,.55),0 8px 24px rgba(37,99,235,.16)!important;transition:box-shadow .2s ease}
 </style>
+<style id="orders-client-readiness-style">
+.orders-client-ready{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:5px 12px;border-radius:9px;font-size:12px;font-weight:800;white-space:nowrap;box-sizing:border-box}.orders-client-ready.pending{color:#b96b2c;background:#fff1e5;border:1px solid #f1c59f}.orders-client-ready.ready{color:#2f8f5b;background:#eaf8f0;border:1px solid #b8dfc8}body:not(.light-theme) .orders-client-ready.pending{color:#f0b37e;background:rgba(194,116,65,.16);border-color:rgba(213,151,108,.35)}body:not(.light-theme) .orders-client-ready.ready{color:#8ed0a8;background:rgba(68,150,124,.16);border-color:rgba(110,191,163,.30)}@media(max-width:760px){.orders-client-ready{order:2}.orders-client-toggle>div:last-child{gap:8px}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3629,14 +3632,21 @@ function orderGroup(orders){
  const total=orders.reduce((sum,o)=>sum+(Number(o.total)||0),0);
  const paid=orders.reduce((sum,o)=>sum+(Number(o.paid)||0),0);
  const debt=Math.max(0,total-paid);
+ const clientOrders=(data.orders||[]).filter(o=>!o.deleted&&String(o.clientId)===String(orders[0].clientId));
+ const readyCount=clientOrders.filter(o=>o.status==='done').length;
+ const allReady=clientOrders.length>0&&readyCount===clientOrders.length;
+ const readiness=allReady
+   ? `<span class="orders-client-ready ready">✓ Готов к выдаче</span>`
+   : `<span class="orders-client-ready pending">Не готово — ${readyCount} из ${clientOrders.length}</span>`;
  const details=orders.map(o=>orderGroupDetail(o)).join('');
  return `<div class="orders-client-group rowcard" data-client-id="${c?.id||orders[0].clientId}" style="display:block;padding:0;overflow:hidden;margin-bottom:12px">
    <div class="orders-client-toggle" onclick="toggleOrdersClientGroup(this.parentElement)" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;cursor:pointer">
      <div style="display:flex;align-items:center;gap:12px;min-width:0">
        <div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(59,130,246,.14);color:#60a5fa;font-weight:800;flex:0 0 auto">${(c?.name||'—').slice(0,1)}</div>
-       <div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${orders.length}</small></div>
+       <div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${clientOrders.length}</small></div>
      </div>
      <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;flex-wrap:wrap">
+       ${readiness}
        <div style="text-align:right"><b>${total.toLocaleString('ru-RU')} ₽</b><small style="display:block;color:${debt?'#ef6b6b':'#2f8f5b'};margin-top:3px">${debt?`Долг: ${debt.toLocaleString('ru-RU')} ₽`:'Оплачено полностью'}</small></div>
        <span class="orders-client-chevron" style="font-size:18px;color:#7aaef8">⌄</span>
      </div>
