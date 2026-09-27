@@ -3824,22 +3824,36 @@ function notifyClient(clientId){
   if(document.getElementById('clientProfile')?.classList.contains('active')&&currentClientProfileId!==null)showClient(currentClientProfileId);
   toast('Клиент оповещён');
 }
+function notifyClientAll(clientId){
+  const orders=activeOrders().filter(o=>String(o.clientId)===String(clientId)&&o.status!=='done');
+  if(!orders.length)return toast('Нет активных заказов клиента');
+  orders.forEach(o=>nextStatus(o));
+}
+function toggleNotificationOrders(clientId){
+  const box=document.getElementById('notify-orders-'+clientId);
+  const chevron=document.getElementById('notify-chevron-'+clientId);
+  if(!box)return;
+  const opened=box.style.display!=='none';
+  box.style.display=opened?'none':'block';
+  if(chevron)chevron.textContent=opened?'⌄':'⌃';
+}
 function notificationGroup(orders){
   const c=client(orders[0].clientId);
-  const pending=orders.filter(o=>o.status==='notify').length;
+  const pending=orders.filter(o=>o.status!=='done').length;
+  const clientId=orders[0].clientId;
   const items=orders.map(o=>{
     const v=car(o.carId,o.clientId), d=Math.max(0,(+o.total||0)-(+o.paid||0));
-    const notifyColor=o.status==='pick'?'order-issued-green':(d>0?'order-debt-red':((+o.total||0)>0&&(+o.paid||0)>= (+o.total||0)?'order-paid-orange':''));
+    const notifyColor=o.status==='done'?'order-issued-green':(d>0?'order-debt-red':((+o.total||0)>0&&(+o.paid||0)>= (+o.total||0)?'order-paid-orange':''));
     return `<div class="notify-detail ${notifyColor}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-top:7px;flex-wrap:wrap">
       <div style="flex:1;min-width:220px"><b>№${o.id} · ${o.part||'—'}</b><small style="display:block">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''}${d?' · долг '+d+' ₽':' · оплачено полностью'}</small></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         ${status(o.status)}
-        ${o.status==='notify'?`<button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">📢 Оповестить</button>`:''}
-        <button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>
+        ${o.status!=='done'?`<button class="smallbtn primary" onclick="event.stopPropagation();nextStatus(data.orders.find(x=>x.id===${o.id}))">Далее →</button>`:''}
+        <button class="smallbtn" onclick="event.stopPropagation();prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>
       </div>
     </div>`;
   }).join('');
-  return `<div class="rowcard"><div style="width:100%"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small></div><button class="smallbtn primary" onclick="notifyClient(${orders[0].clientId})">📢 Оповестить клиента${pending>1?` (${pending})`:''}</button></div><div style="margin-top:8px;font-size:12px;color:var(--muted)">Все заказы клиента поступили. Можно оповестить клиента.</div><div class="notify-orders" style="margin-top:4px">${items}</div></div></div>`;
+  return `<div class="rowcard" onclick="toggleNotificationOrders(${clientId})" style="cursor:pointer"><div style="width:100%"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button class="smallbtn primary" onclick="event.stopPropagation();notifyClientAll(${clientId})">📢 Оповестить все сразу${pending>1?` (${pending})`:''}</button><span id="notify-chevron-${clientId}" style="font-size:20px;line-height:1;color:var(--muted);min-width:24px;text-align:center">⌄</span></div></div><div style="margin-top:8px;font-size:12px;color:var(--muted)">Нажмите на карточку клиента, чтобы увидеть все его запчасти и заказы.</div><div id="notify-orders-${clientId}" class="notify-orders" style="display:none;margin-top:4px">${items}</div></div></div>`;
 }
 
 function clientClosedOrderView(o){
