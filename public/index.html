@@ -3777,10 +3777,10 @@ function render(){
  if(!data.expenses)data.expenses=[];
  document.getElementById('statClients').textContent=data.clients.length;
  document.getElementById('statOrders').textContent=active.length;
-  document.getElementById('statNotify').textContent=active.filter(o=>o.status==='notify').length;
+  document.getElementById('statNotify').textContent=pendingNotificationClients().length;
  let debt=active.reduce((s,o)=>s+Math.max(0,o.total-o.paid),0);document.getElementById('statDebt').textContent=debt+' ₽';
  document.getElementById('navWait').textContent=active.filter(o=>o.status==='wait').length||'';
- document.getElementById('navNotify').textContent=active.filter(o=>o.status==='notify').length||'';
+ document.getElementById('navNotify').textContent=pendingNotificationClients().length||'';
  document.getElementById('navDebt').textContent=active.filter(o=>o.total>o.paid).length||'';
  let os=active.filter(o=>currentFilter==='all'||(currentFilter==='debt'?o.total>o.paid:o.status===currentFilter));
  
@@ -3792,25 +3792,54 @@ function render(){
  let cq=(document.getElementById('carsSearch')?.value||'').toLowerCase().trim();let carsFound=data.clients.flatMap(c=>c.cars.map(v=>({c,v}))).filter(({c,v})=>{if(!cq)return true;let carName=((v.brand||'')+' '+(v.model||'')).toLowerCase(),win=(v.vin||v.win||'').toLowerCase(),name=(c.name||'').toLowerCase(),phone=(c.phone||'').toLowerCase();let plate=(v.plate||'').toLowerCase();return carName.includes(cq)||win.includes(cq)||name.includes(cq)||phone.includes(cq)||plate.includes(cq)});document.getElementById('carList').innerHTML=carsFound.map(({c,v})=>`<div class="rowcard" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center"><div><b>🚗 ${v.brand} ${v.model}</b><small>${v.plate} · ${v.year||'год не указан'} · ${c.name}</small></div><div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="smallbtn" onclick="showCar(${c.id},${v.id})">История</button><button class="smallbtn primary" onclick="openClientCartFromCar(${c.id},${v.id})">🛒 Заказать</button></div></div>`).join('')||(cq?'<div class="empty">По вашему запросу автомобили не найдены</div>':'<div class="empty">Нет автомобилей</div>');
  let oq=(document.getElementById('ordersSearch')?.value||'').toLowerCase().trim();let allOrders=active.filter(o=>Number(o.total||0)<=Number(o.paid||0)).filter(o=>orderSearchMatch(o,oq));document.getElementById('allOrders').innerHTML=allOrders.map(o=>miniOrder(o,'orders')).join('')||(oq?'<div class="empty">По вашему запросу оплаченные заказы не найдены</div>':'<div class="empty">Нет оплаченных заказов</div>');
  let wq=(document.getElementById('waitingSearch')?.value||'').toLowerCase().trim();let waiting=active.filter(o=>o.status==='wait').filter(o=>{if(!wq)return true;let c=client(o.clientId),v=car(o.carId,o.clientId),name=(c?.name||'').toLowerCase(),phone=(c?.phone||'').toLowerCase(),plate=(v?.plate||'').toLowerCase(),win=(v?.vin||v?.win||o.vin||o.win||'').toLowerCase(),part=(o.part||'').toLowerCase(),code=(o.code||'').toLowerCase();return part.includes(wq)||code.includes(wq)||name.includes(wq)||phone.includes(wq)||plate.includes(wq)||win.includes(wq)});document.getElementById('waitList').innerHTML=waiting.map(o=>miniOrder(o,'waiting')).join('')||(wq?'<div class="empty">По вашему запросу товары не найдены</div>':'<div class="empty">Нет ожидающих заказов</div>');
- let nq=(document.getElementById('notifySearch')?.value||'').toLowerCase().trim();let notifyOrders=active.filter(o=>o.status==='notify').filter(o=>{if(!nq)return true;let c=client(o.clientId),v=car(o.carId,o.clientId),name=(c?.name||'').toLowerCase(),phone=(c?.phone||'').toLowerCase(),plate=(v?.plate||'').toLowerCase(),win=(v?.vin||v?.win||o.vin||o.win||'').toLowerCase();return name.includes(nq)||phone.includes(nq)||plate.includes(nq)||win.includes(nq)||(o.part||'').toLowerCase().includes(nq)||(o.code||'').toLowerCase().includes(nq)});document.getElementById('notifyList').innerHTML=Object.values(notifyOrders.reduce((g,o)=>{(g[o.clientId]||(g[o.clientId]=[])).push(o);return g},{})).map(notificationGroup).join('')||(nq?'<div class="empty">По вашему запросу заказы не найдены</div>':'<div class="empty">Нет заказов для оповещения</div>');
+ let nq=(document.getElementById('notifySearch')?.value||'').toLowerCase().trim();
+ const eligibleNotifyClients=pendingNotificationClients().filter(group=>{
+   if(!nq)return true;
+   const c=client(group.clientId);
+   return group.orders.some(o=>{
+     const v=car(o.carId,o.clientId);
+     const vals=[c?.name,c?.phone,v?.plate,v?.vin,v?.win,o.vin,o.win,o.part,o.code,o.partNumber,o.id].map(x=>(x??'').toString().toLowerCase());
+     return vals.some(x=>x.includes(nq));
+   });
+ });
+ document.getElementById('notifyList').innerHTML=eligibleNotifyClients.map(group=>notificationGroup(group.orders)).join('')||(nq?'<div class="empty">По вашему запросу клиенты не найдены</div>':'<div class="empty">Нет клиентов, которых нужно оповестить</div>');
  let dq=(document.getElementById('debtsSearch')?.value||'').toLowerCase().trim();let debts=active.filter(o=>Number(o.total||0)>Number(o.paid||0)).filter(o=>{if(!dq)return true;let c=client(o.clientId),v=car(o.carId,o.clientId);let name=(c?.name||'').toLowerCase(),part=(o.part||'').toLowerCase(),vin=(v?.vin||v?.win||o.vin||o.win||'').toLowerCase();let phone=(c?.phone||'').toLowerCase(),plate=(v?.plate||'').toLowerCase();return name.includes(dq)||part.includes(dq)||(o.partNumber||o.code||'').toLowerCase().includes(dq)||vin.includes(dq)||phone.includes(dq)||plate.includes(dq)});document.getElementById('debtList').innerHTML=debts.map(o=>miniOrder(o,'debts')).join('')||(dq?'<div class="empty">По вашему запросу неоплаченные заказы не найдены</div>':'<div class="empty">Неоплаченных заказов нет 🎉</div>');
  renderCombinedOrders(); renderDeletedOrders(); (function(){let salesDateEl=document.getElementById('salesDate');if(salesDateEl&&!salesDateEl.value){let savedDate='';try{savedDate=localStorage.getItem('garage_last_sale_date')||''}catch(e){}salesDateEl.value=savedDate||today();}})(); renderSales();
 }
+function pendingNotificationClients(){
+  const groups={};
+  activeOrders().filter(o=>o.status!=='done').forEach(o=>{(groups[o.clientId]||(groups[o.clientId]=[])).push(o)});
+  return Object.entries(groups).map(([clientId,orders])=>({clientId:Number(clientId),orders}))
+    .filter(group=>group.orders.length>0 && group.orders.every(o=>o.status!=='wait') && group.orders.some(o=>o.status==='notify'));
+}
+function notifyClient(clientId){
+  const u=getCurrentUser();
+  const orders=activeOrders().filter(o=>String(o.clientId)===String(clientId)&&o.status==='notify');
+  if(!orders.length)return toast('Нет заказов, которые нужно оповестить');
+  orders.forEach(o=>{o.status='pick';o.notifiedBy=u;o.notifiedAt=new Date().toISOString();});
+  save();
+  renderCombinedOrders();
+  refreshOpenOrderViews();
+  refreshActiveCarHistory();
+  if(document.getElementById('clientProfile')?.classList.contains('active')&&currentClientProfileId!==null)showClient(currentClientProfileId);
+  toast('Клиент оповещён');
+}
 function notificationGroup(orders){
-  const c=client(orders[0].clientId), unlocked=true;
+  const c=client(orders[0].clientId);
+  const pending=orders.filter(o=>o.status==='notify').length;
   const items=orders.map(o=>{
     const v=car(o.carId,o.clientId), d=Math.max(0,(+o.total||0)-(+o.paid||0));
-    const notifyColor=o.status==='done'?'order-issued-green':(d>0?'order-debt-red':((+o.total||0)>0&&(+o.paid||0)>= (+o.total||0)?'order-paid-orange':''));
+    const notifyColor=o.status==='pick'?'order-issued-green':(d>0?'order-debt-red':((+o.total||0)>0&&(+o.paid||0)>= (+o.total||0)?'order-paid-orange':''));
     return `<div class="notify-detail ${notifyColor}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-top:7px;flex-wrap:wrap">
       <div style="flex:1;min-width:220px"><b>№${o.id} · ${o.part||'—'}</b><small style="display:block">Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''}${d?' · долг '+d+' ₽':' · оплачено полностью'}</small></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         ${status(o.status)}
-        <button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">Далее →</button>
-        <button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">← Назад</button>
+        ${o.status==='notify'?`<button class="smallbtn primary" onclick="nextStatus(data.orders.find(x=>x.id===${o.id}))">📢 Оповестить</button>`:''}
+        <button class="smallbtn" onclick="prevStatus(data.orders.find(x=>x.id===${o.id}))">← Назад</button>
       </div>
     </div>`;
   }).join('');
-  return `<div class="rowcard"><div style="width:100%"><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'деталь':orders.length<5?'детали':'деталей'}</small>${items}</div></div>`;
+  return `<div class="rowcard"><div style="width:100%"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small></div><button class="smallbtn primary" onclick="notifyClient(${orders[0].clientId})">📢 Оповестить клиента${pending>1?` (${pending})`:''}</button></div><div style="margin-top:8px;font-size:12px;color:var(--muted)">Все заказы клиента поступили. Можно оповестить клиента.</div><div class="notify-orders" style="margin-top:4px">${items}</div></div></div>`;
 }
 
 function clientClosedOrderView(o){
@@ -6660,5 +6689,44 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
     </div>`;
   };
   try{ if(typeof render==='function') render(); }catch(e){ console.warn('garage home match orders repaint',e); }
+})();
+</script>
+
+
+<!-- GARAGE v2.3: Главная — та же информация о готовности клиента, что и в разделе «Заказы» -->
+<script id="garage-home-readiness-match-orders">
+(function(){
+  window.homeOrderGroup=function(orders){
+    const c=client(orders[0].clientId);
+    const total=orders.reduce((sum,o)=>sum+(Number(o.total)||0),0);
+    const paid=orders.reduce((sum,o)=>sum+(Number(o.paid)||0),0);
+    const debt=Math.max(0,total-paid);
+    // Логика полностью совпадает с разделом «Заказы»:
+    // выданные заказы не участвуют в общем количестве, а «pick» = готов к выдаче.
+    const clientOrders=(data.orders||[]).filter(o=>!o.deleted&&String(o.clientId)===String(orders[0].clientId)&&o.status!=='done');
+    const readyCount=clientOrders.filter(o=>o.status==='pick').length;
+    const allReady=clientOrders.length>0&&readyCount===clientOrders.length;
+    const readiness=allReady
+      ? `<span class="orders-client-ready ready">✓ Готов к выдаче</span>`
+      : `<span class="orders-client-ready pending">Не готово — ${readyCount} из ${clientOrders.length}</span>`;
+    const details=orders.map(o=>homeOrderDetail(o)).join('');
+    return `<div class="home-order-group rowcard" data-client-id="${c?.id||orders[0].clientId}" style="display:block;padding:0;overflow:hidden;margin-bottom:12px">
+      <div class="home-order-toggle" onclick="toggleHomeOrderGroup(this.parentElement)" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(59,130,246,.14);color:#60a5fa;font-weight:800;flex:0 0 auto">${(c?.name||'—').slice(0,1)}</div>
+          <div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${clientOrders.length}</small></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;flex-wrap:wrap">
+          ${readiness}
+          <div style="text-align:right"><b>${total.toLocaleString('ru-RU')} ₽</b><small style="display:block;color:${debt?'#ef6b6b':'#2f8f5b'};margin-top:3px">${debt?`Долг: ${debt.toLocaleString('ru-RU')} ₽`:'Оплачено полностью'}</small></div>
+          <span class="home-order-chevron" style="font-size:18px;color:#7aaef8">⌄</span>
+        </div>
+      </div>
+      <div class="home-order-details" style="display:none;padding:0 12px 12px;border-top:1px solid var(--line)">
+        <div class="home-order-list">${details}</div>
+      </div>
+    </div>`;
+  };
+  try{ if(typeof render==='function') render(); }catch(e){ console.warn('garage home readiness repaint',e); }
 })();
 </script>
