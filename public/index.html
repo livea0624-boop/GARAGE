@@ -6834,9 +6834,10 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
           <div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(59,130,246,.14);color:#60a5fa;font-weight:800;flex:0 0 auto">${(c?.name||'—').slice(0,1)}</div>
           <div style="min-width:0"><b style="font-size:16px">${c?.name||'—'}</b><small style="display:block;color:var(--muted);margin-top:3px">${c?.phone||''} · Заказов: ${clientOrders.length}</small></div>
         </div>
-        <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:nowrap;min-width:0">
+          ${clientButtons(c?.id||orders[0].clientId)}
           ${readiness}
-          <div style="text-align:right"><b>${total.toLocaleString('ru-RU')} ₽</b><small style="display:block;color:${debt?'#ef6b6b':'#2f8f5b'};margin-top:3px">${debt?`Долг: ${debt.toLocaleString('ru-RU')} ₽`:'Оплачено полностью'}</small></div>
+          <div style="text-align:right;min-width:92px"><b>${total.toLocaleString('ru-RU')} ₽</b><small style="display:block;color:${debt?'#ef6b6b':'#2f8f5b'};margin-top:3px">${debt?`Долг: ${debt.toLocaleString('ru-RU')} ₽`:'Оплачено полностью'}</small></div>
           <span class="home-order-chevron" style="font-size:18px;color:#7aaef8">⌄</span>
         </div>
       </div>
