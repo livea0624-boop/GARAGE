@@ -5456,49 +5456,9 @@ async function garageCloudFinishAuth(password,created){
     const remaining=Math.max(0,finalTotal-paid);
     return {o,pct,personal,finalTotal,remaining,canDiscount};
   }
-  window.toggleBulkPayDiscountAll=function(){
-    const box=document.getElementById('bulkPayApplyDiscountAll');
-    const controls=document.getElementById('bulkPayDiscountAllControls');
-    const input=document.getElementById('bulkPayDiscountAllPct');
-    if(controls)controls.style.display=box?.checked?'flex':'none';
-    if(!box?.checked){
-      if(input)input.value='';
-      const info=document.getElementById('bulkPayDiscountAllInfo');
-      if(info)info.textContent='Процент будет выставлен во всех доступных полях «Скидка %».';
-      refreshBulkClientPay();
-      return;
-    }
-    applyBulkPayDiscountAll();
-  };
-  window.applyBulkPayDiscountAll=function(){
-    const box=document.getElementById('bulkPayApplyDiscountAll');
-    if(!box?.checked)return;
-    const method=document.getElementById('bulkClientPayMethod')?.value||'cash';
-    const input=document.getElementById('bulkPayDiscountAllPct');
-    const pct=Math.min(100,Math.max(0,Number(input?.value||0)));
-    const eligible=[...document.querySelectorAll('.bulk-pay-check')].map(ch=>data.orders.find(x=>x.id===Number(ch.value))).filter(Boolean).filter(o=>!num(o.discount)&&!num(o.personalDiscount)&&method!=='card');
-    eligible.forEach(o=>{const el=document.getElementById('bulkPayPct_'+o.id);if(el){el.value=pct?String(pct):'';}});
-    const skipped=[...document.querySelectorAll('.bulk-pay-check')].map(ch=>data.orders.find(x=>x.id===Number(ch.value))).filter(Boolean).filter(o=>num(o.discount)||num(o.personalDiscount));
-    const info=document.getElementById('bulkPayDiscountAllInfo');
-    if(info){
-      if(method==='card')info.textContent='Для оплаты картой процентная скидка отключена.';
-      else if(skipped.length)info.textContent='Часть заказов уже имеет скидку — для них процент не изменяется.';
-      else info.textContent=pct?'Процент установлен во всех доступных заказах.':'Введите процент скидки.';
-    }
-    refreshBulkClientPay();
-  };
   window.refreshBulkClientPay=function(){
     const checks=[...document.querySelectorAll('.bulk-pay-check')];
     const method=document.getElementById('bulkClientPayMethod')?.value||'cash';
-    const globalBox=document.getElementById('bulkPayApplyDiscountAll');
-    const globalInput=document.getElementById('bulkPayDiscountAllPct');
-    if(globalInput)globalInput.disabled=method==='card';
-    if(method==='card'&&globalBox?.checked){
-      globalBox.checked=false;
-      const controls=document.getElementById('bulkPayDiscountAllControls');
-      if(controls)controls.style.display='none';
-      if(globalInput)globalInput.value='';
-    }
     checks.forEach(ch=>{
       const id=Number(ch.value),o=data.orders.find(x=>x.id===id);if(!o)return;
       const pct=document.getElementById('bulkPayPct_'+id),per=document.getElementById('bulkPayPersonal_'+id);
@@ -5534,16 +5494,7 @@ async function garageCloudFinishAuth(password,created){
       ${rows}
       <div class="bulk-pay-summary"><span><b>Выбрано: <span id="bulkClientPayCount">${st.unpaid.length}</span></b></span><span>Всего к оплате <b id="bulkClientPayTotal">0,00 ₽</b></span></div>
       <div class="form" style="margin-top:12px"><label>Способ оплаты<div><select id="bulkClientPayMethod" onchange="refreshBulkClientPay()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label></div>
-      <div class="bulk-pay-discount-all" style="margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(59,130,246,.05)">
-        <label style="display:flex;align-items:center;gap:9px;font-weight:700;cursor:pointer">
-          <input id="bulkPayApplyDiscountAll" type="checkbox" onchange="toggleBulkPayDiscountAll()" style="width:18px;height:18px">
-          <span>🏷 Применить % скидки ко всем заказам</span>
-        </label>
-        <div id="bulkPayDiscountAllControls" style="display:none;margin-top:9px;align-items:center;gap:10px;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:7px;margin:0"><span style="font-size:13px;color:var(--muted)">Скидка</span><input id="bulkPayDiscountAllPct" type="number" min="0" max="100" step="0.01" value="" placeholder="Например: 5" oninput="applyBulkPayDiscountAll()" style="width:120px"></label><span id="bulkPayDiscountAllInfo" style="font-size:12px;color:var(--muted)">Процент будет выставлен во всех доступных полях «Скидка %».</span>
-        </div>
-      </div>
-      <div style="margin-top:9px;color:var(--muted);font-size:12px">У каждого выбранного заказа можно отдельно задать скидку и персональную скидку. Снятая галочка оставляет заказ неоплаченным. Общая скидка заполняет процент сразу для всех заказов, у которых скидка ещё не применялась.</div>
+      <div style="margin-top:9px;color:var(--muted);font-size:12px">У каждого выбранного заказа можно отдельно задать скидку и персональную скидку. Снятая галочка оставляет заказ неоплаченным.</div>
     </div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="completeSelectedClientPayments(${cid})">Оплатить выбранные</button></div>`);
     refreshBulkClientPay();
   };
