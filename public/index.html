@@ -3632,7 +3632,7 @@ function orderGroup(orders){
  const total=orders.reduce((sum,o)=>sum+(Number(o.total)||0),0);
  const paid=orders.reduce((sum,o)=>sum+(Number(o.paid)||0),0);
  const debt=Math.max(0,total-paid);
- const clientOrders=(data.orders||[]).filter(o=>!o.deleted&&String(o.clientId)===String(orders[0].clientId));
+ const clientOrders=(data.orders||[]).filter(o=>!o.deleted&&String(o.clientId)===String(orders[0].clientId)&&o.status!=='done');
  const readyCount=clientOrders.filter(o=>o.status==='pick').length;
  const allReady=clientOrders.length>0&&readyCount===clientOrders.length;
  const readiness=allReady
