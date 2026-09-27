@@ -191,8 +191,6 @@ body.dark .close,
   background:#243244;
   color:#f8fafc;
 }
-
-.notify-client-head{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:2px 0}.notify-client-head:hover{opacity:.9}.notify-client-chevron{font-size:20px;line-height:1;color:var(--muted);min-width:24px;text-align:center}
 </style>
 
 <style>
@@ -3826,25 +3824,8 @@ function notifyClient(clientId){
   if(document.getElementById('clientProfile')?.classList.contains('active')&&currentClientProfileId!==null)showClient(currentClientProfileId);
   toast('Клиент оповещён');
 }
-function notifyClientAll(clientId){
-  const orders=activeOrders().filter(o=>String(o.clientId)===String(clientId)&&o.status==='notify');
-  if(!orders.length)return toast('Нет заказов, которые нужно оповестить');
-  // Делаем ровно то же действие, что и кнопка «Далее →» для каждого заказа,
-  // но только для заказов, которые сейчас находятся на статусе «Не оповещён».
-  orders.forEach(o=>nextStatus(o));
-  toast('Все заказы клиента оповещены');
-}
-function toggleNotificationOrders(clientId){
-  const box=document.getElementById('notify-orders-'+clientId);
-  const chevron=document.getElementById('notify-chevron-'+clientId);
-  if(!box)return;
-  const opened=box.style.display!=='none';
-  box.style.display=opened?'none':'block';
-  if(chevron)chevron.textContent=opened?'⌄':'⌃';
-}
 function notificationGroup(orders){
   const c=client(orders[0].clientId);
-  const clientId=orders[0].clientId;
   const pending=orders.filter(o=>o.status==='notify').length;
   const items=orders.map(o=>{
     const v=car(o.carId,o.clientId), d=Math.max(0,(+o.total||0)-(+o.paid||0));
@@ -3858,22 +3839,7 @@ function notificationGroup(orders){
       </div>
     </div>`;
   }).join('');
-  return `<div class="rowcard notify-client-card">
-    <div style="width:100%">
-      <div class="notify-client-head" onclick="toggleNotificationOrders(${clientId})">
-        <div style="min-width:0;flex:1">
-          <b>☎ ${c?.name||'Без имени'}</b>
-          <small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small>
-        </div>
-        <span id="notify-chevron-${clientId}" class="notify-client-chevron">⌄</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
-        <button class="smallbtn primary" onclick="event.stopPropagation();notifyClientAll(${clientId})">📢 Оповестить все сразу${pending>1?` (${pending})`:''}</button>
-      </div>
-      <div style="margin-top:8px;font-size:12px;color:var(--muted)">Все заказы клиента поступили. Нажмите на карточку, чтобы посмотреть запчасти и подробности заказов.</div>
-      <div id="notify-orders-${clientId}" class="notify-orders" style="display:none;margin-top:4px">${items}</div>
-    </div>
-  </div>`;
+  return `<div class="rowcard"><div style="width:100%"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small></div><button class="smallbtn primary" onclick="notifyClient(${orders[0].clientId})">📢 Оповестить клиента${pending>1?` (${pending})`:''}</button></div><div style="margin-top:8px;font-size:12px;color:var(--muted)">Все заказы клиента поступили. Можно оповестить клиента.</div><div class="notify-orders" style="margin-top:4px">${items}</div></div></div>`;
 }
 
 function clientClosedOrderView(o){
