@@ -6636,16 +6636,51 @@ body.light-theme #cars .cars-search-card .cars-search:focus-within{
 
   window.notificationGroup=function(orders){
     const c=client(orders[0].clientId),unlocked=true;
+    const pending=orders.filter(o=>o.status==='notify').length;
+    const allArrived=orders.length>0 && orders.every(o=>o.status!=='wait' && o.status!=='done');
     const items=orders.map(o=>{
       const v=car(o.carId,o.clientId),d=Math.max(0,(+o.total||0)-(+o.paid||0)),fullyPaid=d<=0,issued=o.status==='done',notifyColor=issued?'order-issued-green':(d>0?'order-debt-red':(fullyPaid?'order-paid-orange':''));
-      return `<div class="notify-detail ${notifyColor} order-payment-center-row" style="margin-top:7px;border-radius:10px"><div class="order-payment-center-info"><b>№${o.id} · ${o.part||'—'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div><div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div><div class="order-payment-center-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}<button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">Далее →</button><button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">← Назад</button></div></div>`;
+      return `<div class="notify-detail ${notifyColor} order-payment-center-row" style="margin-top:7px;border-radius:10px"><div class="order-payment-center-info"><b>№${o.id} · ${o.part||'—'}</b><small>Код: ${o.partNumber||o.code||'—'} · ${v?.brand||''} ${v?.model||''} · ${v?.plate||''}</small></div><div class="order-payment-center-box">${garagePaymentSummary(o,true)}</div><div class="order-payment-center-actions">${status(o.status)}${d?`<button class="smallbtn primary btn-pay-all" onclick="payOrderFully(${o.id})">✓ Оплатить</button>`:''}${o.status==='notify'?`<button class="smallbtn primary" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`nextStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">📢 Оповестить</button>`:''}<button class="smallbtn" ${unlocked?'':'disabled style="opacity:.45;cursor:not-allowed"'} onclick="${unlocked?`prevStatus(data.orders.find(x=>x.id===${o.id}))`:`toast('Сначала откройте замочек')`}">← Назад</button></div></div>`;
     }).join('');
-    return `<div class="rowcard"><div style="width:100%"><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'деталь':orders.length<5?'детали':'деталей'}</small>${items}</div></div>`;
+    return `<div class="rowcard notification-client-card" data-client-id="${c?.id||orders[0].clientId}">
+      <div style="width:100%">
+        <div class="notification-client-head">
+          <div><b>☎ ${c?.name||'Без имени'}</b><small style="display:block">${c?.phone||'Телефон не указан'} · ${orders.length} ${orders.length===1?'заказ':orders.length<5?'заказа':'заказов'}</small></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="notification-ready-badge">${allArrived?'✓ Все заказы поступили':'⏳ Ожидание поступления'}</span>
+            ${pending?`<button class="smallbtn primary" onclick="notifyClient(${orders[0].clientId})">📢 Оповестить клиента${pending>1?` (${pending})`:''}</button>`:''}
+            <button type="button" class="smallbtn notification-toggle" onclick="toggleNotificationClient(this)">▾ Заказы</button>
+          </div>
+        </div>
+        <div class="notification-client-summary">${pending?`Можно оповестить: ${pending} из ${orders.length}`:'Все заказы клиента уже оповещены'}</div>
+        <div class="notification-client-orders" style="display:none">${items}</div>
+      </div>
+    </div>`;
+  };
+
+  window.toggleNotificationClient=function(btn){
+    const card=btn.closest('.notification-client-card');
+    const box=card?.querySelector('.notification-client-orders');
+    if(!box)return;
+    const open=box.style.display!=='none';
+    box.style.display=open?'none':'block';
+    btn.textContent=open?'▾ Заказы':'▴ Заказы';
   };
 
   try{if(typeof render==='function')render();}catch(e){console.warn('payment center final repaint',e)}
 })();
 </script>
+
+<style id="garage-notification-client-dropdown">
+.notification-client-card{padding:12px 14px!important}
+.notification-client-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notification-client-head>div:first-child{min-width:180px}
+.notification-ready-badge{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:8px;background:rgba(249,115,22,.10);border:1px solid rgba(249,115,22,.35);color:#ea580c;font-size:12px;font-weight:700}
+.notification-client-summary{margin-top:7px;font-size:12px;color:var(--muted)}
+.notification-client-orders{margin-top:8px;padding-top:2px;border-top:1px solid var(--line)}
+body.light-theme .notification-ready-badge{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+body:not(.light-theme) .notification-ready-badge{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.38);color:#fb923c}
+</style>
 
 <!-- GARAGE v2.3: Главная — карточки заказов приведены к точной компоновке раздела «Заказы» -->
 <style id="garage-home-match-orders-final">
