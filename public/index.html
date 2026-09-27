@@ -5426,7 +5426,95 @@ async function garageCloudFinishAuth(password,created){
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-</script></body>
+</script>
+<style id="garage-bulk-pay-v2-style">
+.bulk-pay-order{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:var(--card)}
+.bulk-pay-order-main{min-width:0}.bulk-pay-order-main b{display:block}.bulk-pay-order-main small{display:block;color:var(--muted);margin-top:3px}
+.bulk-pay-order-controls{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.bulk-pay-order-controls label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.bulk-pay-order-controls input{width:88px;min-height:32px;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+.bulk-pay-order-controls input:disabled{opacity:.5}.bulk-pay-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(59,130,246,.06)}
+.bulk-pay-remove{font-size:12px;color:var(--muted);white-space:nowrap}.bulk-pay-order-total{text-align:right;white-space:nowrap}.bulk-pay-order-total b{font-size:15px}.bulk-pay-order-total small{display:block;color:#c2410c;margin-top:3px}
+@media(max-width:760px){.bulk-pay-order{grid-template-columns:28px 1fr}.bulk-pay-order-total{grid-column:2;text-align:left}.bulk-pay-summary{align-items:flex-start;flex-direction:column}}
+</style>
+<script id="garage-bulk-pay-v2-js">
+(function(){
+  function num(v){return Number(String(v??0).replace(',','.'))||0}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function selectedRows(){return [...document.querySelectorAll('.bulk-pay-check:checked')].map(x=>Number(x.value)).filter(Boolean)}
+  function calcRow(id){
+    const o=data.orders.find(x=>x.id===id); if(!o)return null;
+    const pctEl=document.getElementById('bulkPayPct_'+id), personalEl=document.getElementById('bulkPayPersonal_'+id);
+    const canDiscount=!num(o.discount)&&!num(o.personalDiscount);
+    const method=document.getElementById('bulkClientPayMethod')?.value||'cash';
+    let pct=canDiscount?Math.min(100,Math.max(0,num(pctEl?.value))):0;
+    if(method==='card')pct=0;
+    const base=num(o.baseTotal??o.total);
+    const percentTotal=canDiscount?Math.max(0,base*(1-pct/100)):num(o.total);
+    const personal=Math.max(0,Math.min(percentTotal,num(personalEl?.value)));
+    const finalTotal=Math.max(0,percentTotal-personal);
+    const paid=num(o.paid);
+    const remaining=Math.max(0,finalTotal-paid);
+    return {o,pct,personal,finalTotal,remaining,canDiscount};
+  }
+  window.refreshBulkClientPay=function(){
+    const checks=[...document.querySelectorAll('.bulk-pay-check')];
+    const method=document.getElementById('bulkClientPayMethod')?.value||'cash';
+    checks.forEach(ch=>{
+      const id=Number(ch.value),o=data.orders.find(x=>x.id===id);if(!o)return;
+      const pct=document.getElementById('bulkPayPct_'+id),per=document.getElementById('bulkPayPersonal_'+id);
+      const can=!num(o.discount)&&!num(o.personalDiscount);
+      if(pct){pct.disabled=!can||method==='card';if(method==='card')pct.value='';}
+      const r=calcRow(id),el=document.getElementById('bulkPayRemaining_'+id);
+      if(el&&r)el.textContent=r.remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
+    });
+    let total=0,count=0;selectedRows().forEach(id=>{const r=calcRow(id);if(r){total+=r.remaining;count++}});
+    const t=document.getElementById('bulkClientPayTotal');if(t)t.textContent=total.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
+    const c=document.getElementById('bulkClientPayCount');if(c)c.textContent=count;
+  };
+  window.toggleAllBulkPay=function(master){document.querySelectorAll('.bulk-pay-check').forEach(x=>x.checked=master.checked);refreshBulkClientPay()};
+  window.payAllClientOrders=function(cid){
+    const c=client(cid),st=clientBulkState(cid);if(!c||!st.all.length)return toast('У клиента нет активных заказов');
+    if(!st.unpaid.length)return toast('Все заказы клиента уже оплачены');
+    const rows=st.unpaid.map(o=>{
+      const rem=Math.max(0,num(o.total)-num(o.paid)),can=!num(o.discount)&&!num(o.personalDiscount);
+      return `<div class="bulk-pay-order">
+        <input class="bulk-pay-check" type="checkbox" value="${o.id}" checked onchange="refreshBulkClientPay()" style="width:18px;height:18px;margin-top:3px">
+        <div class="bulk-pay-order-main"><b>№${o.id} · ${esc(o.part||'Без названия')}</b><small>Код: ${esc(o.partNumber||o.code||'—')} · Уже оплачено: ${num(o.paid).toLocaleString('ru-RU')} ₽</small>
+          <div class="bulk-pay-order-controls">
+            <label>Скидка % <input id="bulkPayPct_${o.id}" type="number" min="0" max="100" step="0.01" placeholder="0" ${can?'':'disabled'} oninput="refreshBulkClientPay()"></label>
+            <label>Персональная скидка ₽ <input id="bulkPayPersonal_${o.id}" type="number" min="0" step="1" placeholder="0" oninput="refreshBulkClientPay()"></label>
+            ${can?'':'<span class="bulk-pay-remove">Скидка по заказу уже применена</span>'}
+          </div>
+        </div>
+        <div class="bulk-pay-order-total"><b id="bulkPayRemaining_${o.id}">${rem.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b><small>К оплате</small></div>
+      </div>`;
+    }).join('');
+    openModal('💳 Оплата всех заказов · '+(c.name||'Клиент'),`<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px"><div><b>${esc(c.name||'Клиент')}</b><div style="color:var(--muted);font-size:13px;margin-top:3px">${esc(c.phone||'')} · Не оплачено заказов: ${st.unpaid.length}</div></div><label style="display:flex;align-items:center;gap:7px;font-size:13px"><input type="checkbox" checked onchange="toggleAllBulkPay(this)"> Выбрать все</label></div>
+      ${rows}
+      <div class="bulk-pay-summary"><span><b>Выбрано: <span id="bulkClientPayCount">${st.unpaid.length}</span></b></span><span>Всего к оплате <b id="bulkClientPayTotal">0,00 ₽</b></span></div>
+      <div class="form" style="margin-top:12px"><label>Способ оплаты<div><select id="bulkClientPayMethod" onchange="refreshBulkClientPay()"><option value="cash">💵 Наличные</option><option value="card">💳 Карта</option></select></div></label></div>
+      <div style="margin-top:9px;color:var(--muted);font-size:12px">У каждого выбранного заказа можно отдельно задать скидку и персональную скидку. Снятая галочка оставляет заказ неоплаченным.</div>
+    </div><div class="formfoot"><button class="smallbtn" onclick="closeModal()">Отмена</button><button class="smallbtn primary" onclick="completeSelectedClientPayments(${cid})">Оплатить выбранные</button></div>`);
+    refreshBulkClientPay();
+  };
+  window.completeSelectedClientPayments=function(cid){
+    const ids=selectedRows();if(!ids.length)return toast('Выберите хотя бы один заказ');
+    const method=document.getElementById('bulkClientPayMethod')?.value||'cash';
+    const drafts=ids.map(calcRow).filter(Boolean).filter(r=>r.remaining>0);
+    if(!drafts.length)return toast('Выбранные заказы уже оплачены');
+    window._bulkPayDrafts=drafts.map(r=>({id:r.o.id,method,pct:r.pct,personal:r.personal,finalTotal:r.finalTotal,remaining:r.remaining}));
+    const total=drafts.reduce((a,r)=>a+r.remaining,0);
+    openModal('Подтверждение оплаты',`<div class="payment-confirm-modal"><div class="payment-confirm-icon">?</div><div class="payment-confirm-title">Подтвердить оплату?</div><div class="payment-confirm-text">Будет проведена оплата ${drafts.length} выбранных заказов клиента.</div><div class="payment-confirm-amount"><span>К оплате</span><b>${total.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div><div style="margin-top:10px;max-height:230px;overflow:auto">${drafts.map(r=>`<div class="payment-confirm-method"><span>№${r.id} · ${esc(r.o.part||'')}</span><b>${r.remaining.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})} ₽</b></div>`).join('')}</div><div class="payment-confirm-method"><span>Способ оплаты</span><b>${method==='card'?'💳 Карта':'💵 Наличные'}</b></div><div class="payment-confirm-actions"><button class="smallbtn" onclick="window._bulkPayDrafts=null;payAllClientOrders(${cid})">Отмена</button><button class="smallbtn primary" onclick="confirmSelectedClientPayments(${cid})">Подтвердить оплату</button></div></div>`);
+  };
+  window.confirmSelectedClientPayments=function(cid){
+    const drafts=window._bulkPayDrafts||[];if(!drafts.length)return;
+    drafts.forEach(d=>{const o=data.orders.find(x=>x.id===d.id);if(!o)return;const oldPaid=num(o.paid);if(d.pct>0&&!num(o.discount)&&!num(o.personalDiscount))o.discount=d.pct;if(d.personal>0)o.personalDiscount=d.personal;o.total=Math.max(0,d.finalTotal);o.paid=o.total;o.paymentMethod=d.method;o.paidBy=getCurrentUser();o.paidAt=today();orderPaymentSync(o,oldPaid);});
+    window._bulkPayDrafts=null;closeModal();save();toast('Оплата выбранных заказов проведена');
+  };
+})();
+</script>
+</body>
 
 <!-- v70.52 main history next/prev refresh fix -->
 <script id="v7052-main-history-refresh-fix">
@@ -6246,7 +6334,7 @@ body:not(.light-theme) .notification-ready-badge{background:rgba(249,115,22,.12)
     return `<div class="client-bulk-actions" onclick="${sp}return false">
       <button type="button" ${dis(payDisabled,payDisabled?'Все заказы уже оплачены':'Оплатить все активные заказы')} onclick="${sp}payAllClientOrders(${cid})">💳 Оплата всех заказов</button>
       <button type="button" ${dis(issueDisabled,issueDisabled?'Сначала все активные заказы должны быть полностью оплачены и готовы к выдаче':'Выдать все заказы клиента')} onclick="${sp}issueAllClientOrders(${cid})">📦 Выдать все заказы клиента</button>
-      <button type="button" ${dis(deleteDisabled,deleteDisabled?'Удаление доступно после выдачи и полной оплаты всех заказов':'Удалить все заказы клиента')} onclick="${sp}confirmDeleteAllClientOrders(${cid})">🗑 Удалить все заказы клиента</button>
+      <button type="button" ${dis(deleteDisabled,deleteDisabled?'Удаление доступно после выдачи и полной оплаты всех заказов':'Удалить все заказы')} onclick="${sp}confirmDeleteAllClientOrders(${cid})">🗑 Удалить все заказы</button>
     </div>`;
   }
   function money(n){return Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'}
@@ -6286,7 +6374,7 @@ body:not(.light-theme) .notification-ready-badge{background:rgba(249,115,22,.12)
   window.confirmDeleteAllClientOrders=function(cid){
     const c=client(cid),st=clientBulkState(cid); if(!c||!st.all.length)return toast('У клиента нет активных заказов');
     if(!st.allDonePaid)return toast('Удаление доступно только после выдачи и полной оплаты всех заказов');
-    if(!confirm(`Удалить все заказы клиента «${c.name}»?\n\nБудет перемещено в «Закрытые заказы»: ${st.all.length} ${st.all.length===1?'заказ':'заказа/заказов'}.`))return;
+    if(!confirm(`Удалить все заказы «${c.name}»?\n\nБудет перемещено в «Закрытые заказы»: ${st.all.length} ${st.all.length===1?'заказ':'заказа/заказов'}.`))return;
     st.all.forEach(o=>{o.deleted=true;o.deletedAt=new Date().toISOString();});
     save();toast('Все заказы клиента перемещены в историю');
   };
