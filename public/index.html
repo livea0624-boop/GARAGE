@@ -4140,6 +4140,10 @@ function showClient(id){
   }).join('')||'<div class="empty">Автомобилей пока нет</div>';
 
   let history=data.orders.filter(o=>o.clientId===id);
+  let clientActiveOrders=activeOrders().filter(o=>String(o.clientId)===String(id));
+  let clientNotificationHtml=clientActiveOrders.length
+    ? notificationGroup(clientActiveOrders)
+    : '<div class="empty">Активных заказов для оповещения нет.</div>';
   let historyHtml=history.map(o=>clientClosedOrderView(o)).join('')||'<div class="empty">Заказов нет.</div>';
 
   openModal(c.name,`
@@ -4157,6 +4161,11 @@ function showClient(id){
     <button class="smallbtn primary new-order-profile-btn" onclick="openClientCart(${id})">🛒 Сделать новый заказ</button>
   </div>
   ${c.note?`<div class="profile-note"><b>Комментарий:</b> ${c.note}</div>`:''}
+
+  <section class="profile-section">
+    <button class="profile-section-title" onclick="toggleProfileSection(this)">📢 Оповещение клиентов (${clientActiveOrders.length}) <span>⌄</span></button>
+    <div class="profile-section-body">${clientNotificationHtml}</div>
+  </section>
 
   <section class="profile-section">
     <button class="profile-section-title" onclick="toggleProfileSection(this)">🚗 Список авто (${c.cars.length}) <span>⌄</span></button>
