@@ -94,8 +94,8 @@ async function oneTimeCleanStart(env) {
 
   if (marker) return;
 
-  // One-time migration/reset for this new cloud-only version.
-  // It removes all old Garage data and all old passwords.
+  // One-time clean start for this new cloud-only version.
+  // Existing Garage data and old passwords are removed once.
   await env.GARAGE_DB.batch([
     env.GARAGE_DB.prepare('DELETE FROM app_state'),
     env.GARAGE_DB.prepare('DELETE FROM auth_config'),
@@ -127,8 +127,13 @@ async function authorized(request, env) {
   const auth = await getAuth(env);
   if (!auth) return false;
 
-  const hash = await hashPassword(supplied, unb64(auth.salt));
-  return hash === auth.password_hash;
+  try {
+    const hash = await hashPassword(supplied, unb64(auth.salt));
+    return hash === auth.password_hash;
+  } catch (error) {
+    console.error('Password verification error:', error);
+    return false;
+  }
 }
 
 async function requireAuth(request, env) {
@@ -145,6 +150,7 @@ async function authStatus(env) {
 
 async function setupPassword(request, env) {
   let body;
+
   try {
     body = await request.json();
   } catch {
@@ -152,11 +158,13 @@ async function setupPassword(request, env) {
   }
 
   const password = String(body?.password || '');
+
   if (password.length < 6) {
     return json({ error: 'Минимум 6 символов.' }, 400);
   }
 
   const existing = await getAuth(env);
+
   if (existing) {
     return json({ error: 'Пароль уже создан.' }, 409);
   }
@@ -177,7 +185,10 @@ async function setupPassword(request, env) {
 }
 
 async function login(request, env) {
-  if (await authorized(request, env)) return json({ ok: true });
+  if (await authorized(request, env)) {
+    return json({ ok: true });
+  }
+
   return json({ error: 'Неверный пароль.' }, 401);
 }
 
@@ -186,7 +197,9 @@ async function readState(env) {
     .prepare('SELECT state_json, updated_at FROM app_state WHERE id = 1')
     .first();
 
-  if (!row) return json({ state: null, updatedAt: null });
+  if (!row) {
+    return json({ state: null, updatedAt: null });
+  }
 
   try {
     return json({
@@ -200,13 +213,19 @@ async function readState(env) {
 
 async function writeState(request, env) {
   let body;
+
   try {
     body = await request.json();
   } catch {
     return json({ error: 'Invalid JSON' }, 400);
   }
 
-  if (!body || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
+  if (
+    !body ||
+    !body.state ||
+    typeof body.state !== 'object' ||
+    Array.isArray(body.state)
+  ) {
     return json({ error: 'Expected an object in state' }, 400);
   }
 
@@ -231,7 +250,12 @@ async function clearState(request, env) {
   if (error) return error;
 
   await env.GARAGE_DB.prepare('DELETE FROM app_state').run();
+
   return json({ ok: true });
+}
+
+function notFound() {
+  return json({ error: 'Not Found' }, 404);
 }
 
 export default {
@@ -239,55 +263,83 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
     }
 
     if (!env.GARAGE_DB) {
-      return json({ error: 'D1 binding GARAGE_DB is not configured' }, 500);
+      return json({
+        error: 'D1 binding GARAGE_DB is not configured'
+      }, 500);
     }
 
     try {
-      await init(env);
-
+      // API routes are handled before Assets, so they work even if the
+      // Assets binding is missing from a manual Worker deployment.
       if (url.pathname === '/api/auth/status') {
-        if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-        return authStatus(env);
+        if (request.method !== 'GET') {
+          return json({ error: 'Method not allowed' }, 405);
+        }
+
+        await init(env);
+        return await authStatus(env);
       }
 
       if (url.pathname === '/api/auth/setup') {
-        if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-        return setupPassword(request, env);
+        if (request.method !== 'POST') {
+          return json({ error: 'Method not allowed' }, 405);
+        }
+
+        await init(env);
+        return await setupPassword(request, env);
       }
 
       if (url.pathname === '/api/auth/login') {
-        if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-        return login(request, env);
+        if (request.method !== 'POST') {
+          return json({ error: 'Method not allowed' }, 405);
+        }
+
+        await init(env);
+        return await login(request, env);
       }
 
       if (url.pathname === '/api/state') {
+        await init(env);
+
         if (request.method === 'GET') {
           const error = await requireAuth(request, env);
           if (error) return error;
-          return readState(env);
+          return await readState(env);
         }
 
         if (request.method === 'PUT') {
           const error = await requireAuth(request, env);
           if (error) return error;
-          return writeState(request, env);
+          return await writeState(request, env);
         }
 
         if (request.method === 'DELETE') {
-          return clearState(request, env);
+          return await clearState(request, env);
         }
 
         return json({ error: 'Method not allowed' }, 405);
       }
 
-      return env.ASSETS.fetch(request);
+      // Static site handling. If the Worker was manually deployed without
+      // an Assets binding, return a clean 404 instead of throwing
+      // "Cannot read properties of undefined (reading 'fetch')".
+      if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+        return await env.ASSETS.fetch(request);
+      }
+
+      return notFound();
     } catch (error) {
       console.error('GARAGE Worker error:', error);
-      return json({ error: error?.message || 'Internal Server Error' }, 500);
+      return json({
+        error: error?.message || 'Internal Server Error'
+      }, 500);
     }
   }
 };
