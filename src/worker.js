@@ -1,6 +1,29 @@
 <!doctype html>
 <html lang="ru">
 <head>
+<script id="garage-cloud-storage-bootstrap">
+(function(){
+  // Persistent browser storage is intentionally disabled. The app's data store
+  // exists only in RAM for the current session and is populated from Cloudflare D1.
+  if(window.__GARAGE_CLOUD_STORAGE_BOOTSTRAPPED__)return;
+  window.__GARAGE_CLOUD_STORAGE_BOOTSTRAPPED__=true;
+  const d=Object.create(null);
+  let ks=[];
+  const s={
+    get length(){return ks.length},
+    key(i){return ks[i]??null},
+    getItem(k){k=String(k);return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},
+    setItem(k,v){d[String(k)]=String(v);ks=Object.keys(d);if(!s._suspended&&s._onChange)s._onChange()},
+    removeItem(k){k=String(k);if(Object.prototype.hasOwnProperty.call(d,k)){delete d[k];ks=Object.keys(d);if(!s._suspended&&s._onChange)s._onChange()}},
+    clear(){for(const k of ks)delete d[k];ks=[];if(!s._suspended&&s._onChange)s._onChange()},
+    __replace(o){for(const k of ks)delete d[k];if(o&&typeof o==='object'&&!Array.isArray(o)){for(const [k,v] of Object.entries(o))d[String(k)]=String(v??'')}ks=Object.keys(d)},
+    __snapshot(){const o={};for(const k of ks)o[k]=d[k];return o},
+    __setOnChange(fn){s._onChange=typeof fn==='function'?fn:null},
+    __suspend(fn){const prev=!!s._suspended;s._suspended=true;try{return fn()}finally{s._suspended=prev}}
+  };
+  window.garageStorage=s;
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ГАРАЖ — заказная система 03 · V13</title>
@@ -314,7 +337,7 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 .order-discount-box{display:grid;grid-template-columns:1fr 1fr;gap:7px}.order-discount-box select,.order-discount-box input{width:100%;height:38px;box-sizing:border-box;border:1px solid #dfe5ed;border-radius:9px;padding:0 9px;background:#fff}.order-discount-box .wide{grid-column:1/-1}
 .order-side-divider{border-top:1px solid #edf0f4;margin:13px 0}.order-history-compact{display:grid;gap:6px}.order-history-compact .event{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:8px;padding:8px 0;border-bottom:1px solid #f0f2f5}.order-history-compact .event:last-child{border-bottom:0}.order-history-compact time{font-size:10px;color:#909aaa}.order-history-compact b{font-size:11px}.order-history-compact small{display:block;font-size:10px;color:#8792a1;margin-top:2px}.order-history-compact .amount{font-size:11px;font-weight:800;white-space:nowrap}
 .order-complete-bar{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid #e1e7ef;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px}.order-complete-bar.ready{background:#f3fbf6;border-color:#cde7d5}.order-complete-bar b{font-size:12px}.order-complete-bar small{display:block;color:#7c8898;margin-top:3px;font-size:10px}
-.order-selection-bar{padding:9px 11px;border-radius:10px;background:#f5f8fc;color:#6d7b8f;font-size:11px;margin-top:9px}.order-selection-bar strong{color:#25364b}.order-payment-discount-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;padding:8px 11px;border-radius:10px;background:#f8f6ff;border:1px solid #e6ddfb;color:#6f6190;font-size:11px}.order-payment-discount-hint b{font-size:13px;color:#5b4a86}
+.order-selection-bar{padding:9px 11px;border-radius:10px;background:#f5f8fc;color:#6d7b8f;font-size:11px;margin-top:9px}.order-selection-bar strong{color:#25364b}
 .order-removed-block{padding:11px;border-radius:10px;background:#fff0f0;border:1px solid #f0d3d3;color:#a13b3b;font-size:11px;margin-top:10px}.order-removed-block b{display:block;margin-bottom:3px}
 @media(max-width:980px){.order-workspace{grid-template-columns:1fr}.order-side-column{position:static}.order-item-card{grid-template-columns:minmax(0,1fr) 140px}.order-item-paycol{grid-column:1/-1;border-left:0!important;border-top:1px solid #edf0f4;padding-left:0!important;padding-top:10px}.order-item-card .order-item-money{border-left:1px solid #edf0f4}.order-summary-bar{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.order-detail-head{padding:14px 16px}.order-detail-body{padding:12px}.order-summary-bar{grid-template-columns:1fr 1fr}.order-panel-head{align-items:stretch;flex-direction:column}.order-panel-head #markWholeOrderTaken{width:100%}.order-item-card{grid-template-columns:1fr}.order-item-money{border-left:0!important;border-top:1px solid #edf0f4;padding:10px 0 0}.order-item-paycol{grid-column:auto;border-left:0!important;border-top:1px solid #edf0f4;padding:10px 0 0!important}.order-complete-bar{align-items:flex-start;flex-direction:column}.order-action-grid{grid-template-columns:1fr}}
@@ -1190,7 +1213,7 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   </div>
   <div class="card section">
     <div class="section-title">Резервная копия</div>
-    <p style="color:#6d7887;margin-top:0">Экспортируйте данные в JSON перед очисткой браузера или переносом на другой компьютер. Импорт заменяет текущие локальные данные данными из копии.</p>
+    <p style="color:#6d7887;margin-top:0">Экспортируйте текущую облачную базу в JSON для резервного копирования или переноса. Импорт полностью заменяет данные в облаке.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <button class="btn primary" type="button" id="exportGarageBackup">⬇ Экспортировать данные</button>
       <button class="btn" type="button" id="importGarageBackup">⬆ Импортировать данные</button>
@@ -1389,13 +1412,13 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 const SELLER_COLORS=['#5b8def','#3bb39a','#d88952','#8b7ed8','#5b6f8f','#c56b8f'];
 const sellerColorKey=name=>'garageSellerColor_'+encodeURIComponent(name);
 function getSellers(){
-  let raw=localStorage.getItem('garageSellers'), list;
+  let raw=garageStorage.getItem('garageSellers'), list;
   try{list=raw?JSON.parse(raw):null}catch(e){list=null}
-  if(!Array.isArray(list)||!list.length){list=['Михаил','Владимир'];localStorage.setItem('garageSellers',JSON.stringify(list))}
+  if(!Array.isArray(list)||!list.length){list=['Михаил','Владимир'];garageStorage.setItem('garageSellers',JSON.stringify(list))}
   return list;
 }
-function getCurrentSeller(){const list=getSellers(),saved=localStorage.getItem('garageCurrentUser');return list.includes(saved)?saved:list[0]}
-function getSellerColor(name){const saved=localStorage.getItem(sellerColorKey(name));if(saved)return saved;const i=Math.max(0,getSellers().indexOf(name));return SELLER_COLORS[i%SELLER_COLORS.length]}
+function getCurrentSeller(){const list=getSellers(),saved=garageStorage.getItem('garageCurrentUser');return list.includes(saved)?saved:list[0]}
+function getSellerColor(name){const saved=garageStorage.getItem(sellerColorKey(name));if(saved)return saved;const i=Math.max(0,getSellers().indexOf(name));return SELLER_COLORS[i%SELLER_COLORS.length]}
 function sellerMark(name, cls='mini'){const n=String(name||'—');const c=getSellerColor(n);const safe=escapeHtml(n);return `<span class=\"seller-mark ${cls}\" style=\"color:${c};--seller-bg:${c}14\"><span class=\"seller-mark-dot\" style=\"background:${c}\"></span>${safe}</span>`}
 function renderSellers(){
   const list=getSellers(), current=getCurrentSeller(), select=document.getElementById('currentSellerSwitch');
@@ -1417,7 +1440,7 @@ function openSellerManager(){
   document.getElementById('sellerModal').classList.remove('hidden');
 }
 function closeSellerManager(){document.getElementById('sellerModal').classList.add('hidden')}
-function setCurrentSeller(name){if(!getSellers().includes(name))return;localStorage.setItem('garageCurrentUser',name);renderSellers();openSellerManager()}
+function setCurrentSeller(name){if(!getSellers().includes(name))return;garageStorage.setItem('garageCurrentUser',name);renderSellers();openSellerManager()}
 document.getElementById('currentSellerSwitch').addEventListener('change',e=>setCurrentSeller(e.target.value));
 document.getElementById('sellerManage').onclick=openSellerManager;
 document.getElementById('closeSellerModal').onclick=closeSellerManager;
@@ -1426,18 +1449,18 @@ document.getElementById('addSeller').onclick=()=>{
   const input=document.getElementById('newSellerName'),name=input.value.trim(),list=getSellers();
   if(!name)return;
   if(list.some(x=>x.toLowerCase()===name.toLowerCase()))return;
-  list.push(name);localStorage.setItem('garageSellers',JSON.stringify(list));localStorage.setItem(sellerColorKey(name),SELLER_COLORS[(list.length-1)%SELLER_COLORS.length]);input.value='';renderSellers();openSellerManager();
+  list.push(name);garageStorage.setItem('garageSellers',JSON.stringify(list));garageStorage.setItem(sellerColorKey(name),SELLER_COLORS[(list.length-1)%SELLER_COLORS.length]);input.value='';renderSellers();openSellerManager();
 };
 document.getElementById('sellerList').addEventListener('click',e=>{
   const sel=e.target.closest('[data-select]'),del=e.target.closest('[data-delete]');
   if(sel){setCurrentSeller(sel.dataset.select);return}
   if(del){
     const name=del.dataset.delete,list=getSellers();if(list.length<=1)return;
-    showActionConfirm('delete-seller',()=>{const next=list.filter(x=>x!==name);localStorage.setItem('garageSellers',JSON.stringify(next));localStorage.removeItem(sellerColorKey(name));if(getCurrentSeller()===name)localStorage.setItem('garageCurrentUser',next[0]);renderSellers();openSellerManager();},'Продавец «'+name+'» будет удалён из списка. Исторические операции этого продавца останутся в журнале.');
+    showActionConfirm('delete-seller',()=>{const next=list.filter(x=>x!==name);garageStorage.setItem('garageSellers',JSON.stringify(next));garageStorage.removeItem(sellerColorKey(name));if(getCurrentSeller()===name)garageStorage.setItem('garageCurrentUser',next[0]);renderSellers();openSellerManager();},'Продавец «'+name+'» будет удалён из списка. Исторические операции этого продавца останутся в журнале.');
   }
 });
 document.getElementById('sellerList').addEventListener('input',e=>{
-  if(e.target.dataset.color){localStorage.setItem(sellerColorKey(e.target.dataset.color),e.target.value);renderSellers();openSellerManager()}
+  if(e.target.dataset.color){garageStorage.setItem(sellerColorKey(e.target.dataset.color),e.target.value);renderSellers();openSellerManager()}
 });
 renderSellers();
 
@@ -1455,10 +1478,10 @@ document.getElementById('cancelClientModal').onclick=closeClientCreate;
 function escapeHtml(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function getClients(){
   let list=[];
-  try{list=JSON.parse(localStorage.getItem('garageClients')||'[]')}catch(e){list=[]}
+  try{list=JSON.parse(garageStorage.getItem('garageClients')||'[]')}catch(e){list=[]}
   return Array.isArray(list)?list:[];
 }
-function saveClients(list){localStorage.setItem('garageClients',JSON.stringify(list))}
+function saveClients(list){garageStorage.setItem('garageClients',JSON.stringify(list))}
 function nextUniqueClientId(){
   const used=new Set(getClients().map(c=>String(c?.id||'')));
   for(let attempt=0;attempt<20;attempt++){
@@ -1467,9 +1490,9 @@ function nextUniqueClientId(){
     else id='c_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
     if(!used.has(id)){used.add(id);return id;}
   }
-  let seq=Math.max(0,parseInt(localStorage.getItem('garageClientSequence')||'0',10)||0);
+  let seq=Math.max(0,parseInt(garageStorage.getItem('garageClientSequence')||'0',10)||0);
   do{seq++;}while(used.has('c_seq_'+seq));
-  localStorage.setItem('garageClientSequence',String(seq));
+  garageStorage.setItem('garageClientSequence',String(seq));
   return 'c_seq_'+seq;
 }
 function clientTagHtml(tag){
@@ -1477,9 +1500,9 @@ function clientTagHtml(tag){
   const x=map[tag]; return x?`<span class="client-mini-tag ${x[0]}">${x[1]}</span>`:'';
 }
 function getClientCarts(){
-  try{const x=JSON.parse(localStorage.getItem('garageClientCarts')||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}
+  try{const x=JSON.parse(garageStorage.getItem('garageClientCarts')||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}
 }
-function saveClientCarts(carts){localStorage.setItem('garageClientCarts',JSON.stringify(carts))}
+function saveClientCarts(carts){garageStorage.setItem('garageClientCarts',JSON.stringify(carts))}
 function clearClientCart(id){const all=getClientCarts();delete all[String(id)];saveClientCarts(all);renderClients(document.getElementById('clientsSearch')?.value||'')}
 function normalizePaymentMethod(value, detail, fallback='cash'){
   const v=String(value||'').toLowerCase();
@@ -1630,27 +1653,27 @@ function normalizeClientOrder(raw){
 }
 function getClientOrders(){
   try{
-    const x=JSON.parse(localStorage.getItem('garageClientOrders')||'[]');
+    const x=JSON.parse(garageStorage.getItem('garageClientOrders')||'[]');
     if(!Array.isArray(x))return [];
     let changed=false;
     const list=x.map(normalizeClientOrder).filter(Boolean).map(r=>{changed=changed||r.changed;return r.order;});
-    if(changed){try{localStorage.setItem('garageClientOrders',JSON.stringify(list))}catch(e){}}
+    if(changed){try{garageStorage.setItem('garageClientOrders',JSON.stringify(list))}catch(e){}}
     return list;
   }catch(e){return []}
 }
-function saveClientOrders(list){localStorage.setItem('garageClientOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
+function saveClientOrders(list){garageStorage.setItem('garageClientOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
 function nextClientOrderId(){
-  const seq=Math.max(0,parseInt(localStorage.getItem('garageOrderSequence')||'0',10)||0);
+  const seq=Math.max(0,parseInt(garageStorage.getItem('garageOrderSequence')||'0',10)||0);
   const ids=[];
   getClientOrders().forEach(o=>ids.push(parseInt(o.id,10)));
   getCompletedOrders().forEach(o=>ids.push(parseInt(o.id,10)));
   try{
-    const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+    const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
     Object.values(overrides||{}).forEach(o=>ids.push(parseInt(o?.id,10)));
   }catch(e){}
   const maxExisting=ids.filter(Number.isFinite).reduce((m,n)=>Math.max(m,n),0);
   const next=Math.max(seq,maxExisting)+1;
-  localStorage.setItem('garageOrderSequence',String(next));
+  garageStorage.setItem('garageOrderSequence',String(next));
   return String(next);
 }
 function allocateOrderPayment(order,amount,selectedIndices){
@@ -2480,7 +2503,7 @@ document.getElementById('saveProductSale').onclick=()=>{
   showActionConfirm('sell',()=>{
     const round=Math.max(0,afterPercent-final);
     const saleNow=new Date(); const sale={id:Date.now(),items:JSON.parse(JSON.stringify(cartItems)),baseTotal:base,discountPercent:getSaleDiscountPercent(),discountPercentAmount:pctSum,roundDiscount:round,roundingAdjustment:round,total:final,paymentMethod:saleMethod,seller:getCurrentSeller(),date:saleNow.toISOString().slice(0,10),createdAt:saleNow.toISOString()};
-    const all=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');all.unshift(sale);localStorage.setItem('garageWarehouseSales',JSON.stringify(all));
+    const all=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');all.unshift(sale);garageStorage.setItem('garageWarehouseSales',JSON.stringify(all));
     renderSalesJournal();
     closeProductSale();
   });
@@ -2504,7 +2527,7 @@ function getAllKnownOrders(){
   getCompletedOrders().forEach(add);
   getClientOrders().forEach(add);
   try{
-    const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+    const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
     Object.values(overrides||{}).forEach(add);
   }catch(e){}
     return [...byId.values()];
@@ -2530,9 +2553,9 @@ function saveOrderHistory(order){
     saveClientOrders(active);
     return;
   }
-  const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+  const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
   overrides[key]=JSON.parse(JSON.stringify(order));
-  localStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
+  garageStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
 }
 function orderItemFinalTotal(item){const pct=Math.max(0,Number(item.discountPct)||0);const qty=Math.max(0,Number(item.qty)||0);const before=Math.max(0,Number(item.price)||0);const d=Math.max(0,Number(item.discountAmount)||0);const after=pct>0?Math.max(0,before-d):before;return after*qty;}
 let removeItemContext=null;
@@ -2814,11 +2837,6 @@ function updateOrderPaymentAmount(){
   const selected=[...document.querySelectorAll('#orderHistoryBody [data-pay-item]:checked')].map(x=>Number(x.dataset.payItem));
   const total=selected.reduce((sum,i)=>sum+(order.items[i]?getItemRemaining(order.items[i]):0),0);const input=document.getElementById('orderPaymentAmount');if(input)input.value=total>0?String(Math.round(total*100)/100):'0';
   const info=document.getElementById('orderPaymentSelected');if(info)info.textContent=selected.length?`Выбрано позиций: ${selected.length} · к оплате ${money0(total)}`:'Выберите товары галочками';
-  const discountHint=document.getElementById('orderPaymentDiscountHint');
-  if(discountHint){
-    const value=discountHint.querySelector('b');
-    if(value) value.textContent=selected.length&&total>0?money0(total*0.95):'—';
-  }
   syncOrderSelectAllCheckbox();
 }
 function updateOrderDiscountInfo(){
@@ -2947,7 +2965,7 @@ function openOrderHistory(id){
     partial_taken:{icon:'◐',note:'Клиент уже забрал часть позиций заказа.'},
     taken:{icon:'✓',note:'Все активные позиции заказа выданы клиенту.'}
   }[aggregate.value]||{icon:'•',note:'Текущее состояние заказа.'};
-  body.innerHTML=`<div class="order-status-overview"><div class="order-status-card ${aggregate.value}"><div class="order-status-card-icon">${orderStatusMeta.icon}</div><div class="order-status-card-main"><div class="order-status-card-kicker">Статус заказа</div><div class="order-status-card-label">${escapeHtml(aggregate.label)}</div><div class="order-status-card-note">${escapeHtml(orderStatusMeta.note)}</div></div><div class="order-status-card-side"><small>Позиций</small><b>${activeItems.length}</b></div></div>${statusDetail}</div><div class="order-workspace"><div class="order-main-column"><div class="order-summary-bar"><div class="order-summary-card"><span>Итого</span><b>${money0(order.total)}</b>${Number(order.roundingAdjustment)>0?`<small style="display:block;color:#c47a12;margin-top:3px">Округление −${money0(order.roundingAdjustment)}</small>`:''}</div><div class="order-summary-card paid"><span>Оплачено</span><b>${money0(order.paid)}</b></div><div class="order-summary-card debt"><span>Долг</span><b>${money0(order.debt)}</b></div><div class="order-summary-card"><span>Позиций</span><b>${activeItems.length}</b></div></div><div class="order-panel"><div class="order-panel-head"><div class="order-panel-head-main"><div><b>Позиции заказа</b><span>${activeItems.length} шт. · оплата и статус по каждой позиции</span></div><label class="order-select-all"><input type="checkbox" id="orderSelectAll" ${archived?'disabled':''}><span>Выбрать всё</span></label></div>${archived?'':'<button class="btn" type="button" id="markWholeOrderTaken">✓ Выдан весь заказ</button>'}</div><div class="order-items-list">${items}</div></div>${completionBar}</div><div class="order-side-column">${archived?'<div class="order-side-card"><div class="order-side-title">Архивный заказ</div><div class="order-side-note">Оплата, скидки, удаление позиций и изменение статусов здесь недоступны. Заказ уже завершён.</div></div>':'<div class="order-side-card"><div class="order-side-title">Оплата выбранных позиций</div>'}<input class="order-pay-amount" id="orderPaymentAmount" type="number" min="0" step="0.01" value="0" placeholder="Сумма"><div class="order-pay-method"><button type="button" data-order-pay-method="cash" class="active">💵 Наличные</button><button type="button" data-order-pay-method="card">💳 Карта</button></div><div class="order-selection-bar" id="orderPaymentSelected">Выберите позиции</div><div class="order-payment-discount-hint" id="orderPaymentDiscountHint"><span>Если применить скидку 5%</span><b>—</b></div><div class="order-action-grid" style="margin-top:9px"><button class="btn" type="button" id="orderPayAll">Оплатить весь остаток</button><button class="btn primary" type="button" id="orderPaySelected">Внести оплату</button></div><div class="order-side-note">Сумма распределяется по выбранным позициям сверху вниз. Если сумма больше остатка, разница сохранится как переплата по заказу.</div></div><div class="order-side-card"><div class="order-side-title">Скидка выбранным позициям</div><div class="order-discount-box"><select id="orderDiscountType"><option value="0">0% — без скидки / отменить</option><option value="5">5%</option><option value="10">10%</option><option value="manual">Своя %</option></select><input id="orderDiscountManual" type="number" min="0" max="100" step="0.01" placeholder="%" style="display:none"><button class="btn wide" type="button" id="applyOrderDiscount">Применить скидку</button></div><div class="order-selection-bar" id="orderDiscountSelected">Выберите позиции</div><div class="order-discount-preview" id="orderDiscountPreview"><span>Сумма после скидки</span><b>—</b></div><div class="order-side-note">После оплаты обычное изменение скидки фиксируется. Отменить уже установленную скидку до 0% можно отдельно; оплаченная сумма сохраняется, а остаток заказа пересчитывается.</div></div><div class="order-side-card"><div class="order-side-title">Последние действия</div><div class="order-history-compact">${events||'<div style="font-size:11px;color:#8792a1">История пока пуста</div>'}</div></div></div></div>`;
+  body.innerHTML=`<div class="order-status-overview"><div class="order-status-card ${aggregate.value}"><div class="order-status-card-icon">${orderStatusMeta.icon}</div><div class="order-status-card-main"><div class="order-status-card-kicker">Статус заказа</div><div class="order-status-card-label">${escapeHtml(aggregate.label)}</div><div class="order-status-card-note">${escapeHtml(orderStatusMeta.note)}</div></div><div class="order-status-card-side"><small>Позиций</small><b>${activeItems.length}</b></div></div>${statusDetail}</div><div class="order-workspace"><div class="order-main-column"><div class="order-summary-bar"><div class="order-summary-card"><span>Итого</span><b>${money0(order.total)}</b>${Number(order.roundingAdjustment)>0?`<small style="display:block;color:#c47a12;margin-top:3px">Округление −${money0(order.roundingAdjustment)}</small>`:''}</div><div class="order-summary-card paid"><span>Оплачено</span><b>${money0(order.paid)}</b></div><div class="order-summary-card debt"><span>Долг</span><b>${money0(order.debt)}</b></div><div class="order-summary-card"><span>Позиций</span><b>${activeItems.length}</b></div></div><div class="order-panel"><div class="order-panel-head"><div class="order-panel-head-main"><div><b>Позиции заказа</b><span>${activeItems.length} шт. · оплата и статус по каждой позиции</span></div><label class="order-select-all"><input type="checkbox" id="orderSelectAll" ${archived?'disabled':''}><span>Выбрать всё</span></label></div>${archived?'':'<button class="btn" type="button" id="markWholeOrderTaken">✓ Выдан весь заказ</button>'}</div><div class="order-items-list">${items}</div></div>${completionBar}</div><div class="order-side-column">${archived?'<div class="order-side-card"><div class="order-side-title">Архивный заказ</div><div class="order-side-note">Оплата, скидки, удаление позиций и изменение статусов здесь недоступны. Заказ уже завершён.</div></div>':'<div class="order-side-card"><div class="order-side-title">Оплата выбранных позиций</div>'}<input class="order-pay-amount" id="orderPaymentAmount" type="number" min="0" step="0.01" value="0" placeholder="Сумма"><div class="order-pay-method"><button type="button" data-order-pay-method="cash" class="active">💵 Наличные</button><button type="button" data-order-pay-method="card">💳 Карта</button></div><div class="order-selection-bar" id="orderPaymentSelected">Выберите позиции</div><div class="order-action-grid" style="margin-top:9px"><button class="btn" type="button" id="orderPayAll">Оплатить весь остаток</button><button class="btn primary" type="button" id="orderPaySelected">Внести оплату</button></div><div class="order-side-note">Сумма распределяется по выбранным позициям сверху вниз. Если сумма больше остатка, разница сохранится как переплата по заказу.</div></div><div class="order-side-card"><div class="order-side-title">Скидка выбранным позициям</div><div class="order-discount-box"><select id="orderDiscountType"><option value="0">0% — без скидки / отменить</option><option value="5">5%</option><option value="10">10%</option><option value="manual">Своя %</option></select><input id="orderDiscountManual" type="number" min="0" max="100" step="0.01" placeholder="%" style="display:none"><button class="btn wide" type="button" id="applyOrderDiscount">Применить скидку</button></div><div class="order-selection-bar" id="orderDiscountSelected">Выберите позиции</div><div class="order-discount-preview" id="orderDiscountPreview"><span>Сумма после скидки</span><b>—</b></div><div class="order-side-note">После оплаты обычное изменение скидки фиксируется. Отменить уже установленную скидку до 0% можно отдельно; оплаченная сумма сохраняется, а остаток заказа пересчитывается.</div></div><div class="order-side-card"><div class="order-side-title">Последние действия</div><div class="order-history-compact">${events||'<div style="font-size:11px;color:#8792a1">История пока пуста</div>'}</div></div></div></div>`;
   body.querySelectorAll('[data-pay-item]').forEach(x=>x.addEventListener('change',updateOrderPaymentAmount));
   body.querySelectorAll('[data-discount-item]').forEach(x=>x.addEventListener('change',updateOrderDiscountInfo));
   body.querySelector('#orderSelectAll')?.addEventListener('change',e=>toggleAllOrderPaymentChecks(e.currentTarget));
@@ -3037,9 +3055,9 @@ document.getElementById('orderHistoryBody')?.addEventListener('click',e=>{const 
 document.getElementById('ordersRows')?.addEventListener('click',e=>{const del=e.target.closest('[data-order-delete]');if(del){e.stopPropagation();deleteOrder(del.dataset.orderDelete);return;}const btn=e.target.closest('[data-order-history]');if(btn){e.stopPropagation();openOrderHistory(btn.dataset.orderHistory)}});
 
 function getReturns(){
-  try{const data=JSON.parse(localStorage.getItem('garageReturns')||'[]');return Array.isArray(data)?data:[]}catch(e){return []}
+  try{const data=JSON.parse(garageStorage.getItem('garageReturns')||'[]');return Array.isArray(data)?data:[]}catch(e){return []}
 }
-function saveReturns(list){localStorage.setItem('garageReturns',JSON.stringify(list))}
+function saveReturns(list){garageStorage.setItem('garageReturns',JSON.stringify(list))}
 function todayIso(){return new Date().toISOString().slice(0,10)}
 function openStandaloneReturnDetails(id){
   const x=getReturns().find(r=>String(r.id)===String(id));
@@ -3135,15 +3153,15 @@ function confirmReturn(){
 }
 function getCompletedOrders(){
   try{
-    const raw=JSON.parse(localStorage.getItem('garageCompletedOrders')||'[]');
+    const raw=JSON.parse(garageStorage.getItem('garageCompletedOrders')||'[]');
     if(!Array.isArray(raw))return [];
     let changed=false;
     const list=raw.map(o=>{const r=normalizeClientOrder(o);if(r?.changed)changed=true;return r?.order||o;}).filter(Boolean);
-    if(changed)localStorage.setItem('garageCompletedOrders',JSON.stringify(list));
+    if(changed)garageStorage.setItem('garageCompletedOrders',JSON.stringify(list));
     return list;
   }catch(e){return []}
 }
-function saveCompletedOrders(list){localStorage.setItem('garageCompletedOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
+function saveCompletedOrders(list){garageStorage.setItem('garageCompletedOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
 function getArchivedOrderIds(){return new Set(getCompletedOrders().map(o=>String(o.id)))}
 function orderHasActiveItems(order){return (order?.items||[]).some(i=>!i.removed);}
 function getActiveClientOrders(){
@@ -3181,9 +3199,9 @@ function completeOrder(orderId){
   // Архив является единственным источником истины для завершённого заказа.
   const dynamic=getClientOrders().filter(o=>String(o.id)!==String(order.id));
   saveClientOrders(dynamic);
-  const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+  const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
   delete overrides[String(order.id)];
-  localStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
+  garageStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
   renderOrders(); renderSalesJournal(); renderCompletedOrders(); closeOrderHistory();
   document.querySelector('.nav button[data-page="history"]')?.click();
   toast('Заказ перемещён в историю','ok','Заказ #'+order.id+' завершён');
@@ -3600,7 +3618,7 @@ function moneyValue(v){
 function parseRowAmount(row){return moneyValue(row.dataset.amount)}
 function updateSalesSummary(){
   let earned=0,cash=0,card=0;
-  const warehouse=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');
+  const warehouse=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');
   warehouse.forEach(x=>{
     const total=moneyValue(x.total);
     earned+=total;
@@ -3620,7 +3638,7 @@ function updateSalesSummary(){
 }
 function renderSalesJournal(){
   const rows=document.getElementById('salesRows'),empty=document.getElementById('salesEmpty');if(!rows||!empty)return;
-  const warehouse=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');
+  const warehouse=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');
   const html=[];
   warehouse.forEach(x=>{
     const items=Array.isArray(x.items)?x.items:[];const search=[items.map(i=>i.name).join(' '),items.map(i=>i.article||'').join(' '),x.seller].join(' ').toLowerCase();
@@ -3695,34 +3713,6 @@ function setupSalesFilters(){
   });
 }
 
-function makeGarageBackup(){
-  const data={};
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i); if(key&&key.startsWith('garage'))data[key]=localStorage.getItem(key);
-  }
-  return {format:'garage-local-backup-v2',createdAt:new Date().toISOString(),data};
-}
-function exportGarageBackup(){
-  const blob=new Blob([JSON.stringify(makeGarageBackup(),null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='garage-backup-'+todayIso()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500);
-  toast('Резервная копия выгружена в JSON','ok','Экспорт завершён');
-}
-function applyGarageBackup(payload){
-  if(!payload||!['garage-local-backup-v1','garage-local-backup-v2'].includes(payload.format)||!payload.data||typeof payload.data!=='object'){
-    toast('Файл не похож на резервную копию ГАРАЖ.','error','Импорт отменён'); return;
-  }
-  const keys=[]; for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i); if(key&&key.startsWith('garage'))keys.push(key);}
-  keys.forEach(k=>localStorage.removeItem(k)); Object.entries(payload.data).forEach(([k,v])=>{if(String(k).startsWith('garage'))localStorage.setItem(k,String(v??''));});
-  location.reload();
-}
-document.getElementById('exportGarageBackup')?.addEventListener('click',exportGarageBackup);
-document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
-document.getElementById('garageBackupFile')?.addEventListener('change',e=>{
-  const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader();
-  reader.onload=()=>{try{const payload=JSON.parse(reader.result); showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Все текущие локальные данные будут заменены данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён');}finally{e.target.value='';}};
-  reader.readAsText(file,'utf-8');
-});
-
 let financialsVisible=true;
 function setFinancialVisibility(){
   document.querySelectorAll('[data-financial-value]').forEach(el=>el.classList.toggle('financial-hidden',!financialsVisible));
@@ -3795,9 +3785,9 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.getElementById('cancelClearOrdersSales')?.addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
   document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>{
-    ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>localStorage.removeItem(k));
+    ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>garageStorage.removeItem(k));
     // Удаляем также сохранённые признаки архивирования/изменения демонстрационных заказов, если они были.
-    ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>localStorage.removeItem(k));
+    ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>garageStorage.removeItem(k));
     close();
     if(typeof renderOrders==='function')renderOrders();
     if(typeof renderSalesJournal==='function')renderSalesJournal();
@@ -3808,45 +3798,131 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
 })();
 </script>
 
-<script id="garage-cloud-sync-v2">
+<script id="garage-cloud-runtime-v3">
 (function(){
-  const PASSWORD_KEY='garageSitePassword';
-  const SYNC_META_KEY='garageCloudMeta';
-  const EXCLUDE=new Set([PASSWORD_KEY,SYNC_META_KEY]);
-  let ready=false, loading=false, saving=false, saveTimer=null;
+  // Cloud-only runtime: the application uses an in-memory Storage-compatible
+  // object. Nothing is persisted in the browser. Persistent state lives in D1.
+  const store=window.garageStorage;
+  let ready=false;
+  let loading=false;
+  let saving=false;
+  let saveTimer=null;
+  let authPassword='';
   const base=location.origin;
-  function api(path,method='GET',body=null,password=''){
+
+  store.__setOnChange(()=>{ if(ready && !loading) { clearTimeout(saveTimer); saveTimer=setTimeout(saveCloud,350); } });
+
+  function api(path,method='GET',body=null){
     const headers={'content-type':'application/json'};
-    if(password)headers['x-garage-password']=password;
-    return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined}).then(async r=>{let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});
+    if(authPassword)headers['x-garage-password']=authPassword;
+    return fetch(base+path,{method,headers,body:body==null?undefined:JSON.stringify(body),cache:'no-store'}).then(async r=>{
+      let j=null;try{j=await r.json()}catch{}
+      if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));
+      return j;
+    });
   }
-  function snapshot(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!EXCLUDE.has(k))out[k]=localStorage.getItem(k)}return out;}
-  function applySnapshot(state){if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>localStorage.setItem(k,state[k]??''));}
-  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);if(j.state&&typeof j.state==='object'){applySnapshot(j.state);if(typeof render==='function')render();window.dispatchEvent(new Event('garage-cloud-loaded'));return true}return false}finally{loading=false}}
-  async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageCloudPassword||localStorage.getItem(PASSWORD_KEY);if(!password)return;await api('/api/state','PUT',{state:snapshot()},password);localStorage.setItem(SYNC_META_KEY,JSON.stringify({updatedAt:new Date().toISOString()}));}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком')}finally{saving=false}}
-  function schedule(){if(!ready||loading)return;clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,500)}
-  const originalSet=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&!EXCLUDE.has(k))schedule()};
-  const originalRemove=Storage.prototype.removeItem;
-  Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&!EXCLUDE.has(k))schedule()};
-  window.garageCloudSync={start:async function(password){window.garageCloudPassword=password;originalSet.call(localStorage,PASSWORD_KEY,password);const had=await loadCloud(password);ready=true;if(!had)await saveCloud();return had;},save:saveCloud,load:loadCloud};
+  async function loadCloud(){
+    loading=true;
+    try{
+      const j=await api('/api/state','GET');
+      store.__suspend(()=>store.__replace(j.state&&typeof j.state==='object'?j.state:{}));
+      if(typeof render==='function')render();
+      window.dispatchEvent(new Event('garage-cloud-loaded'));
+      return !!j.state;
+    }finally{loading=false}
+  }
+  async function saveCloud(){
+    if(!ready||loading||saving||!authPassword)return;
+    saving=true;
+    try{await api('/api/state','PUT',{state:store.__snapshot()})}
+    catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка сохранения в облако','error','Cloudflare')}
+    finally{saving=false}
+  }
+  async function clearCloud(){
+    await api('/api/state','DELETE');
+    store.__suspend(()=>store.__replace({}));
+    if(typeof render==='function')render();
+    window.dispatchEvent(new Event('garage-cloud-loaded'));
+  }
+  async function exportCloud(){
+    const j=await api('/api/state','GET');
+    return {format:'garage-cloud-backup-v1',createdAt:new Date().toISOString(),data:j.state&&typeof j.state==='object'?j.state:{}};
+  }
+  async function importCloud(payload){
+    if(!payload||payload.format!=='garage-cloud-backup-v1'||!payload.data||typeof payload.data!=='object'||Array.isArray(payload.data))throw new Error('Файл не похож на резервную копию ГАРАЖ.');
+    await api('/api/state','PUT',{state:payload.data});
+    store.__suspend(()=>store.__replace(payload.data));
+    if(typeof render==='function')render();
+    window.dispatchEvent(new Event('garage-cloud-loaded'));
+  }
+  window.garageCloudSync={
+    start:async function(password){
+      authPassword=String(password||'');
+      const had=await loadCloud();
+      ready=true;
+      if(!had)await saveCloud();
+      return had;
+    },
+    save:saveCloud,
+    load:loadCloud,
+    clear:clearCloud,
+    export:exportCloud,
+    import:importCloud,
+    get password(){return authPassword}
+  };
+
+  // Backups now operate directly on the cloud state, never on browser storage.
+  window.addEventListener('garage-cloud-backup-ready',()=>{});
 })();
 </script>
-<script id="garage-cloud-auth-v2">
+<script id="garage-cloud-auth-v3">
 (function(){
-  const P='garageSitePassword';
   function gate(mode){
     document.getElementById('garageCloudGate')?.remove();
     const first=mode==='setup';
-    const el=document.createElement('div');el.id='garageCloudGate';el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220 0%,#111827 45%,#1e3a5f 100%);z-index:99999;display:grid;place-items:center;padding:20px;isolation:isolate;overflow:hidden;';
-    el.innerHTML=`<div style="width:min(420px,100%);background:rgba(255,255,255,.97);color:#17202a;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:28px;box-shadow:0 25px 90px rgba(0,0,0,.45);backdrop-filter:blur(8px)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0 6px">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:var(--muted,#7b8794);margin:0 0 18px">${first?'Создайте общий пароль для всех пользователей.':'Введите общий пароль для продолжения работы.'}</p>${first?'<input id="gcp1" type="password" placeholder="Новый пароль (от 6 символов)" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gcp2" type="password" placeholder="Повторите пароль" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">':'<input id="gcp1" type="password" placeholder="Пароль" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">'}<div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароль':'Войти'}</button></div>`;
-    document.body.appendChild(el);const err=el.querySelector('#gce');
-    el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{let a=el.querySelector('#gcp1').value;if(first){let b2=el.querySelector('#gcp2').value;if(a.length<6)throw Error('Минимум 6 символов.');if(a!==b2)throw Error('Пароли не совпадают.');await fetch(location.origin+'/api/auth/setup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:a})}).then(async r=>{if(!r.ok){let j=await r.json().catch(()=>({}));throw Error(j.error||'Ошибка создания пароля')}})}else{await apiLogin(a)}window.garageCloudPassword=a;localStorage.setItem(P,a);await window.garageCloudSync.start(a);el.remove();}catch(e){err.textContent=e.message;b.disabled=false}};
-    el.querySelector('#gcp1').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gcb').click()});
+    const el=document.createElement('div');el.id='garageCloudGate';
+    el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220 0%,#111827 45%,#1e3a5f 100%);z-index:99999;display:grid;place-items:center;padding:20px;isolation:isolate;overflow:hidden;';
+    el.innerHTML=`<div style="width:min(420px,100%);background:rgba(255,255,255,.97);color:#17202a;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:28px;box-shadow:0 25px 90px rgba(0,0,0,.45);backdrop-filter:blur(8px)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0 6px">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:#7b8794;margin:0 0 18px">${first?'Создайте новый общий пароль. Он будет храниться только в облаке.':'Введите пароль для доступа к облачной базе GARAGE.'}</p>${first?'<input id="gcp1" type="password" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gcp2" type="password" placeholder="Повторите пароль" autocomplete="new-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">':'<input id="gcp1" type="password" placeholder="Пароль" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">'}<div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароль':'Войти'}</button></div>`;
+    document.body.appendChild(el);
+    const err=el.querySelector('#gce'), btn=el.querySelector('#gcb');
+    const submit=async()=>{btn.disabled=true;try{
+      const a=el.querySelector('#gcp1').value;
+      if(first){const b=el.querySelector('#gcp2').value;if(a.length<6)throw Error('Минимум 6 символов.');if(a!==b)throw Error('Пароли не совпадают.');await authRequest('/api/auth/setup','POST',{password:a})}
+      else await authRequest('/api/auth/login','POST',{password:a});
+      await window.garageCloudSync.start(a);el.remove();
+    }catch(e){err.textContent=e.message||'Ошибка';btn.disabled=false}};
+    btn.onclick=submit;
+    el.querySelector('#gcp1').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+    el.querySelector('#gcp2')?.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
   }
-  async function apiLogin(password){const r=await fetch(location.origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});if(!r.ok){let j=await r.json().catch(()=>({}));throw Error(r.status===401?'Неверный пароль.':(j.error||'Ошибка входа'))}}
-  async function init(){try{const r=await fetch(location.origin+'/api/auth/status');const j=await r.json();gate(j.configured?'login':'setup')}catch(e){gate('login')}}
+  async function authRequest(path,method,body){
+    const r=await fetch(location.origin+path,{method,headers:{'content-type':'application/json'},body:JSON.stringify(body),cache:'no-store'});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw Error(r.status===401?'Неверный пароль.':(j.error||'Ошибка авторизации'));
+    return j;
+  }
+  async function init(){
+    try{const r=await fetch(location.origin+'/api/auth/status',{cache:'no-store'});const j=await r.json();gate(j.configured?'login':'setup')}
+    catch(e){gate('login')}
+  }
   window.addEventListener('load',()=>setTimeout(init,50));
+})();
+</script>
+<script id="garage-cloud-backup-v3">
+(function(){
+  function downloadJson(payload){
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='garage-cloud-backup-'+(new Date().toISOString().slice(0,10))+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+  }
+  document.getElementById('exportGarageBackup')?.addEventListener('click',async()=>{try{const data=await window.garageCloudSync.export();downloadJson(data);toast('Резервная копия облачной базы выгружена в JSON','ok','Экспорт завершён')}catch(e){toast('Не удалось скачать облачную базу','error','Экспорт')}});
+  document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
+  document.getElementById('garageBackupFile')?.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const payload=JSON.parse(reader.result);showActionConfirm('import-backup',async()=>{try{await window.garageCloudSync.import(payload);toast('Облачная база восстановлена','success','Импорт завершён')}catch(err){toast(err.message||'Не удалось восстановить базу','error','Импорт')}} ,'Текущая облачная база будет полностью заменена данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён')}finally{e.target.value=''}};reader.readAsText(file,'utf-8')});
+  // Optional full-cloud delete button, injected into the existing backup card.
+  const box=document.getElementById('exportGarageBackup')?.parentElement;
+  if(box&&!document.getElementById('clearCloudDatabaseBtn')){
+    const b=document.createElement('button');b.id='clearCloudDatabaseBtn';b.className='btn danger';b.type='button';b.textContent='🗑 Очистить всю облачную базу';b.title='Удалить всех клиентов, заказы, продажи, историю и настройки из D1';box.appendChild(b);
+    b.addEventListener('click',()=>showActionConfirm('clear-cloud-database',async()=>{try{await window.garageCloudSync.clear();toast('Облачная база полностью очищена','success','Очистка завершена')}catch(e){toast(e.message||'Ошибка очистки облачной базы','error','Cloudflare')}} ,'Будут удалены ВСЕ данные GARAGE из облака: клиенты, заказы, оплаты, продажи, история, пользователи и настройки. Действие необратимо.'));
+  }
 })();
 </script>
 </body>
