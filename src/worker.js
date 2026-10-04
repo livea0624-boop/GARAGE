@@ -50,7 +50,7 @@ async function hashPassword(password, salt) {
     {
       name: 'PBKDF2',
       salt,
-      iterations: 150000,
+      iterations: 100000,
       hash: 'SHA-256'
     },
     key,
