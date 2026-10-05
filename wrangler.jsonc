@@ -1,4 +1,3 @@
-```jsonc
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "garage-cloud",
@@ -12,8 +11,7 @@
     {
       "binding": "GARAGE_DB",
       "database_name": "garage-cloud-db",
-      "database_id": "63220ffe-2e1d-4b56-9a4c-1fc37de22888"
+      "database_id": "caeb6602-b29b-4b52-9820-485a4c9504e5"
     }
   ]
 }
-```
