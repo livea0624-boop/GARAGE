@@ -1,0 +1,13 @@
+{
+  "name": "garage-cloud",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:init": "wrangler d1 execute garage-cloud-db --remote --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
