@@ -1,5 +1,11 @@
 node_modules/
 .wrangler/
+.dev.vars
 .env
 .env.*
-.dev.vars
+!.env.example
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
