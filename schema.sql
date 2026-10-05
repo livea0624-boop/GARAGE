@@ -1,18 +1,9 @@
-CREATE TABLE IF NOT EXISTS auth_config (
-  id INTEGER PRIMARY KEY CHECK (id = 1),
-  salt TEXT NOT NULL,
-  password_hash TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
+-- Чистая схема нового GARAGE.
+-- Паролей приложения здесь нет.
+-- Все рабочие данные хранятся одним JSON-состоянием в D1.
 
 CREATE TABLE IF NOT EXISTS app_state (
-  id INTEGER PRIMARY KEY CHECK (id = 1),
+  id INTEGER PRIMARY KEY,
   state_json TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS system_meta (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
