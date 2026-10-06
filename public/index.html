@@ -709,6 +709,11 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 }
 </style>
 
+<style id="client-delete-ui">
+.client-actions .client-delete-btn{color:#b42318;border-color:#f0c9c5;background:#fff8f7}
+.client-actions .client-delete-btn:hover{background:#fff0ee;border-color:#e7aaa4;color:#9f1d13}
+@media(max-width:700px){.client-actions .client-delete-btn{width:100%}}
+</style>
 
 <style id="v22-client-order-action">
 .client-order-detail-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -2629,8 +2634,23 @@ function renderClients(filter=''){
   if(!clients.length){listEl.innerHTML='<div class="client-empty">Клиенты по выбранным условиям не найдены.</div>';return;}
   listEl.innerHTML=clients.map(c=>{
     const cars=getClientCars(c); const carText=cars.map(car=>[car.brand,car.model,car.plate].filter(Boolean).join(' · ')).filter(Boolean).join(' / ')||'Автомобиль не указан'; const tags=(c.tags||[]).map(clientTagHtml).join(''); const sellerInfo=c.seller?`<div class="client-seller">Создал ${sellerMark(c.seller,'mini')}</div>`:''; const clientCart=getClientCart(c.id),clientCartTotal=clientCartTotals(clientCart); const cartClass=clientCartTotal.count?'client-cart has-items':'client-cart'; const cartHtml=clientCartTotal.count?`<span class="client-cart-main">🛒 Корзина <span class="client-cart-count">${clientCartTotal.count}</span></span><span class="client-cart-sub">${money0(clientCartTotal.afterDiscount)} · ${clientCart.items.length} поз.</span>`:'<span class="client-cart-main">🛒 Корзина пуста</span>';
-    return `<div class="client-card" data-client-id="${escapeHtml(c.id)}"><div class="client-main"><div class="client-name">${escapeHtml(c.name)}</div><div class="client-meta">${escapeHtml(c.phone)} · ${cars.length} авто${carText?' · '+escapeHtml(carText):''}</div>${tags?`<div class="client-tag-list">${tags}</div>`:''}${sellerInfo}</div><button type="button" class="${cartClass}" data-client-cart="${escapeHtml(c.id)}">${cartHtml}</button><div class="client-actions"><button class="btn" data-client-profile="${escapeHtml(c.id)}">Открыть профиль</button><button class="btn primary" data-client-order="${escapeHtml(c.id)}">🛒 Заказать</button></div></div>`;
+    return `<div class="client-card" data-client-id="${escapeHtml(c.id)}"><div class="client-main"><div class="client-name">${escapeHtml(c.name)}</div><div class="client-meta">${escapeHtml(c.phone)} · ${cars.length} авто${carText?' · '+escapeHtml(carText):''}</div>${tags?`<div class="client-tag-list">${tags}</div>`:''}${sellerInfo}</div><button type="button" class="${cartClass}" data-client-cart="${escapeHtml(c.id)}">${cartHtml}</button><div class="client-actions"><button class="btn" data-client-profile="${escapeHtml(c.id)}">Открыть профиль</button><button class="btn primary" data-client-order="${escapeHtml(c.id)}">🛒 Заказать</button><button class="btn client-delete-btn" type="button" data-client-delete="${escapeHtml(c.id)}">🗑 Удалить</button></div></div>`;
   }).join('');
+}
+function deleteClientCard(id){
+  const list=getClients();
+  const client=list.find(c=>String(c.id)===String(id));
+  if(!client)return;
+  showActionConfirm('delete-client',()=>{
+    const current=getClients();
+    const idx=current.findIndex(c=>String(c.id)===String(id));
+    if(idx<0)return;
+    current.splice(idx,1);
+    saveClients(current);
+    const carts=getClientCarts(); delete carts[String(id)]; saveClientCarts(carts);
+    renderClients(document.getElementById('clientsSearch')?.value||'');
+    toast('Карточка клиента удалена','ok','Клиент удалён');
+  },`Карточка клиента «${String(client.name||'Без имени')}» будет удалена. Заказы, история и продажи этого клиента останутся в системе.`);
 }
 function getClientCars(client){
   if(Array.isArray(client?.cars)&&client.cars.length)return client.cars;
@@ -3032,6 +3052,8 @@ document.getElementById('clientsList')?.addEventListener('click',e=>{
   const profile=e.target.closest('[data-client-profile]');
   const order=e.target.closest('[data-client-order]');
   const cart=e.target.closest('[data-client-cart]');
+  const del=e.target.closest('[data-client-delete]');
+  if(del){deleteClientCard(del.dataset.clientDelete);return;}
   if(profile){openClientProfile(profile.dataset.clientProfile);return;}
   if(order){openClientCart(order.dataset.clientOrder);return;}
   if(cart){openClientCart(cart.dataset.clientCart);return;}
@@ -3273,6 +3295,11 @@ function showActionConfirm(type, onYes, detailText){
     title.textContent='Удалить продавца?';
     text.textContent=detailText || 'Продавец будет удалён из текущего списка. История операций сохранится.';
     yes.textContent='Да, удалить'; yes.className='btn danger';
+  }else if(type==='delete-client'){
+    icon.textContent='🗑'; icon.style.background='#fff5f5'; icon.style.color='#b42318';
+    title.textContent='Удалить карточку клиента?';
+    text.textContent=detailText || 'Карточка клиента будет удалена. Заказы, история и продажи останутся в системе.';
+    yes.textContent='🗑 Да, удалить карточку'; yes.className='btn danger';
   }else if(type==='import-backup'){
     icon.textContent='⬆'; icon.style.background='#fff7e8'; icon.style.color='#a56608';
     title.textContent='Импортировать резервную копию?';
@@ -4714,7 +4741,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   }
   function snapshot(){const out={};for(let i=0;i<garageStorage.length;i++){const k=garageStorage.key(i);if(k)out[k]=garageStorage.getItem(k)}return out}
   function applySnapshot(state){garageStorage.clear();if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>garageStorage.setItem(k,state[k]??''));}
-  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);applySnapshot(j.state||{});if(typeof render==='function')render();window.dispatchEvent(new Event('garage-cloud-loaded'));return !!j.state}finally{loading=false}}
+  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);applySnapshot(j.state||{});if(typeof render==='function')render();if(typeof renderClients==='function')renderClients(document.getElementById('clientsSearch')?.value||'');window.dispatchEvent(new Event('garage-cloud-loaded'));return !!j.state}finally{loading=false}}
   async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageLoginPassword;if(password)await api('/api/state','PUT',{state:snapshot()},password)}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком','error')}finally{saving=false}}
   function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,450)}
   const os=garageStorage.setItem.bind(garageStorage),or=garageStorage.removeItem.bind(garageStorage),oc=garageStorage.clear.bind(garageStorage);
