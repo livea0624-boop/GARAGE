@@ -3847,7 +3847,7 @@ let saleMethod='cash';
 let cartItems=[];
 let saleRoundingAdjustment=0;
 
-function money(n){return new Intl.NumberFormat('ru-RU').format(Math.round(Number(n)||0))+' ₽'}
+function money(n){const v=Math.round((Number(n)||0)*100)/100;return new Intl.NumberFormat('ru-RU',{minimumFractionDigits:Number.isInteger(v)?0:2,maximumFractionDigits:2}).format(v)+' ₽'}
 function money0(n){return money(Math.max(0,Number(n)||0))}
 function renderCart(){
   const count=cartItems.reduce((a,x)=>a+(+x.qty||0),0);
@@ -5465,7 +5465,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
     if(typeof renderOrders==='function')renderOrders();
     if(typeof renderSalesJournal==='function')renderSalesJournal();
     if(typeof renderCompletedOrders==='function')renderCompletedOrders();
-    if(typeof renderHome==='function')renderHome();
+    if(typeof renderHomeDashboard==='function')renderHomeDashboard();
     if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
   });
 })();
@@ -5722,7 +5722,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
     el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{const login=el.querySelector('#glogin').value,action=el.querySelector('#gaction').value;if(login.length<6)throw Error('Пароль входа: минимум 6 символов.');if(first){if(action.length<6)throw Error('Пароль действий: минимум 6 символов.');await api('/api/auth/setup',{loginPassword:login,actionPassword:action})}else await api('/api/auth/login',{password:login});window.garageLoginPassword=login;await window.garageCloudSync.start(login);el.remove()}catch(e){err.textContent=e.message;b.disabled=false}};
     el.querySelector('#gchange')?.addEventListener('click',()=>openChangeLogin(el));
   }
-  function openChangeLogin(gateEl){const old=prompt('Введите текущий пароль входа');if(old===null)return;const next=prompt('Введите новый пароль входа (минимум 6 символов)');if(next===null)return;api('/api/auth/change-login',{currentPassword:old,password:next}).then(()=>{window.garageLoginPassword=next;alert('Пароль входа изменён.');gateEl.querySelector('#gchange').focus()}).catch(e=>alert(e.message))}
+  function openChangeLogin(gateEl){const old=prompt('Введите текущий пароль входа');if(old===null)return;const next=prompt('Введите новый пароль входа (минимум 6 символов)');if(next===null)return;api('/api/auth/change',{currentPassword:old,password:next}).then(()=>{window.garageLoginPassword=next;alert('Пароль входа изменён.');gateEl.querySelector('#gchange').focus()}).catch(e=>alert(e.message))}
   async function init(){try{const r=await fetch(location.origin+'/api/auth/status',{cache:'no-store'});const j=await r.json();gate(j.configured?'login':'setup')}catch{gate('login')}}
   window.garageRequestActionPassword=async function(){
     return await new Promise(resolve=>{
