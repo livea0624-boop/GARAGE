@@ -27,7 +27,7 @@ async function ensureAuthTable(env) {
     CREATE TABLE IF NOT EXISTS garage_auth (
       id INTEGER PRIMARY KEY,
       login_hash TEXT NOT NULL,
-      action_hash TEXT NOT NULL,
+      action_hash TEXT,
       updated_at TEXT NOT NULL
     )
   `).run();
@@ -79,16 +79,16 @@ export default {
 
         let body;
         try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-        const loginPassword = String(body?.loginPassword || body?.password || '');
-        const actionPassword = String(body?.actionPassword || '');
-        if (loginPassword.length < 6 || actionPassword.length < 6) {
-          return json({ error: 'Passwords must contain at least 6 characters' }, 400);
+        const loginPassword = String(body?.password || '');
+        if (loginPassword.length < 6) {
+          return json({ error: 'Password must contain at least 6 characters' }, 400);
         }
         const now = new Date().toISOString();
+        const hash = await sha256(loginPassword);
         await env.GARAGE_DB.prepare(`
           INSERT INTO garage_auth (id, login_hash, action_hash, updated_at)
           VALUES (1, ?, ?, ?)
-        `).bind(await sha256(loginPassword), await sha256(actionPassword), now).run();
+        `).bind(hash, hash, now).run();
         return json({ ok: true });
       }
 
@@ -105,7 +105,7 @@ export default {
       if (url.pathname === '/api/auth/action' && request.method === 'POST') {
         let body;
         try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-        if (!(await requireAction(request, env, String(body?.password || '')))) {
+        if (!(await requireLogin(request, env))) {
           return json({ error: 'Unauthorized' }, 401);
         }
         return json({ ok: true });
@@ -120,7 +120,7 @@ export default {
         if (!auth || (await sha256(current)) !== auth.login_hash) return json({ error: 'Unauthorized' }, 401);
         if (next.length < 6) return json({ error: 'Password must contain at least 6 characters' }, 400);
         await env.GARAGE_DB.prepare(
-          'UPDATE garage_auth SET login_hash = ?, updated_at = ? WHERE id = 1'
+          'UPDATE garage_auth SET login_hash = ?, action_hash = NULL, updated_at = ? WHERE id = 1'
         ).bind(await sha256(next), new Date().toISOString()).run();
         return json({ ok: true });
       }
