@@ -1,129 +1,168 @@
 const corsHeaders = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, PUT, OPTIONS',
-  'access-control-allow-headers': 'content-type'
+  'access-control-allow-methods': 'GET,PUT,POST,OPTIONS',
+  'access-control-allow-headers': 'content-type, x-garage-password'
 };
 
-function json(body, status = 200, extraHeaders = {}) {
-  return new Response(JSON.stringify(body), {
+const json = (body, status = 200) => new Response(
+  JSON.stringify(body),
+  {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
-      ...corsHeaders,
-      ...extraHeaders
+      ...corsHeaders
     }
-  });
+  }
+);
+
+async function sha256(value) {
+  const bytes = new TextEncoder().encode(String(value));
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function ensureStateTable(env) {
+async function ensureAuthTable(env) {
   await env.GARAGE_DB.prepare(`
-    CREATE TABLE IF NOT EXISTS app_state (
+    CREATE TABLE IF NOT EXISTS garage_auth (
       id INTEGER PRIMARY KEY,
-      state_json TEXT NOT NULL,
+      login_hash TEXT NOT NULL,
+      action_hash TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
   `).run();
 }
 
-async function readJson(request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
+async function getAuth(env) {
+  await ensureAuthTable(env);
+  return env.GARAGE_DB.prepare(
+    'SELECT login_hash, action_hash, updated_at FROM garage_auth WHERE id = 1'
+  ).first();
 }
 
-function sameOriginOrAllowed(request) {
-  const origin = request.headers.get('origin');
-  if (!origin) return true;
-  try {
-    const originUrl = new URL(origin);
-    const requestUrl = new URL(request.url);
-    return originUrl.host === requestUrl.host;
-  } catch {
-    return false;
-  }
+async function requireLogin(request, env) {
+  const supplied = request.headers.get('x-garage-password') || '';
+  const auth = await getAuth(env);
+  if (!auth || !supplied) return false;
+  return (await sha256(supplied)) === auth.login_hash;
+}
+
+async function requireAction(request, env, password) {
+  const auth = await getAuth(env);
+  if (!auth) return false;
+  const supplied = password || request.headers.get('x-garage-password') || '';
+  if (!supplied) return false;
+  return (await sha256(supplied)) === auth.action_hash;
 }
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    if (!env.GARAGE_DB) {
+      return json({ error: 'D1 binding GARAGE_DB is not configured' }, 500);
+    }
+
     try {
-      if (!env.GARAGE_DB) {
-        return json({ error: 'D1 binding GARAGE_DB is not configured' }, 500);
+      if (url.pathname === '/api/auth/status' && request.method === 'GET') {
+        const auth = await getAuth(env);
+        return json({ configured: !!auth });
       }
 
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: corsHeaders });
-      }
+      if (url.pathname === '/api/auth/setup' && request.method === 'POST') {
+        const existing = await getAuth(env);
+        if (existing) return json({ error: 'Already configured' }, 409);
 
-      if (!sameOriginOrAllowed(request)) {
-        return json({ error: 'Origin not allowed' }, 403);
-      }
-
-      await ensureStateTable(env);
-      const url = new URL(request.url);
-
-      if (url.pathname === '/api/health' && request.method === 'GET') {
-        return json({ ok: true, service: 'garage', storage: 'cloudflare-d1' });
-      }
-
-      if (url.pathname === '/api/state' && request.method === 'GET') {
-        const row = await env.GARAGE_DB.prepare(`
-          SELECT state_json, updated_at
-          FROM app_state
-          WHERE id = 1
-        `).first();
-
-        if (!row) {
-          return json({ state: null, updatedAt: null });
+        let body;
+        try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+        const loginPassword = String(body?.loginPassword || body?.password || '');
+        const actionPassword = String(body?.actionPassword || '');
+        if (loginPassword.length < 6 || actionPassword.length < 6) {
+          return json({ error: 'Passwords must contain at least 6 characters' }, 400);
         }
-
-        let state;
-        try {
-          state = JSON.parse(row.state_json);
-        } catch {
-          return json({ error: 'Stored state is invalid' }, 500);
-        }
-
-        return json({ state, updatedAt: row.updated_at });
-      }
-
-      if (url.pathname === '/api/state' && request.method === 'PUT') {
-        const body = await readJson(request);
-
-        if (!body || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
-          return json({ error: 'Expected an object in state' }, 400);
-        }
-
-        const updatedAt = new Date().toISOString();
-        const stateJson = JSON.stringify(body.state);
-
+        const now = new Date().toISOString();
         await env.GARAGE_DB.prepare(`
-          INSERT INTO app_state (id, state_json, updated_at)
-          VALUES (1, ?, ?)
-          ON CONFLICT(id) DO UPDATE SET
-            state_json = excluded.state_json,
-            updated_at = excluded.updated_at
-        `).bind(stateJson, updatedAt).run();
-
-        return json({ ok: true, updatedAt });
+          INSERT INTO garage_auth (id, login_hash, action_hash, updated_at)
+          VALUES (1, ?, ?, ?)
+        `).bind(await sha256(loginPassword), await sha256(actionPassword), now).run();
+        return json({ ok: true });
       }
 
-      if (!env.ASSETS) {
-        return json({ error: 'Assets binding is not configured' }, 500);
+      if (url.pathname === '/api/auth/login' && request.method === 'POST') {
+        let body;
+        try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+        const auth = await getAuth(env);
+        if (!auth || (await sha256(String(body?.password || ''))) !== auth.login_hash) {
+          return json({ error: 'Unauthorized' }, 401);
+        }
+        return json({ ok: true });
       }
 
-      const response = await env.ASSETS.fetch(request);
-      const headers = new Headers(response.headers);
-      headers.set('x-content-type-options', 'nosniff');
-      headers.set('referrer-policy', 'strict-origin-when-cross-origin');
-      headers.set('x-frame-options', 'SAMEORIGIN');
-      headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
-      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      if (url.pathname === '/api/auth/action' && request.method === 'POST') {
+        let body;
+        try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+        if (!(await requireAction(request, env, String(body?.password || '')))) {
+          return json({ error: 'Unauthorized' }, 401);
+        }
+        return json({ ok: true });
+      }
+
+      if (url.pathname === '/api/auth/change' && request.method === 'POST') {
+        let body;
+        try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+        const auth = await getAuth(env);
+        const current = String(body?.currentPassword || '');
+        const next = String(body?.password || '');
+        if (!auth || (await sha256(current)) !== auth.login_hash) return json({ error: 'Unauthorized' }, 401);
+        if (next.length < 6) return json({ error: 'Password must contain at least 6 characters' }, 400);
+        await env.GARAGE_DB.prepare(
+          'UPDATE garage_auth SET login_hash = ?, updated_at = ? WHERE id = 1'
+        ).bind(await sha256(next), new Date().toISOString()).run();
+        return json({ ok: true });
+      }
+
+      if (url.pathname === '/api/state') {
+        if (!(await requireLogin(request, env))) return json({ error: 'Unauthorized' }, 401);
+
+        if (request.method === 'GET') {
+          const row = await env.GARAGE_DB.prepare(
+            'SELECT state_json, updated_at FROM app_state WHERE id = 1'
+          ).first();
+          if (!row) return json({ state: null, updatedAt: null });
+          try {
+            return json({ state: JSON.parse(row.state_json), updatedAt: row.updated_at });
+          } catch {
+            return json({ error: 'Stored state is invalid' }, 500);
+          }
+        }
+
+        if (request.method === 'PUT') {
+          let body;
+          try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+          if (!body || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
+            return json({ error: 'Expected an object in state' }, 400);
+          }
+          const updatedAt = new Date().toISOString();
+          await env.GARAGE_DB.prepare(`
+            INSERT INTO app_state (id, state_json, updated_at)
+            VALUES (1, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              state_json = excluded.state_json,
+              updated_at = excluded.updated_at
+          `).bind(JSON.stringify(body.state), updatedAt).run();
+          return json({ ok: true, updatedAt });
+        }
+        return json({ error: 'Method not allowed' }, 405);
+      }
+
+      return env.ASSETS.fetch(request);
     } catch (error) {
-      console.error('GARAGE Worker error:', error);
-      return json({ error: 'Internal Server Error', detail: String(error?.message || error) }, 500);
+      console.error(error);
+      return json({ error: error?.message || 'Internal server error' }, 500);
     }
   }
 };
