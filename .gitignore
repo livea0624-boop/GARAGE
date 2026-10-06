@@ -1,11 +1,36 @@
+# Dependencies
 node_modules/
+
+# Wrangler / Cloudflare local files
 .wrangler/
 .dev.vars
 .env
 .env.*
 !.env.example
-.DS_Store
-Thumbs.db
+
+# Local secrets
+*.pem
+*.key
+*.secret
+
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary / backups
+*.tmp
+*.bak
+*.old
+
+# Local generated files
+dist/
+build/
