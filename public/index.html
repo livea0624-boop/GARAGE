@@ -4792,7 +4792,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
     if(!ready||loading||saving)return;
     saving=true;
     try{
-      const password=window.garageCloudPassword;
+      const password=window.garageLoginPassword;
       if(password){
         const j=await api('/api/state','PUT',{state:snapshot()},password);
         lastCloudUpdatedAt=String(j.updatedAt||'');
@@ -4812,7 +4812,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   async function pollCloud(){
     if(!ready||loading||saving||saveTimer)return;
     try{
-      const password=window.garageCloudPassword;
+      const password=window.garageLoginPassword;
       if(!password)return;
       const j=await api('/api/state','GET',null,password);
       const remoteUpdatedAt=String(j.updatedAt||'');
