@@ -2140,14 +2140,20 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   <div class="head"><div><div class="eyebrow">Система</div><div class="title">Настройки</div></div></div>
   <div class="card section"><div class="section-title">Система</div><p style="color:#6d7887">Данные заказов и продаж хранятся в текущем хранилище Garage. Номер заказа ведётся отдельной последовательностью и не переиспользуется. Клиенты, автомобили и настройки при очистке ниже не удаляются.</p></div>
   <div class="card section" id="hostingUsageCard">
-    <div class="section-title">☁️ Объём и лимиты Cloudflare</div>
-    <p style="color:#6d7887;margin-top:6px">Здесь показывается фактический размер базы GARAGE, объём данных приложения и ориентир до лимита бесплатного D1. Лимиты запросов Cloudflare сбрасываются ежедневно.</p>
-    <div id="hostingUsageTable" style="margin-top:12px">
-      <div style="padding:14px;border:1px solid var(--line,#e5eaf0);border-radius:12px;color:#6d7887">Загрузка данных о хранилище…</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div class="section-title" style="margin-bottom:0">☁️ Объём и лимиты Cloudflare</div>
+      <button type="button" class="btn" id="hostingUsageToggle" aria-expanded="false">Показать ▾</button>
     </div>
-    <div id="hostingUsageNote" style="margin-top:10px;color:#6d7887;font-size:12px;line-height:1.5"></div>
+    <div id="hostingUsageDetails" class="hidden">
+      <p style="color:#6d7887;margin-top:10px">Здесь показывается фактический размер базы GARAGE, объём данных приложения и ориентир до лимита бесплатного D1. Лимиты запросов Cloudflare сбрасываются ежедневно.</p>
+      <div id="hostingUsageTable" style="margin-top:12px">
+        <div style="padding:14px;border:1px solid var(--line,#e5eaf0);border-radius:12px;color:#6d7887">Загрузка данных о хранилище…</div>
+      </div>
+      <div id="hostingUsageNote" style="margin-top:10px;color:#6d7887;font-size:12px;line-height:1.5"></div>
+    </div>
   </div>
-  <div class="card section" id="interfaceModeCard">
+
+<div class="card section" id="interfaceModeCard">
     <div class="section-title">Вид интерфейса</div>
     <p style="color:#6d7887;margin-top:6px">Можно принудительно выбрать раскладку. Это удобно, если Garage открыт в браузере телефона, но нужен компьютерный интерфейс, или наоборот.</p>
     <div class="interface-mode-grid" role="group" aria-label="Режим интерфейса">
@@ -4862,6 +4868,17 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   window.addEventListener('load',()=>setTimeout(load,500));
   timer=setInterval(()=>{if(document.visibilityState==='visible')load()},60000);
 })();
+
+  const hostingToggle=document.getElementById('hostingUsageToggle');
+  const hostingDetails=document.getElementById('hostingUsageDetails');
+  if(hostingToggle&&hostingDetails){
+    hostingToggle.addEventListener('click',()=>{
+      const open=!hostingDetails.classList.contains('hidden');
+      hostingDetails.classList.toggle('hidden');
+      hostingToggle.setAttribute('aria-expanded',open?'false':'true');
+      hostingToggle.textContent=open?'Показать ▾':'Скрыть ▴';
+    });
+  }
 </script>
 <script id="garage-interface-mode">
 (function(){
