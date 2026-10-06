@@ -1052,14 +1052,6 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   #orderHistoryModal .order-item-status-box{width:100%}
 }
 </style>
-<script id="garage-cloud-early-clean">
-(function(){
-  const makeMemoryStorage=()=>{const data=Object.create(null);return {get length(){return Object.keys(data).length},key(i){return Object.keys(data)[i]??null},getItem(k){k=String(k);return Object.prototype.hasOwnProperty.call(data,k)?data[k]:null},setItem(k,v){data[String(k)]=String(v)},removeItem(k){delete data[String(k)]},clear(){for(const k of Object.keys(data))delete data[k]}}};
-  try{localStorage.clear();sessionStorage.clear();}catch(e){}
-  try{Object.defineProperty(window,'localStorage',{configurable:true,value:makeMemoryStorage()});}catch(e){}
-  try{Object.defineProperty(window,'sessionStorage',{configurable:true,value:makeMemoryStorage()});}catch(e){}
-})();
-</script>
 </head>
 <body>
 <div class="app">
@@ -1190,11 +1182,21 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 
 <section class="page" id="settings">
   <div class="head"><div><div class="eyebrow">Система</div><div class="title">Настройки</div></div></div>
-  <div class="card section"><div class="section-title">Система</div><p style="color:#6d7887">Данные заказов и продаж хранятся локально в браузере. Номер заказа ведётся отдельной последовательностью и не переиспользуется. Клиенты, автомобили и настройки при очистке ниже не удаляются.</p></div>
+  <div class="card section"><div class="section-title">Система</div><p style="color:#6d7887">Рабочие данные хранятся в облачном хранилище GARAGE. Браузер не используется как постоянное хранилище данных. Номер заказа ведётся отдельной последовательностью и не переиспользуется. Клиенты, автомобили и настройки при очистке ниже не удаляются.</p></div>
   <div class="card section" style="border-color:#f0d4d4;background:#fffafa">
     <div class="section-title" style="color:#a33131">Опасная зона</div>
     <p style="color:#7d6868;margin-top:6px">Полностью удалить все заказы и продажи. Клиенты, автомобили, продавцы и остальные настройки останутся.</p>
     <button class="btn danger" type="button" id="clearOrdersSalesBtn" style="margin-top:10px">🗑 Очистить все заказы и продажи</button>
+  </div>
+  <div class="card section" id="garageCloudStorageCard">
+    <div class="section-title">Облачное хранилище</div>
+    <div id="garageCloudStorageInfo" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px">
+      <div class="order-detail-stat"><span>Занято данными</span><b id="cloudStorageUsed">—</b></div>
+      <div class="order-detail-stat"><span>Лимит для расчёта</span><b id="cloudStorageLimit">—</b></div>
+      <div class="order-detail-stat"><span>Средний рост в день</span><b id="cloudStorageGrowth">—</b></div>
+      <div class="order-detail-stat"><span>Прогноз лимита</span><b id="cloudStorageForecast">—</b></div>
+    </div>
+    <p id="cloudStorageNote" style="color:#6d7887;margin:10px 0 0;font-size:12px">Размер считается по фактическому объёму данных GARAGE в D1. Старые ежедневные резервные копии автоматически удаляются.</p>
   </div>
   <div class="card section">
     <div class="section-title">Резервная копия</div>
@@ -3721,15 +3723,38 @@ function applyGarageBackup(payload){
   }
   const keys=[]; for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i); if(key&&key.startsWith('garage'))keys.push(key);}
   keys.forEach(k=>localStorage.removeItem(k)); Object.entries(payload.data).forEach(([k,v])=>{if(String(k).startsWith('garage'))localStorage.setItem(k,String(v??''));});
+  window.garageCloudSync?.save?.();
   location.reload();
 }
-document.getElementById('exportGarageBackup')?.addEventListener('click',exportGarageBackup);
-document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
+function openActionPasswordModal(action,onSuccess){
+  const old=document.getElementById('garageActionPasswordModal'); if(old)old.remove();
+  const el=document.createElement('div'); el.id='garageActionPasswordModal'; el.className='overlay'; el.style.zIndex='100001';
+  el.innerHTML=`<div class="modal" style="max-width:430px"><div class="modal-head"><div><div style="font-size:12px;color:#9a6509;margin-bottom:3px">Защищённое действие</div><h2 style="margin:0">${escapeHtml(action)}</h2></div><button class="close" id="gactClose">×</button></div><div class="modal-body"><p style="margin-top:0;color:#687589">Введите пароль действий. Это отдельный пароль от пароля входа в GARAGE.</p><input id="gactPassword" type="password" autocomplete="off" placeholder="Пароль действий" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box"><div id="gactError" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button class="btn" id="gactChange" type="button">🔑 Изменить пароль действий</button></div><div class="modal-foot"><button class="btn" id="gactCancel">Отмена</button><button class="btn primary" id="gactConfirm">Продолжить</button></div></div>`;
+  document.body.appendChild(el);
+  const close=()=>el.remove(); el.querySelector('#gactClose').onclick=close; el.querySelector('#gactCancel').onclick=close;
+  el.querySelector('#gactConfirm').onclick=async()=>{const b=el.querySelector('#gactConfirm'),pw=el.querySelector('#gactPassword').value,err=el.querySelector('#gactError');b.disabled=true;try{await window.garageCloudSync.action(pw);close();await onSuccess();}catch(e){err.textContent=e.message||'Неверный пароль действий';b.disabled=false;}};
+  el.querySelector('#gactPassword').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gactConfirm').click()});
+  el.querySelector('#gactChange').onclick=()=>openChangePasswordModal('action');
+}
+function openChangePasswordModal(kind='action'){
+  const old=document.getElementById('garageChangePasswordModal'); if(old)old.remove();
+  const isAction=kind==='action';
+  const el=document.createElement('div');el.id='garageChangePasswordModal';el.className='overlay';el.style.zIndex='100002';
+  el.innerHTML=`<div class="modal" style="max-width:430px"><div class="modal-head"><div><div style="font-size:12px;color:#315f9f;margin-bottom:3px">Безопасность</div><h2 style="margin:0">Изменить ${isAction?'пароль действий':'пароль входа'}</h2></div><button class="close" id="gchgClose">×</button></div><div class="modal-body"><div class="field"><label>Текущий пароль</label><input id="gchgCurrent" type="password" autocomplete="off"></div><div class="field"><label>Новый пароль</label><input id="gchgNext" type="password" autocomplete="new-password" placeholder="От 6 символов"></div><div class="field"><label>Повторите новый пароль</label><input id="gchgNext2" type="password" autocomplete="new-password"></div><div id="gchgError" style="min-height:22px;color:#dc2626;font-size:13px"></div></div><div class="modal-foot"><button class="btn" id="gchgCancel">Отмена</button><button class="btn primary" id="gchgConfirm">Сохранить</button></div></div>`;
+  document.body.appendChild(el);const close=()=>el.remove();el.querySelector('#gchgClose').onclick=close;el.querySelector('#gchgCancel').onclick=close;
+  el.querySelector('#gchgConfirm').onclick=async()=>{const b=el.querySelector('#gchgConfirm'),err=el.querySelector('#gchgError'),cur=el.querySelector('#gchgCurrent').value,n=el.querySelector('#gchgNext').value,n2=el.querySelector('#gchgNext2').value;b.disabled=true;try{if(n.length<6)throw Error('Минимум 6 символов.');if(n!==n2)throw Error('Новые пароли не совпадают.');await window.garageCloudSync.changePassword(cur,n,isAction?'action':'login');close();toast('Пароль изменён','success');}catch(e){err.textContent=e.message||'Не удалось изменить пароль';b.disabled=false;}};
+}
+
+document.getElementById('exportGarageBackup')?.addEventListener('click',()=>openActionPasswordModal('Экспорт данных',async()=>exportGarageBackup()));
+document.getElementById('importGarageBackup')?.addEventListener('click',()=>openActionPasswordModal('Импорт данных',async()=>document.getElementById('garageBackupFile')?.click()));
 document.getElementById('garageBackupFile')?.addEventListener('change',e=>{
   const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader();
-  reader.onload=()=>{try{const payload=JSON.parse(reader.result); showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Все текущие локальные данные будут заменены данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён');}finally{e.target.value='';}};
+  reader.onload=()=>{try{const payload=JSON.parse(reader.result);showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Все текущие данные будут заменены данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён');}finally{e.target.value='';}};
   reader.readAsText(file,'utf-8');
 });
+
+async function loadCloudStorageInfo(){
+  try{const j=await window.garageCloudSync?.storageInfo?.();if(!j)return;const used=Number(j.usedBytes||0),limit=Number(j.limitBytes||50*1024*1024),growth=Number(j.avgDailyGrowthBytes||0);const fmt=n=>n<1024?`${n} Б`:n<1048576?`${(n/1024).toFixed(1)} КБ`:`${(n/1048576).toFixed(2)} МБ`;document.getElementById('cloudStorageUsed').textContent=fmt(used);document.getElementById('cloudStorageLimit').textContent=fmt(limit);document.getElementById('cloudStorageGrowth').textContent=growth?`${fmt(growth)}/день`:'пока нет данных';let forecast='—';if(growth>0&&limit>used){const days=Math.ceil((limit-used)/growth);forecast=new Date(Date.now()+days*86400000).toLocaleDateString('ru-RU');}document.getElementById('cloudStorageForecast').textContent=forecast;}catch(e){console.warn('storage info',e)}}
 
 let financialsVisible=true;
 function setFinancialVisibility(){
@@ -3802,90 +3827,43 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.getElementById('closeClearOrdersSales')?.addEventListener('click',close);
   document.getElementById('cancelClearOrdersSales')?.addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
-  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>{
+  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>openActionPasswordModal('Очистить все заказы и продажи',async()=>{
     ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>localStorage.removeItem(k));
-    // Удаляем также сохранённые признаки архивирования/изменения демонстрационных заказов, если они были.
     ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>localStorage.removeItem(k));
     close();
-    if(typeof renderOrders==='function')renderOrders();
-    if(typeof renderSalesJournal==='function')renderSalesJournal();
-    if(typeof renderCompletedOrders==='function')renderCompletedOrders();
-    if(typeof renderHome==='function')renderHome();
-    if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
-  });
+    if(typeof renderOrders==='function')renderOrders(); if(typeof renderSalesJournal==='function')renderSalesJournal(); if(typeof renderCompletedOrders==='function')renderCompletedOrders(); if(typeof renderHome==='function')renderHome(); if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
+    await window.garageCloudSync?.save?.();
+  }));
 })();
 </script>
 
 <script id="garage-cloud-sync-v3">
 (function(){
-  // GARAGE cloud-only: данные живут только в памяти вкладки и синхронизируются с D1.
-  const PASSWORD_KEY='garageSitePassword';
-  const SYNC_META_KEY='garageCloudMeta';
-  const EXCLUDE=new Set([PASSWORD_KEY,SYNC_META_KEY]);
-  let ready=false, loading=false, saving=false, saveTimer=null;
-
-  const base=location.origin;
-  function api(path,method='GET',body=null,password=''){
-    const headers={'content-type':'application/json'};
-    if(password)headers['x-garage-password']=password;
-    return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined})
-      .then(async r=>{let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});
-  }
-  function snapshot(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!EXCLUDE.has(k))out[k]=localStorage.getItem(k)}return out;}
-  function applySnapshot(state){localStorage.clear();if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>{if(!EXCLUDE.has(k))localStorage.setItem(k,state[k]??'')});}
-  async function loadCloud(password){
-    loading=true;
-    try{
-      const j=await api('/api/state','GET',null,password);
-      if(j.state&&typeof j.state==='object'){
-        applySnapshot(j.state);
-        if(typeof render==='function')render();
-        window.dispatchEvent(new Event('garage-cloud-loaded'));
-        return true;
-      }
-      return false;
-    }finally{loading=false}
-  }
-  async function saveCloud(){
-    if(!ready||loading||saving)return;
-    saving=true;
-    try{
-      const password=window.garageCloudPassword;
-      if(!password)return;
-      await api('/api/state','PUT',{state:snapshot()},password);
-    }catch(e){
-      console.error('GARAGE cloud save:',e);
-      if(typeof toast==='function')toast('Ошибка синхронизации с облаком');
-    }finally{saving=false}
-  }
-  function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,500)}
-  window.garageCloudSync={
-    start:async function(password){
-      window.garageCloudPassword=password;
-      const had=await loadCloud(password);
-      ready=true;
-      if(!had)await saveCloud();
-      return had;
-    },
-    save:saveCloud,
-    load:loadCloud
+  let ready=false,loading=false,saving=false,saveTimer=null; const base=location.origin;
+  function api(path,method='GET',body=null,password=''){const headers={'content-type':'application/json'};if(password)headers['x-garage-password']=password;return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined}).then(async r=>{let j=null;try{j=await r.json()}catch{}if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});}
+  function snapshot(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&!['garageSitePassword','garageCloudMeta'].includes(k))out[k]=localStorage.getItem(k)}return out;}
+  function applySnapshot(state){if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>localStorage.setItem(k,state[k]??''));}
+  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);if(j.state&&typeof j.state==='object'){applySnapshot(j.state);if(typeof render==='function')render();window.dispatchEvent(new Event('garage-cloud-loaded'));return true}return false}finally{loading=false}}
+  async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageCloudPassword;if(!password)return;await api('/api/state','PUT',{state:snapshot()},password);if(typeof loadCloudStorageInfo==='function')setTimeout(loadCloudStorageInfo,300);}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком')}finally{saving=false}}
+  function schedule(){if(!ready||loading)return;clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,500)}
+  const originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&!['garageSitePassword','garageCloudMeta'].includes(k))schedule()};
+  const originalRemove=Storage.prototype.removeItem;Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&!['garageSitePassword','garageCloudMeta'].includes(k))schedule()};
+  window.garageCloudSync={start:async function(loginPassword){window.garageCloudPassword=loginPassword;const had=await loadCloud(loginPassword);ready=true;if(!had)await saveCloud();return had;},save:saveCloud,load:loadCloud,
+    action:async function(actionPassword){return api('/api/auth/action','POST',{password:actionPassword},actionPassword)},
+    changePassword:async function(currentPassword,nextPassword,type){return api('/api/auth/change','POST',{currentPassword,password:nextPassword,type},currentPassword)},
+    storageInfo:async function(){return api('/api/storage','GET',null,window.garageCloudPassword)}
   };
 })();
 </script>
 <script id="garage-cloud-auth-v3">
 (function(){
-  function gate(mode){
-    document.getElementById('garageCloudGate')?.remove();
-    const first=mode==='setup';
-    const el=document.createElement('div');el.id='garageCloudGate';el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220 0%,#111827 45%,#1e3a5f 100%);z-index:99999;display:grid;place-items:center;padding:20px;isolation:isolate;overflow:hidden;';
-    el.innerHTML=`<div style="width:min(420px,100%);background:rgba(255,255,255,.97);color:#17202a;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:28px;box-shadow:0 25px 90px rgba(0,0,0,.45);backdrop-filter:blur(8px)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0 6px">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:var(--muted,#7b8794);margin:0 0 18px">${first?'Создайте общий пароль для всех пользователей.':'Введите общий пароль для продолжения работы.'}</p><input id="gcp1" type="password" minlength="6" placeholder="Пароль (от 6 символов)" autocomplete="${first?'new-password':'current-password'}" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box"><div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароль':'Войти'}</button></div>`;
-    document.body.appendChild(el);const err=el.querySelector('#gce');
-    el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{const a=el.querySelector('#gcp1').value;if(a.length<6)throw Error('Минимум 6 символов.');if(first){await fetch(location.origin+'/api/auth/setup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:a})}).then(async r=>{if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(j.error||'Ошибка создания пароля')}})}else{await apiLogin(a)}window.garageCloudPassword=a;await window.garageCloudSync.start(a);el.remove();}catch(e){err.textContent=e.message;b.disabled=false}};
-    el.querySelector('#gcp1').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gcb').click()});
+  function gate(mode){document.getElementById('garageCloudGate')?.remove();const first=mode==='setup';const el=document.createElement('div');el.id='garageCloudGate';el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220 0%,#111827 45%,#1e3a5f 100%);z-index:99999;display:grid;place-items:center;padding:20px;isolation:isolate;overflow:hidden;';el.innerHTML=`<div style="width:min(440px,100%);background:rgba(255,255,255,.97);color:#17202a;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:28px;box-shadow:0 25px 90px rgba(0,0,0,.45)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0 6px">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:#7b8794;margin:0 0 18px">${first?'Создайте пароль входа и отдельный пароль для защищённых действий.':'Введите пароль для входа в GARAGE.'}</p>${first?'<input id="gcp1" type="password" placeholder="Пароль входа (от 6 символов)" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gcp2" type="password" placeholder="Повторите пароль входа" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gca1" type="password" placeholder="Пароль действий (от 6 символов)" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gca2" type="password" placeholder="Повторите пароль действий" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">':'<input id="gcp1" type="password" placeholder="Пароль входа" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">'}<div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароли':'Войти'}</button>${first?'':'<button id="gch" class="btn" style="width:100%;margin-top:8px">🔑 Изменить пароль входа</button>'}</div>`;document.body.appendChild(el);const err=el.querySelector('#gce');
+    el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{const login=el.querySelector('#gcp1').value;if(first){const login2=el.querySelector('#gcp2').value,action=el.querySelector('#gca1').value,action2=el.querySelector('#gca2').value;if(login.length<6||action.length<6)throw Error('Оба пароля должны содержать минимум 6 символов.');if(login!==login2||action!==action2)throw Error('Пароли не совпадают.');await postSetup(login,action)}else await apiLogin(login);window.garageCloudPassword=login;await window.garageCloudSync.start(login);el.remove();if(typeof loadCloudStorageInfo==='function')loadCloudStorageInfo();}catch(e){err.textContent=e.message;b.disabled=false;}};
+    el.querySelector('#gcp1').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gcb').click()});el.querySelector('#gch')?.addEventListener('click',()=>openChangePasswordModal('login'));
   }
+  async function postSetup(loginPassword,actionPassword){const r=await fetch(location.origin+'/api/auth/setup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({loginPassword,actionPassword})});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(j.error||'Ошибка создания паролей')}}
   async function apiLogin(password){const r=await fetch(location.origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(r.status===401?'Неверный пароль.':(j.error||'Ошибка входа'))}}
-  async function init(){try{const r=await fetch(location.origin+'/api/auth/status',{cache:'no-store'});const j=await r.json();gate(j.configured?'login':'setup')}catch(e){gate('login')}}
-  window.addEventListener('load',()=>setTimeout(init,50));
+  async function init(){try{const r=await fetch(location.origin+'/api/auth/status');const j=await r.json();gate(j.configured?'login':'setup')}catch(e){gate('login')}}window.addEventListener('load',()=>setTimeout(init,50));
 })();
 </script>
 </body>
