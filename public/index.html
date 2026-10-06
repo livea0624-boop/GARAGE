@@ -4731,25 +4731,133 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   window.addEventListener('garage-cloud-loaded',()=>applyMode(getMode()));
 })();
 </script>
-<script id="garage-cloud-sync-v4">
+<script id="garage-cloud-sync-v5-realtime">
 (function(){
-  let ready=false,loading=false,saving=false,saveTimer=null;
+  let ready=false,loading=false,saving=false,saveTimer=null,pollTimer=null;
+  let lastCloudUpdatedAt='';
+  const POLL_MS=2000;
+  const DEVICE_ONLY_KEYS=new Set(['garageInterfaceMode']);
   const base=location.origin;
+
   function api(path,method='GET',body=null,password=''){
-    const headers={'content-type':'application/json'};
+    const headers={'content-type':'application/json','cache-control':'no-cache'};
     if(password)headers['x-garage-password']=password;
-    return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined}).then(async r=>{let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});
+    return fetch(base+path,{method,headers,cache:'no-store',body:body?JSON.stringify(body):undefined}).then(async r=>{
+      let j=null;try{j=await r.json()}catch{}
+      if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));
+      return j;
+    });
   }
-  function snapshot(){const out={};for(let i=0;i<garageStorage.length;i++){const k=garageStorage.key(i);if(k)out[k]=garageStorage.getItem(k)}return out}
-  function applySnapshot(state){garageStorage.clear();if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>garageStorage.setItem(k,state[k]??''));}
-  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);applySnapshot(j.state||{});if(typeof render==='function')render();if(typeof renderClients==='function')renderClients(document.getElementById('clientsSearch')?.value||'');window.dispatchEvent(new Event('garage-cloud-loaded'));return !!j.state}finally{loading=false}}
-  async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageLoginPassword;if(password)await api('/api/state','PUT',{state:snapshot()},password)}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком','error')}finally{saving=false}}
-  function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,450)}
-  const os=garageStorage.setItem.bind(garageStorage),or=garageStorage.removeItem.bind(garageStorage),oc=garageStorage.clear.bind(garageStorage);
-  garageStorage.setItem=function(k,v){os(k,v);if(!loading)schedule()};
-  garageStorage.removeItem=function(k){or(k);if(!loading)schedule()};
+
+  function snapshot(){
+    const out={};
+    for(let i=0;i<garageStorage.length;i++){
+      const k=garageStorage.key(i);
+      if(k && !DEVICE_ONLY_KEYS.has(k))out[k]=garageStorage.getItem(k);
+    }
+    return out;
+  }
+
+  function applySnapshot(state){
+    // Сохраняем настройки конкретного устройства, очищаем только общие данные,
+    // затем применяем свежий снимок из D1.
+    const deviceValues={};
+    DEVICE_ONLY_KEYS.forEach(k=>{
+      const v=garageStorage.getItem(k);
+      if(v!==null)deviceValues[k]=v;
+    });
+    garageStorage.clear();
+    if(state&&typeof state==='object'){
+      Object.keys(state).forEach(k=>{
+        if(!DEVICE_ONLY_KEYS.has(k))garageStorage.setItem(k,state[k]??'');
+      });
+    }
+    Object.keys(deviceValues).forEach(k=>garageStorage.setItem(k,deviceValues[k]));
+  }
+
+  async function loadCloud(password){
+    loading=true;
+    try{
+      const j=await api('/api/state','GET',null,password);
+      applySnapshot(j.state||{});
+      lastCloudUpdatedAt=String(j.updatedAt||'');
+      if(typeof render==='function')render();
+      if(typeof renderClients==='function')renderClients(document.getElementById('clientsSearch')?.value||'');
+      window.dispatchEvent(new Event('garage-cloud-loaded'));
+      return !!j.state;
+    }finally{loading=false}
+  }
+
+  async function saveCloud(){
+    if(!ready||loading||saving)return;
+    saving=true;
+    try{
+      const password=window.garageLoginPassword;
+      if(password){
+        const j=await api('/api/state','PUT',{state:snapshot()},password);
+        lastCloudUpdatedAt=String(j.updatedAt||'');
+      }
+    }catch(e){
+      console.error('GARAGE cloud save:',e);
+      if(typeof toast==='function')toast('Ошибка синхронизации с облаком','error');
+    }finally{saving=false}
+  }
+
+  function schedule(){
+    if(!ready||loading)return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(saveCloud,450);
+  }
+
+  async function pollCloud(){
+    if(!ready||loading||saving||saveTimer)return;
+    try{
+      const password=window.garageLoginPassword;
+      if(!password)return;
+      const j=await api('/api/state','GET',null,password);
+      const remoteUpdatedAt=String(j.updatedAt||'');
+      if(!remoteUpdatedAt || remoteUpdatedAt===lastCloudUpdatedAt)return;
+
+      loading=true;
+      try{
+        applySnapshot(j.state||{});
+        lastCloudUpdatedAt=remoteUpdatedAt;
+        if(typeof render==='function')render();
+        if(typeof renderClients==='function')renderClients(document.getElementById('clientsSearch')?.value||'');
+        window.dispatchEvent(new Event('garage-cloud-updated'));
+      }finally{loading=false}
+    }catch(e){
+      console.warn('GARAGE cloud realtime:',e);
+    }
+  }
+
+  function startPolling(){
+    clearInterval(pollTimer);
+    pollTimer=setInterval(pollCloud,POLL_MS);
+  }
+
+  const os=garageStorage.setItem.bind(garageStorage),
+        or=garageStorage.removeItem.bind(garageStorage),
+        oc=garageStorage.clear.bind(garageStorage);
+
+  garageStorage.setItem=function(k,v){os(k,v);if(!loading&&!DEVICE_ONLY_KEYS.has(k))schedule()};
+  garageStorage.removeItem=function(k){or(k);if(!loading&&!DEVICE_ONLY_KEYS.has(k))schedule()};
   garageStorage.clear=function(){oc();if(!loading)schedule()};
-  window.garageCloudSync={start:async password=>{window.garageLoginPassword=password;const had=await loadCloud(password);ready=true;if(!had)await saveCloud();return had},save:saveCloud,load:loadCloud,api};
+
+  window.garageCloudSync={
+    start:async password=>{
+      window.garageLoginPassword=password;
+      const had=await loadCloud(password);
+      ready=true;
+      if(!had)await saveCloud();
+      startPolling();
+      return had
+    },
+    save:saveCloud,
+    load:loadCloud,
+    poll:pollCloud,
+    api
+  };
 })();
 </script>
 <script id="garage-cloud-auth-v4">
