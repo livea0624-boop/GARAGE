@@ -2008,6 +2008,602 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 }
 </style>
 
+
+<style id="garage-mobile-v7-polished">
+@media(max-width:700px){
+  /* =========================================================
+     GARAGE MOBILE V7
+     Mobile is a separate presentation layer.
+     Desktop styles are untouched.
+     ========================================================= */
+
+  :root{
+    --gm-side:12px;
+    --gm-gap:10px;
+    --gm-radius:16px;
+    --gm-nav:68px;
+    --gm-safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+
+  html,body{max-width:100%;overflow-x:hidden}
+  body.garage-mobile-mode{background:#f4f7fb}
+
+  /* ---------- App chrome ---------- */
+  body.garage-mobile-mode .content{
+    padding:10px var(--gm-side) calc(var(--gm-nav) + 18px + var(--gm-safe-bottom));
+    width:100%;
+    max-width:none;
+  }
+
+  body.garage-mobile-mode .head{
+    min-height:44px;
+    margin:0 0 10px;
+    align-items:center;
+    gap:8px;
+  }
+
+  body.garage-mobile-mode .head .eyebrow{font-size:10px}
+  body.garage-mobile-mode .head .title{
+    font-size:20px;
+    line-height:1.15;
+    letter-spacing:-.02em;
+  }
+  body.garage-mobile-mode .head .actions{
+    gap:6px;
+    flex-wrap:nowrap;
+  }
+  body.garage-mobile-mode .head .actions .btn{
+    min-width:42px;
+    min-height:42px;
+    padding:8px 10px;
+  }
+
+  /* Hide verbose desktop-only labels where the mobile nav already gives context. */
+  body.garage-mobile-mode .home-stat-note{font-size:10px;line-height:1.3}
+
+  /* ---------- Cards / grids ---------- */
+  body.garage-mobile-mode .grid,
+  body.garage-mobile-mode .two,
+  body.garage-mobile-mode .home-minimal-grid{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  body.garage-mobile-mode .home-minimal-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body.garage-mobile-mode .home-minimal-grid .home-minimal-stat:first-child{
+    grid-column:1/-1;
+  }
+
+  body.garage-mobile-mode .card{
+    border-radius:var(--gm-radius);
+    box-shadow:0 2px 10px rgba(25,45,70,.045);
+  }
+  body.garage-mobile-mode .section{padding:13px}
+  body.garage-mobile-mode .section-title{font-size:15px;margin-bottom:10px}
+
+  /* ---------- Touch targets ---------- */
+  body.garage-mobile-mode button,
+  body.garage-mobile-mode .btn,
+  body.garage-mobile-mode select,
+  body.garage-mobile-mode input,
+  body.garage-mobile-mode textarea{
+    min-height:44px;
+  }
+  body.garage-mobile-mode .btn{
+    padding:10px 12px;
+    border-radius:11px;
+  }
+
+  /* ---------- Lists: cards, never squeezed tables ---------- */
+  body.garage-mobile-mode .table-wrap,
+  body.garage-mobile-mode .table-scroll,
+  body.garage-mobile-mode .orders-table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body.garage-mobile-mode .rows{gap:8px}
+  body.garage-mobile-mode .row{
+    padding:12px;
+    border-radius:13px;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  /* ---------- Bottom navigation ---------- */
+  body.garage-mobile-mode .bottom-nav,
+  body.garage-mobile-mode nav.mobile-bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:9000;
+    min-height:var(--gm-nav);
+    padding:7px 8px calc(7px + var(--gm-safe-bottom));
+    background:rgba(255,255,255,.97);
+    border-top:1px solid #dfe6ee;
+    box-shadow:0 -6px 24px rgba(24,42,62,.10);
+    backdrop-filter:blur(12px);
+  }
+
+  /* ---------- Forms ---------- */
+  body.garage-mobile-mode input,
+  body.garage-mobile-mode select,
+  body.garage-mobile-mode textarea{
+    font-size:16px; /* prevents iOS zoom */
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  /* ---------- MAIN / NOTIFY: independent scroll ---------- */
+  body.garage-mobile-mode #homeNotifyBanner{
+    display:block;
+    min-width:0;
+    overflow:hidden;
+  }
+  body.garage-mobile-mode #homeNotifyBanner.hidden{display:none!important}
+  body.garage-mobile-mode #homeNotifyBanner .home-notify-banner-head{
+    position:sticky;
+    top:0;
+    z-index:3;
+    margin:-15px -17px 10px;
+    padding:13px 14px 10px;
+    background:#fffaf0;
+    border-bottom:1px solid #f0dfae;
+  }
+  body.garage-mobile-mode #homeNotifyList{
+    display:grid;
+    gap:8px;
+    max-height:min(56dvh,520px);
+    overflow-y:scroll!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    scrollbar-width:auto;
+    scrollbar-color:#9eabb9 #edf1f5;
+    padding:2px 4px 4px 1px;
+    min-height:0;
+  }
+  body.garage-mobile-mode #homeNotifyList::-webkit-scrollbar{width:12px}
+  body.garage-mobile-mode #homeNotifyList::-webkit-scrollbar-track{
+    background:#edf1f5;
+    border-radius:999px;
+  }
+  body.garage-mobile-mode #homeNotifyList::-webkit-scrollbar-thumb{
+    background:#9eabb9;
+    border:3px solid #edf1f5;
+    border-radius:999px;
+  }
+  body.garage-mobile-mode #homeNotifyList .home-notify-row{
+    grid-template-columns:1fr!important;
+    gap:7px!important;
+    width:100%;
+    box-sizing:border-box;
+    padding:11px!important;
+  }
+  body.garage-mobile-mode #homeNotifyList .home-notify-client b,
+  body.garage-mobile-mode #homeNotifyList .home-notify-client small,
+  body.garage-mobile-mode #homeNotifyList .home-notify-items{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+  }
+  body.garage-mobile-mode #homeNotifyList .home-notify-order{
+    font-size:11px;
+  }
+  body.garage-mobile-mode #homeNotifyList .home-notify-row .btn{
+    grid-column:1!important;
+    width:100%!important;
+    min-height:46px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* =========================================================
+     ORDER DETAILS / PAYMENT
+     Desktop workspace becomes a true mobile workflow.
+     ========================================================= */
+
+  body.garage-mobile-mode #orderHistoryModal{
+    padding:0;
+    align-items:stretch;
+    justify-content:flex-end;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-modal{
+    width:100%;
+    height:100dvh;
+    max-height:100dvh;
+    border-radius:0;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    background:#f4f7fb;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-head{
+    flex:0 0 auto;
+    min-height:58px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    position:relative;
+    z-index:5;
+    background:#fff;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-head h2{
+    font-size:17px;
+    line-height:1.2;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-sub{
+    font-size:10px;
+    margin-top:3px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-body{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:9px 10px 18px;
+    background:#f4f7fb;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-detail-foot{
+    flex:0 0 auto;
+    padding:8px 10px calc(8px + var(--gm-safe-bottom));
+    background:#fff;
+    border-top:1px solid #dfe6ee;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-workspace{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-main-column,
+  body.garage-mobile-mode #orderHistoryModal .order-side-column{
+    width:100%;
+    min-width:0;
+    position:static;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  /* Summary: compact but readable 2x2 */
+  body.garage-mobile-mode #orderHistoryModal .order-summary-bar{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    margin-bottom:0;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-summary-card{
+    min-width:0;
+    padding:10px 11px;
+    border-radius:13px;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-summary-card span{
+    font-size:9px;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-summary-card b{
+    font-size:15px;
+    margin-top:4px;
+  }
+
+  /* Order status */
+  body.garage-mobile-mode #orderHistoryModal .order-status-card{
+    padding:11px 12px;
+    border-radius:14px;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-status-card-label{
+    font-size:15px;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-status-detail{
+    gap:5px;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-status-detail span{
+    padding:7px 8px;
+    font-size:10px;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  /* Item list: every part is a proper mobile card */
+  body.garage-mobile-mode #orderHistoryModal .order-panel{
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-panel-head{
+    padding:11px 12px;
+    gap:8px;
+    align-items:flex-start;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-panel-head b{
+    font-size:13px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-panel-head span{
+    font-size:10px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-panel-head #markWholeOrderTaken{
+    min-height:40px;
+    padding:8px 9px;
+    font-size:11px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+    padding:12px;
+    min-width:0;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item-main,
+  body.garage-mobile-mode #orderHistoryModal .order-item-info,
+  body.garage-mobile-mode #orderHistoryModal .order-item-paycol{
+    width:100%;
+    min-width:0;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item-paycol{
+    padding-top:8px;
+    border-top:1px solid #edf1f5;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item-paycol .select-pay{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-weight:750;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item-paycol .select-pay input{
+    width:20px;
+    height:20px;
+    min-height:20px;
+    flex:0 0 auto;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-item-paycol .pay-state{
+    margin-top:5px;
+    font-size:10px;
+  }
+
+  /* ---------- PAYMENT PANEL: the important part ---------- */
+  body.garage-mobile-mode #orderHistoryModal .order-side-card{
+    border-radius:15px;
+    padding:12px;
+    box-shadow:0 3px 14px rgba(24,43,64,.06);
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-side-title{
+    font-size:14px;
+    margin-bottom:9px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-pay-amount{
+    height:54px;
+    min-height:54px;
+    font-size:23px;
+    border-radius:13px;
+    padding:0 13px;
+    letter-spacing:.01em;
+    background:#fbfdff;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-pay-method{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:9px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-pay-method button{
+    min-height:48px;
+    height:48px;
+    border-radius:12px;
+    font-size:13px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-discount-box{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-discount-box .wide{
+    grid-column:auto;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-discount-box select,
+  body.garage-mobile-mode #orderHistoryModal .order-discount-box input{
+    height:46px;
+    min-height:46px;
+    border-radius:11px;
+    font-size:16px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-side-divider{
+    margin:11px 0;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-history-compact .event{
+    grid-template-columns:58px minmax(0,1fr);
+    gap:7px;
+  }
+
+  /* Payment action bar: always reachable at the bottom of the payment card */
+  body.garage-mobile-mode #orderHistoryModal .order-action-grid{
+    grid-template-columns:1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-action-grid .btn{
+    width:100%;
+    min-height:48px;
+    height:auto;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:800;
+    white-space:normal;
+  }
+
+  body.garage-mobile-mode #orderHistoryModal .order-action-grid .btn.primary{
+    min-height:52px;
+    font-size:15px;
+  }
+
+  /* On very small phones, don't waste width on decorative gaps. */
+  @media(max-width:380px){
+    body.garage-mobile-mode .content{--gm-side:9px}
+    body.garage-mobile-mode #orderHistoryModal .order-detail-body{padding-left:7px;padding-right:7px}
+    body.garage-mobile-mode #orderHistoryModal .order-summary-card{padding:9px}
+    body.garage-mobile-mode #orderHistoryModal .order-summary-card b{font-size:14px}
+  }
+
+  /* =========================================================
+     Generic mobile dialogs
+     ========================================================= */
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal){
+    padding:0;
+    align-items:flex-end;
+  }
+
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .modal,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .notification-modal{
+    width:100%;
+    max-width:none;
+    max-height:92dvh;
+    margin:0;
+    border-radius:20px 20px 0 0;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .modal .modal-body,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .notification-modal .notification-body{
+    min-height:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .modal .modal-foot,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal) > .notification-modal .notification-foot{
+    flex:0 0 auto;
+    position:sticky;
+    bottom:0;
+    z-index:3;
+    padding:9px 12px calc(9px + var(--gm-safe-bottom));
+    background:#fff;
+    border-top:1px solid #e4e9ef;
+  }
+
+  /* Product/cart modal: header + scrollable list + fixed actions */
+  body.garage-mobile-mode .warehouse-sale-modal{
+    width:100%;
+    max-width:none;
+    max-height:94dvh;
+    border-radius:20px 20px 0 0;
+  }
+  body.garage-mobile-mode .warehouse-sale-modal .modal-body{
+    padding:12px;
+    min-height:0;
+    overflow-y:auto;
+  }
+  body.garage-mobile-mode .warehouse-sale-modal .cart-list{
+    max-height:none;
+    overflow:visible;
+  }
+  body.garage-mobile-mode .warehouse-sale-modal .modal-foot{
+    position:sticky;
+    bottom:0;
+    display:flex;
+    gap:8px;
+  }
+  body.garage-mobile-mode .warehouse-sale-modal .modal-foot .btn{
+    flex:1;
+    min-height:48px;
+  }
+
+  /* Client/order forms become readable stacked sections */
+  body.garage-mobile-mode .form-grid,
+  body.garage-mobile-mode .cart-controls{
+    grid-template-columns:1fr!important;
+    gap:9px;
+  }
+
+  /* Search/filter controls */
+  body.garage-mobile-mode .filters,
+  body.garage-mobile-mode .filter-row,
+  body.garage-mobile-mode .toolbar{
+    grid-template-columns:1fr!important;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  /* Never allow a long status/name to be hidden behind ellipsis in mobile cards. */
+  body.garage-mobile-mode .order-status-badge,
+  body.garage-mobile-mode .status,
+  body.garage-mobile-mode .badge{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    line-height:1.25;
+  }
+
+  /* Toasts above the bottom navigation */
+  body.garage-mobile-mode .toast-stack{
+    left:10px;
+    right:10px;
+    bottom:calc(var(--gm-nav) + 10px + var(--gm-safe-bottom));
+  }
+  body.garage-mobile-mode .garage-toast{
+    min-width:0;
+    width:100%;
+    max-width:none;
+    box-sizing:border-box;
+  }
+}
+</style>
+
+<style id="garage-notification-scroll-fix">
+/* Уведомления: окно не растягивает страницу — прокручивается только содержимое. */
+#notificationModal{overflow:hidden!important;align-items:center!important;}
+#notificationModal > .notification-modal{width:min(760px,calc(100vw - 40px));max-width:760px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column;overflow:hidden;}
+#notificationModal .notification-head{flex:0 0 auto;}
+#notificationModal .notification-body{min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:auto;scrollbar-color:#aeb9c7 #eef2f6;}
+#notificationModal .notification-body::-webkit-scrollbar{width:11px;}
+#notificationModal .notification-body::-webkit-scrollbar-track{background:#eef2f6;border-radius:10px;}
+#notificationModal .notification-body::-webkit-scrollbar-thumb{background:#aeb9c7;border:2px solid #eef2f6;border-radius:10px;}
+#notificationModal .notification-foot{flex:0 0 auto;position:sticky;bottom:0;z-index:5;}
+/* Главная: длинный список уведомлений имеет собственную прокрутку, кнопки каждой строки остаются доступны. */
+.home-notify-list{max-height:min(52vh,520px);overflow-y:auto;overflow-x:hidden;padding-right:5px;scrollbar-width:auto;scrollbar-color:#aeb9c7 #eef2f6;}
+.home-notify-list::-webkit-scrollbar{width:11px;}
+.home-notify-list::-webkit-scrollbar-track{background:#eef2f6;border-radius:10px;}
+.home-notify-list::-webkit-scrollbar-thumb{background:#aeb9c7;border:2px solid #eef2f6;border-radius:10px;}
+@media(max-width:700px){
+  #notificationModal{align-items:flex-end!important;padding:0!important;}
+  #notificationModal > .notification-modal{width:100%;max-width:none;max-height:94dvh;border-radius:20px 20px 0 0;}
+  #notificationModal .notification-body{padding:14px;max-height:none;}
+  #notificationModal .notification-foot{padding:10px 12px;}
+  #notificationModal .notification-foot .btn{min-height:46px;flex:1;}
+  .home-notify-list{max-height:50dvh;}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -4883,7 +5479,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
 <script id="garage-interface-mode">
 (function(){
   const KEY='garageInterfaceMode';
-  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished'];
+  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished','garage-mobile-v7-polished'];
   const labels={auto:'Автоматически',mobile:'Мобильная версия',desktop:'Компьютерная версия'};
   function getMode(){const v=garageStorage?.getItem?.(KEY);return ['auto','mobile','desktop'].includes(v)?v:'auto'}
   let forcedMobileStyle=null;
