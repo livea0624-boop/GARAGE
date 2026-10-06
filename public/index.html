@@ -1052,6 +1052,66 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   #orderHistoryModal .order-item-status-box{width:100%}
 }
 </style>
+<script id="garage-cloud-early-clean">
+(function(){
+  const makeMemoryStorage=()=>{const data=Object.create(null);return {get length(){return Object.keys(data).length},key(i){return Object.keys(data)[i]??null},getItem(k){k=String(k);return Object.prototype.hasOwnProperty.call(data,k)?data[k]:null},setItem(k,v){data[String(k)]=String(v)},removeItem(k){delete data[String(k)]},clear(){for(const k of Object.keys(data))delete data[k]}}};
+  try{garageStorage.clear();sessionStorage.clear();}catch(e){}
+  try{Object.defineProperty(window,'garageStorage',{configurable:true,value:makeMemoryStorage()});}catch(e){}
+  try{Object.defineProperty(window,'sessionStorage',{configurable:true,value:makeMemoryStorage()});}catch(e){}
+})();
+</script>
+
+<style id="garage-mobile-v2">
+@media (max-width:700px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{padding-bottom:68px}
+  .app{display:block;min-height:100vh}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:62px;z-index:9000;padding:6px 8px;background:rgba(255,255,255,.97);border-top:1px solid #dfe6ee;box-shadow:0 -8px 25px rgba(20,35,55,.10);backdrop-filter:blur(12px)}
+  .logo,.sidebar-bottom{display:none!important}
+  .nav{display:flex!important;flex-direction:row!important;gap:5px!important;overflow-x:auto;height:100%;align-items:stretch;padding:0!important}
+  .nav button{flex:1 0 72px;min-width:72px;min-height:48px;padding:6px 5px!important;font-size:10px!important;line-height:1.1;white-space:normal}
+  .nav button span{display:block}
+  .top{position:sticky;top:0;z-index:8000;padding:9px 10px!important;gap:8px!important;background:rgba(247,249,252,.96);backdrop-filter:blur(10px)}
+  .top h1{font-size:17px!important}
+  .content{padding:10px!important}
+  .grid,.two,.three,.four,.formgrid{grid-template-columns:1fr!important}
+  .card{min-width:0!important}
+  button,.btn,input,select,textarea{min-height:42px;box-sizing:border-box}
+  .btn{padding:9px 12px!important}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:620px}
+  .overlay{padding:0!important;place-items:stretch!important}
+  .modal,.order-detail-modal{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;display:flex;flex-direction:column}
+  .modal-body,.order-detail-body{overflow:auto;max-height:none!important;flex:1}
+  .modal-head,.modal-foot,.order-detail-head,.order-detail-foot{padding:12px 14px!important}
+  .order-item-detail,.order-item-detail.order-pay-card{grid-template-columns:1fr!important}
+  .order-item-detail>div,.order-item-detail.order-pay-card>div{grid-column:1!important}
+  .order-history-event{grid-template-columns:1fr!important}
+  .order-history-amount{white-space:normal}
+  .order-status-badge{min-width:0!important;white-space:normal!important;text-align:center;line-height:1.2;padding:7px 8px!important}
+  .order-list-row,.order-row{grid-template-columns:1fr!important}
+  .order-row-right{justify-content:flex-start!important;flex-wrap:wrap}
+  .order-action-grid,.order-payment-tools,.order-history-pay-grid,.sale-product,.sales-filters{grid-template-columns:1fr!important}
+  .sales-filter-search,.sales-filters .btn{grid-column:auto!important}
+  .sales-summary-grid{grid-template-columns:1fr!important}
+  .client-car-row,.client-history-row{grid-template-columns:1fr!important}
+  .client-car-actions{grid-column:auto!important;justify-content:flex-start!important}
+  .quick-menu{position:fixed;left:10px;right:10px;top:auto;bottom:70px;width:auto}
+  .toast-stack{left:10px!important;right:10px!important;bottom:72px!important}
+  .garage-toast{width:100%!important;min-width:0!important}
+  .order-detail-section,.order-side-card{min-width:0}
+  .order-item-detail{overflow:hidden}
+  .order-item-detail small,.order-item-name,.order-status-caption{overflow-wrap:anywhere}
+}
+@media (max-width:420px){
+  .top{padding:8px!important}
+  .content{padding:7px!important}
+  .nav button{font-size:9px!important;min-width:66px}
+  .card{border-radius:12px!important}
+  .modal-body,.order-detail-body{padding:12px!important}
+  .sales-summary-card{min-height:92px}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -1182,21 +1242,11 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 
 <section class="page" id="settings">
   <div class="head"><div><div class="eyebrow">Система</div><div class="title">Настройки</div></div></div>
-  <div class="card section"><div class="section-title">Система</div><p style="color:#6d7887">Рабочие данные хранятся в облачном хранилище GARAGE. Браузер не используется как постоянное хранилище данных. Номер заказа ведётся отдельной последовательностью и не переиспользуется. Клиенты, автомобили и настройки при очистке ниже не удаляются.</p></div>
+  <div class="card section"><div class="section-title">Система</div><p style="color:#6d7887">Данные заказов и продаж хранятся локально в браузере. Номер заказа ведётся отдельной последовательностью и не переиспользуется. Клиенты, автомобили и настройки при очистке ниже не удаляются.</p></div>
   <div class="card section" style="border-color:#f0d4d4;background:#fffafa">
     <div class="section-title" style="color:#a33131">Опасная зона</div>
     <p style="color:#7d6868;margin-top:6px">Полностью удалить все заказы и продажи. Клиенты, автомобили, продавцы и остальные настройки останутся.</p>
     <button class="btn danger" type="button" id="clearOrdersSalesBtn" style="margin-top:10px">🗑 Очистить все заказы и продажи</button>
-  </div>
-  <div class="card section" id="garageCloudStorageCard">
-    <div class="section-title">Облачное хранилище</div>
-    <div id="garageCloudStorageInfo" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px">
-      <div class="order-detail-stat"><span>Занято данными</span><b id="cloudStorageUsed">—</b></div>
-      <div class="order-detail-stat"><span>Лимит для расчёта</span><b id="cloudStorageLimit">—</b></div>
-      <div class="order-detail-stat"><span>Средний рост в день</span><b id="cloudStorageGrowth">—</b></div>
-      <div class="order-detail-stat"><span>Прогноз лимита</span><b id="cloudStorageForecast">—</b></div>
-    </div>
-    <p id="cloudStorageNote" style="color:#6d7887;margin:10px 0 0;font-size:12px">Размер считается по фактическому объёму данных GARAGE в D1. Старые ежедневные резервные копии автоматически удаляются.</p>
   </div>
   <div class="card section">
     <div class="section-title">Резервная копия</div>
@@ -1395,17 +1445,31 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 </div>
 </div>
 
+
+<script id="garage-memory-storage-v2">
+(function(){
+  const data=Object.create(null);
+  window.garageStorage={
+    get length(){return Object.keys(data).length},
+    key(i){return Object.keys(data)[i]??null},
+    getItem(k){k=String(k);return Object.prototype.hasOwnProperty.call(data,k)?data[k]:null},
+    setItem(k,v){data[String(k)]=String(v)},
+    removeItem(k){delete data[String(k)]},
+    clear(){Object.keys(data).forEach(k=>delete data[k])}
+  };
+})();
+</script>
 <script>
 const SELLER_COLORS=['#5b8def','#3bb39a','#d88952','#8b7ed8','#5b6f8f','#c56b8f'];
 const sellerColorKey=name=>'garageSellerColor_'+encodeURIComponent(name);
 function getSellers(){
-  let raw=localStorage.getItem('garageSellers'), list;
+  let raw=garageStorage.getItem('garageSellers'), list;
   try{list=raw?JSON.parse(raw):null}catch(e){list=null}
-  if(!Array.isArray(list)||!list.length){list=['Михаил','Владимир'];localStorage.setItem('garageSellers',JSON.stringify(list))}
+  if(!Array.isArray(list)||!list.length){list=['Михаил','Владимир'];garageStorage.setItem('garageSellers',JSON.stringify(list))}
   return list;
 }
-function getCurrentSeller(){const list=getSellers(),saved=localStorage.getItem('garageCurrentUser');return list.includes(saved)?saved:list[0]}
-function getSellerColor(name){const saved=localStorage.getItem(sellerColorKey(name));if(saved)return saved;const i=Math.max(0,getSellers().indexOf(name));return SELLER_COLORS[i%SELLER_COLORS.length]}
+function getCurrentSeller(){const list=getSellers(),saved=garageStorage.getItem('garageCurrentUser');return list.includes(saved)?saved:list[0]}
+function getSellerColor(name){const saved=garageStorage.getItem(sellerColorKey(name));if(saved)return saved;const i=Math.max(0,getSellers().indexOf(name));return SELLER_COLORS[i%SELLER_COLORS.length]}
 function sellerMark(name, cls='mini'){const n=String(name||'—');const c=getSellerColor(n);const safe=escapeHtml(n);return `<span class=\"seller-mark ${cls}\" style=\"color:${c};--seller-bg:${c}14\"><span class=\"seller-mark-dot\" style=\"background:${c}\"></span>${safe}</span>`}
 function renderSellers(){
   const list=getSellers(), current=getCurrentSeller(), select=document.getElementById('currentSellerSwitch');
@@ -1427,7 +1491,7 @@ function openSellerManager(){
   document.getElementById('sellerModal').classList.remove('hidden');
 }
 function closeSellerManager(){document.getElementById('sellerModal').classList.add('hidden')}
-function setCurrentSeller(name){if(!getSellers().includes(name))return;localStorage.setItem('garageCurrentUser',name);renderSellers();openSellerManager()}
+function setCurrentSeller(name){if(!getSellers().includes(name))return;garageStorage.setItem('garageCurrentUser',name);renderSellers();openSellerManager()}
 document.getElementById('currentSellerSwitch').addEventListener('change',e=>setCurrentSeller(e.target.value));
 document.getElementById('sellerManage').onclick=openSellerManager;
 document.getElementById('closeSellerModal').onclick=closeSellerManager;
@@ -1436,18 +1500,18 @@ document.getElementById('addSeller').onclick=()=>{
   const input=document.getElementById('newSellerName'),name=input.value.trim(),list=getSellers();
   if(!name)return;
   if(list.some(x=>x.toLowerCase()===name.toLowerCase()))return;
-  list.push(name);localStorage.setItem('garageSellers',JSON.stringify(list));localStorage.setItem(sellerColorKey(name),SELLER_COLORS[(list.length-1)%SELLER_COLORS.length]);input.value='';renderSellers();openSellerManager();
+  list.push(name);garageStorage.setItem('garageSellers',JSON.stringify(list));garageStorage.setItem(sellerColorKey(name),SELLER_COLORS[(list.length-1)%SELLER_COLORS.length]);input.value='';renderSellers();openSellerManager();
 };
 document.getElementById('sellerList').addEventListener('click',e=>{
   const sel=e.target.closest('[data-select]'),del=e.target.closest('[data-delete]');
   if(sel){setCurrentSeller(sel.dataset.select);return}
   if(del){
     const name=del.dataset.delete,list=getSellers();if(list.length<=1)return;
-    showActionConfirm('delete-seller',()=>{const next=list.filter(x=>x!==name);localStorage.setItem('garageSellers',JSON.stringify(next));localStorage.removeItem(sellerColorKey(name));if(getCurrentSeller()===name)localStorage.setItem('garageCurrentUser',next[0]);renderSellers();openSellerManager();},'Продавец «'+name+'» будет удалён из списка. Исторические операции этого продавца останутся в журнале.');
+    showActionConfirm('delete-seller',()=>{const next=list.filter(x=>x!==name);garageStorage.setItem('garageSellers',JSON.stringify(next));garageStorage.removeItem(sellerColorKey(name));if(getCurrentSeller()===name)garageStorage.setItem('garageCurrentUser',next[0]);renderSellers();openSellerManager();},'Продавец «'+name+'» будет удалён из списка. Исторические операции этого продавца останутся в журнале.');
   }
 });
 document.getElementById('sellerList').addEventListener('input',e=>{
-  if(e.target.dataset.color){localStorage.setItem(sellerColorKey(e.target.dataset.color),e.target.value);renderSellers();openSellerManager()}
+  if(e.target.dataset.color){garageStorage.setItem(sellerColorKey(e.target.dataset.color),e.target.value);renderSellers();openSellerManager()}
 });
 renderSellers();
 
@@ -1465,10 +1529,10 @@ document.getElementById('cancelClientModal').onclick=closeClientCreate;
 function escapeHtml(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function getClients(){
   let list=[];
-  try{list=JSON.parse(localStorage.getItem('garageClients')||'[]')}catch(e){list=[]}
+  try{list=JSON.parse(garageStorage.getItem('garageClients')||'[]')}catch(e){list=[]}
   return Array.isArray(list)?list:[];
 }
-function saveClients(list){localStorage.setItem('garageClients',JSON.stringify(list))}
+function saveClients(list){garageStorage.setItem('garageClients',JSON.stringify(list))}
 function nextUniqueClientId(){
   const used=new Set(getClients().map(c=>String(c?.id||'')));
   for(let attempt=0;attempt<20;attempt++){
@@ -1477,9 +1541,9 @@ function nextUniqueClientId(){
     else id='c_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
     if(!used.has(id)){used.add(id);return id;}
   }
-  let seq=Math.max(0,parseInt(localStorage.getItem('garageClientSequence')||'0',10)||0);
+  let seq=Math.max(0,parseInt(garageStorage.getItem('garageClientSequence')||'0',10)||0);
   do{seq++;}while(used.has('c_seq_'+seq));
-  localStorage.setItem('garageClientSequence',String(seq));
+  garageStorage.setItem('garageClientSequence',String(seq));
   return 'c_seq_'+seq;
 }
 function clientTagHtml(tag){
@@ -1487,9 +1551,9 @@ function clientTagHtml(tag){
   const x=map[tag]; return x?`<span class="client-mini-tag ${x[0]}">${x[1]}</span>`:'';
 }
 function getClientCarts(){
-  try{const x=JSON.parse(localStorage.getItem('garageClientCarts')||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}
+  try{const x=JSON.parse(garageStorage.getItem('garageClientCarts')||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}
 }
-function saveClientCarts(carts){localStorage.setItem('garageClientCarts',JSON.stringify(carts))}
+function saveClientCarts(carts){garageStorage.setItem('garageClientCarts',JSON.stringify(carts))}
 function clearClientCart(id){const all=getClientCarts();delete all[String(id)];saveClientCarts(all);renderClients(document.getElementById('clientsSearch')?.value||'')}
 function normalizePaymentMethod(value, detail, fallback='cash'){
   const v=String(value||'').toLowerCase();
@@ -1640,27 +1704,27 @@ function normalizeClientOrder(raw){
 }
 function getClientOrders(){
   try{
-    const x=JSON.parse(localStorage.getItem('garageClientOrders')||'[]');
+    const x=JSON.parse(garageStorage.getItem('garageClientOrders')||'[]');
     if(!Array.isArray(x))return [];
     let changed=false;
     const list=x.map(normalizeClientOrder).filter(Boolean).map(r=>{changed=changed||r.changed;return r.order;});
-    if(changed){try{localStorage.setItem('garageClientOrders',JSON.stringify(list))}catch(e){}}
+    if(changed){try{garageStorage.setItem('garageClientOrders',JSON.stringify(list))}catch(e){}}
     return list;
   }catch(e){return []}
 }
-function saveClientOrders(list){localStorage.setItem('garageClientOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
+function saveClientOrders(list){garageStorage.setItem('garageClientOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
 function nextClientOrderId(){
-  const seq=Math.max(0,parseInt(localStorage.getItem('garageOrderSequence')||'0',10)||0);
+  const seq=Math.max(0,parseInt(garageStorage.getItem('garageOrderSequence')||'0',10)||0);
   const ids=[];
   getClientOrders().forEach(o=>ids.push(parseInt(o.id,10)));
   getCompletedOrders().forEach(o=>ids.push(parseInt(o.id,10)));
   try{
-    const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+    const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
     Object.values(overrides||{}).forEach(o=>ids.push(parseInt(o?.id,10)));
   }catch(e){}
   const maxExisting=ids.filter(Number.isFinite).reduce((m,n)=>Math.max(m,n),0);
   const next=Math.max(seq,maxExisting)+1;
-  localStorage.setItem('garageOrderSequence',String(next));
+  garageStorage.setItem('garageOrderSequence',String(next));
   return String(next);
 }
 function allocateOrderPayment(order,amount,selectedIndices){
@@ -2490,7 +2554,7 @@ document.getElementById('saveProductSale').onclick=()=>{
   showActionConfirm('sell',()=>{
     const round=Math.max(0,afterPercent-final);
     const saleNow=new Date(); const sale={id:Date.now(),items:JSON.parse(JSON.stringify(cartItems)),baseTotal:base,discountPercent:getSaleDiscountPercent(),discountPercentAmount:pctSum,roundDiscount:round,roundingAdjustment:round,total:final,paymentMethod:saleMethod,seller:getCurrentSeller(),date:saleNow.toISOString().slice(0,10),createdAt:saleNow.toISOString()};
-    const all=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');all.unshift(sale);localStorage.setItem('garageWarehouseSales',JSON.stringify(all));
+    const all=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');all.unshift(sale);garageStorage.setItem('garageWarehouseSales',JSON.stringify(all));
     renderSalesJournal();
     closeProductSale();
   });
@@ -2514,7 +2578,7 @@ function getAllKnownOrders(){
   getCompletedOrders().forEach(add);
   getClientOrders().forEach(add);
   try{
-    const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+    const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
     Object.values(overrides||{}).forEach(add);
   }catch(e){}
     return [...byId.values()];
@@ -2540,9 +2604,9 @@ function saveOrderHistory(order){
     saveClientOrders(active);
     return;
   }
-  const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+  const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
   overrides[key]=JSON.parse(JSON.stringify(order));
-  localStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
+  garageStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
 }
 function orderItemFinalTotal(item){const pct=Math.max(0,Number(item.discountPct)||0);const qty=Math.max(0,Number(item.qty)||0);const before=Math.max(0,Number(item.price)||0);const d=Math.max(0,Number(item.discountAmount)||0);const after=pct>0?Math.max(0,before-d):before;return after*qty;}
 let removeItemContext=null;
@@ -3047,9 +3111,9 @@ document.getElementById('orderHistoryBody')?.addEventListener('click',e=>{const 
 document.getElementById('ordersRows')?.addEventListener('click',e=>{const del=e.target.closest('[data-order-delete]');if(del){e.stopPropagation();deleteOrder(del.dataset.orderDelete);return;}const btn=e.target.closest('[data-order-history]');if(btn){e.stopPropagation();openOrderHistory(btn.dataset.orderHistory)}});
 
 function getReturns(){
-  try{const data=JSON.parse(localStorage.getItem('garageReturns')||'[]');return Array.isArray(data)?data:[]}catch(e){return []}
+  try{const data=JSON.parse(garageStorage.getItem('garageReturns')||'[]');return Array.isArray(data)?data:[]}catch(e){return []}
 }
-function saveReturns(list){localStorage.setItem('garageReturns',JSON.stringify(list))}
+function saveReturns(list){garageStorage.setItem('garageReturns',JSON.stringify(list))}
 function todayIso(){return new Date().toISOString().slice(0,10)}
 function openStandaloneReturnDetails(id){
   const x=getReturns().find(r=>String(r.id)===String(id));
@@ -3145,15 +3209,15 @@ function confirmReturn(){
 }
 function getCompletedOrders(){
   try{
-    const raw=JSON.parse(localStorage.getItem('garageCompletedOrders')||'[]');
+    const raw=JSON.parse(garageStorage.getItem('garageCompletedOrders')||'[]');
     if(!Array.isArray(raw))return [];
     let changed=false;
     const list=raw.map(o=>{const r=normalizeClientOrder(o);if(r?.changed)changed=true;return r?.order||o;}).filter(Boolean);
-    if(changed)localStorage.setItem('garageCompletedOrders',JSON.stringify(list));
+    if(changed)garageStorage.setItem('garageCompletedOrders',JSON.stringify(list));
     return list;
   }catch(e){return []}
 }
-function saveCompletedOrders(list){localStorage.setItem('garageCompletedOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
+function saveCompletedOrders(list){garageStorage.setItem('garageCompletedOrders',JSON.stringify((Array.isArray(list)?list:[]).map(o=>normalizeClientOrder(o)?.order).filter(Boolean)))}
 function getArchivedOrderIds(){return new Set(getCompletedOrders().map(o=>String(o.id)))}
 function orderHasActiveItems(order){return (order?.items||[]).some(i=>!i.removed);}
 function getActiveClientOrders(){
@@ -3191,9 +3255,9 @@ function completeOrder(orderId){
   // Архив является единственным источником истины для завершённого заказа.
   const dynamic=getClientOrders().filter(o=>String(o.id)!==String(order.id));
   saveClientOrders(dynamic);
-  const overrides=JSON.parse(localStorage.getItem('garageOrderHistoryOverrides')||'{}');
+  const overrides=JSON.parse(garageStorage.getItem('garageOrderHistoryOverrides')||'{}');
   delete overrides[String(order.id)];
-  localStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
+  garageStorage.setItem('garageOrderHistoryOverrides',JSON.stringify(overrides));
   renderOrders(); renderSalesJournal(); renderCompletedOrders(); closeOrderHistory();
   document.querySelector('.nav button[data-page="history"]')?.click();
   toast('Заказ перемещён в историю','ok','Заказ #'+order.id+' завершён');
@@ -3610,7 +3674,7 @@ function moneyValue(v){
 function parseRowAmount(row){return moneyValue(row.dataset.amount)}
 function updateSalesSummary(){
   let earned=0,cash=0,card=0;
-  const warehouse=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');
+  const warehouse=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');
   warehouse.forEach(x=>{
     const total=moneyValue(x.total);
     earned+=total;
@@ -3630,7 +3694,7 @@ function updateSalesSummary(){
 }
 function renderSalesJournal(){
   const rows=document.getElementById('salesRows'),empty=document.getElementById('salesEmpty');if(!rows||!empty)return;
-  const warehouse=JSON.parse(localStorage.getItem('garageWarehouseSales')||'[]');
+  const warehouse=JSON.parse(garageStorage.getItem('garageWarehouseSales')||'[]');
   const html=[];
   warehouse.forEach(x=>{
     const items=Array.isArray(x.items)?x.items:[];const search=[items.map(i=>i.name).join(' '),items.map(i=>i.article||'').join(' '),x.seller].join(' ').toLowerCase();
@@ -3707,8 +3771,8 @@ function setupSalesFilters(){
 
 function makeGarageBackup(){
   const data={};
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i); if(key&&key.startsWith('garage'))data[key]=localStorage.getItem(key);
+  for(let i=0;i<garageStorage.length;i++){
+    const key=garageStorage.key(i); if(key&&key.startsWith('garage'))data[key]=garageStorage.getItem(key);
   }
   return {format:'garage-local-backup-v2',createdAt:new Date().toISOString(),data};
 }
@@ -3721,40 +3785,17 @@ function applyGarageBackup(payload){
   if(!payload||!['garage-local-backup-v1','garage-local-backup-v2'].includes(payload.format)||!payload.data||typeof payload.data!=='object'){
     toast('Файл не похож на резервную копию ГАРАЖ.','error','Импорт отменён'); return;
   }
-  const keys=[]; for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i); if(key&&key.startsWith('garage'))keys.push(key);}
-  keys.forEach(k=>localStorage.removeItem(k)); Object.entries(payload.data).forEach(([k,v])=>{if(String(k).startsWith('garage'))localStorage.setItem(k,String(v??''));});
-  window.garageCloudSync?.save?.();
+  const keys=[]; for(let i=0;i<garageStorage.length;i++){const key=garageStorage.key(i); if(key&&key.startsWith('garage'))keys.push(key);}
+  keys.forEach(k=>garageStorage.removeItem(k)); Object.entries(payload.data).forEach(([k,v])=>{if(String(k).startsWith('garage'))garageStorage.setItem(k,String(v??''));});
   location.reload();
 }
-function openActionPasswordModal(action,onSuccess){
-  const old=document.getElementById('garageActionPasswordModal'); if(old)old.remove();
-  const el=document.createElement('div'); el.id='garageActionPasswordModal'; el.className='overlay'; el.style.zIndex='100001';
-  el.innerHTML=`<div class="modal" style="max-width:430px"><div class="modal-head"><div><div style="font-size:12px;color:#9a6509;margin-bottom:3px">Защищённое действие</div><h2 style="margin:0">${escapeHtml(action)}</h2></div><button class="close" id="gactClose">×</button></div><div class="modal-body"><p style="margin-top:0;color:#687589">Введите пароль действий. Это отдельный пароль от пароля входа в GARAGE.</p><input id="gactPassword" type="password" autocomplete="off" placeholder="Пароль действий" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box"><div id="gactError" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button class="btn" id="gactChange" type="button">🔑 Изменить пароль действий</button></div><div class="modal-foot"><button class="btn" id="gactCancel">Отмена</button><button class="btn primary" id="gactConfirm">Продолжить</button></div></div>`;
-  document.body.appendChild(el);
-  const close=()=>el.remove(); el.querySelector('#gactClose').onclick=close; el.querySelector('#gactCancel').onclick=close;
-  el.querySelector('#gactConfirm').onclick=async()=>{const b=el.querySelector('#gactConfirm'),pw=el.querySelector('#gactPassword').value,err=el.querySelector('#gactError');b.disabled=true;try{await window.garageCloudSync.action(pw);close();await onSuccess();}catch(e){err.textContent=e.message||'Неверный пароль действий';b.disabled=false;}};
-  el.querySelector('#gactPassword').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gactConfirm').click()});
-  el.querySelector('#gactChange').onclick=()=>openChangePasswordModal('action');
-}
-function openChangePasswordModal(kind='action'){
-  const old=document.getElementById('garageChangePasswordModal'); if(old)old.remove();
-  const isAction=kind==='action';
-  const el=document.createElement('div');el.id='garageChangePasswordModal';el.className='overlay';el.style.zIndex='100002';
-  el.innerHTML=`<div class="modal" style="max-width:430px"><div class="modal-head"><div><div style="font-size:12px;color:#315f9f;margin-bottom:3px">Безопасность</div><h2 style="margin:0">Изменить ${isAction?'пароль действий':'пароль входа'}</h2></div><button class="close" id="gchgClose">×</button></div><div class="modal-body"><div class="field"><label>Текущий пароль</label><input id="gchgCurrent" type="password" autocomplete="off"></div><div class="field"><label>Новый пароль</label><input id="gchgNext" type="password" autocomplete="new-password" placeholder="От 6 символов"></div><div class="field"><label>Повторите новый пароль</label><input id="gchgNext2" type="password" autocomplete="new-password"></div><div id="gchgError" style="min-height:22px;color:#dc2626;font-size:13px"></div></div><div class="modal-foot"><button class="btn" id="gchgCancel">Отмена</button><button class="btn primary" id="gchgConfirm">Сохранить</button></div></div>`;
-  document.body.appendChild(el);const close=()=>el.remove();el.querySelector('#gchgClose').onclick=close;el.querySelector('#gchgCancel').onclick=close;
-  el.querySelector('#gchgConfirm').onclick=async()=>{const b=el.querySelector('#gchgConfirm'),err=el.querySelector('#gchgError'),cur=el.querySelector('#gchgCurrent').value,n=el.querySelector('#gchgNext').value,n2=el.querySelector('#gchgNext2').value;b.disabled=true;try{if(n.length<6)throw Error('Минимум 6 символов.');if(n!==n2)throw Error('Новые пароли не совпадают.');await window.garageCloudSync.changePassword(cur,n,isAction?'action':'login');close();toast('Пароль изменён','success');}catch(e){err.textContent=e.message||'Не удалось изменить пароль';b.disabled=false;}};
-}
-
-document.getElementById('exportGarageBackup')?.addEventListener('click',()=>openActionPasswordModal('Экспорт данных',async()=>exportGarageBackup()));
-document.getElementById('importGarageBackup')?.addEventListener('click',()=>openActionPasswordModal('Импорт данных',async()=>document.getElementById('garageBackupFile')?.click()));
+document.getElementById('exportGarageBackup')?.addEventListener('click',exportGarageBackup);
+document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
 document.getElementById('garageBackupFile')?.addEventListener('change',e=>{
   const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader();
-  reader.onload=()=>{try{const payload=JSON.parse(reader.result);showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Все текущие данные будут заменены данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён');}finally{e.target.value='';}};
+  reader.onload=()=>{try{const payload=JSON.parse(reader.result); showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Все текущие локальные данные будут заменены данными из файла «'+file.name+'».');}catch(err){toast('Не удалось прочитать JSON-файл.','error','Импорт отменён');}finally{e.target.value='';}};
   reader.readAsText(file,'utf-8');
 });
-
-async function loadCloudStorageInfo(){
-  try{const j=await window.garageCloudSync?.storageInfo?.();if(!j)return;const used=Number(j.usedBytes||0),limit=Number(j.limitBytes||50*1024*1024),growth=Number(j.avgDailyGrowthBytes||0);const fmt=n=>n<1024?`${n} Б`:n<1048576?`${(n/1024).toFixed(1)} КБ`:`${(n/1048576).toFixed(2)} МБ`;document.getElementById('cloudStorageUsed').textContent=fmt(used);document.getElementById('cloudStorageLimit').textContent=fmt(limit);document.getElementById('cloudStorageGrowth').textContent=growth?`${fmt(growth)}/день`:'пока нет данных';let forecast='—';if(growth>0&&limit>used){const days=Math.ceil((limit-used)/growth);forecast=new Date(Date.now()+days*86400000).toLocaleDateString('ru-RU');}document.getElementById('cloudStorageForecast').textContent=forecast;}catch(e){console.warn('storage info',e)}}
 
 let financialsVisible=true;
 function setFinancialVisibility(){
@@ -3827,43 +3868,72 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.getElementById('closeClearOrdersSales')?.addEventListener('click',close);
   document.getElementById('cancelClearOrdersSales')?.addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
-  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>openActionPasswordModal('Очистить все заказы и продажи',async()=>{
-    ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>localStorage.removeItem(k));
-    ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>localStorage.removeItem(k));
+  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>{
+    ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>garageStorage.removeItem(k));
+    // Удаляем также сохранённые признаки архивирования/изменения демонстрационных заказов, если они были.
+    ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>garageStorage.removeItem(k));
     close();
-    if(typeof renderOrders==='function')renderOrders(); if(typeof renderSalesJournal==='function')renderSalesJournal(); if(typeof renderCompletedOrders==='function')renderCompletedOrders(); if(typeof renderHome==='function')renderHome(); if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
-    await window.garageCloudSync?.save?.();
-  }));
+    if(typeof renderOrders==='function')renderOrders();
+    if(typeof renderSalesJournal==='function')renderSalesJournal();
+    if(typeof renderCompletedOrders==='function')renderCompletedOrders();
+    if(typeof renderHome==='function')renderHome();
+    if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
+  });
 })();
 </script>
 
-<script id="garage-cloud-sync-v3">
+<script id="garage-cloud-sync-v4">
 (function(){
-  let ready=false,loading=false,saving=false,saveTimer=null; const base=location.origin;
-  function api(path,method='GET',body=null,password=''){const headers={'content-type':'application/json'};if(password)headers['x-garage-password']=password;return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined}).then(async r=>{let j=null;try{j=await r.json()}catch{}if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});}
-  function snapshot(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&!['garageSitePassword','garageCloudMeta'].includes(k))out[k]=localStorage.getItem(k)}return out;}
-  function applySnapshot(state){if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>localStorage.setItem(k,state[k]??''));}
-  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);if(j.state&&typeof j.state==='object'){applySnapshot(j.state);if(typeof render==='function')render();window.dispatchEvent(new Event('garage-cloud-loaded'));return true}return false}finally{loading=false}}
-  async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageCloudPassword;if(!password)return;await api('/api/state','PUT',{state:snapshot()},password);if(typeof loadCloudStorageInfo==='function')setTimeout(loadCloudStorageInfo,300);}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком')}finally{saving=false}}
-  function schedule(){if(!ready||loading)return;clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,500)}
-  const originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&!['garageSitePassword','garageCloudMeta'].includes(k))schedule()};
-  const originalRemove=Storage.prototype.removeItem;Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&!['garageSitePassword','garageCloudMeta'].includes(k))schedule()};
-  window.garageCloudSync={start:async function(loginPassword){window.garageCloudPassword=loginPassword;const had=await loadCloud(loginPassword);ready=true;if(!had)await saveCloud();return had;},save:saveCloud,load:loadCloud,
-    action:async function(actionPassword){return api('/api/auth/action','POST',{password:actionPassword},actionPassword)},
-    changePassword:async function(currentPassword,nextPassword,type){return api('/api/auth/change','POST',{currentPassword,password:nextPassword,type},currentPassword)},
-    storageInfo:async function(){return api('/api/storage','GET',null,window.garageCloudPassword)}
-  };
+  let ready=false,loading=false,saving=false,saveTimer=null;
+  const base=location.origin;
+  function api(path,method='GET',body=null,password=''){
+    const headers={'content-type':'application/json'};
+    if(password)headers['x-garage-password']=password;
+    return fetch(base+path,{method,headers,body:body?JSON.stringify(body):undefined}).then(async r=>{let j=null;try{j=await r.json()}catch{};if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));return j;});
+  }
+  function snapshot(){const out={};for(let i=0;i<garageStorage.length;i++){const k=garageStorage.key(i);if(k)out[k]=garageStorage.getItem(k)}return out}
+  function applySnapshot(state){garageStorage.clear();if(!state||typeof state!=='object')return;Object.keys(state).forEach(k=>garageStorage.setItem(k,state[k]??''));}
+  async function loadCloud(password){loading=true;try{const j=await api('/api/state','GET',null,password);applySnapshot(j.state||{});if(typeof render==='function')render();window.dispatchEvent(new Event('garage-cloud-loaded'));return !!j.state}finally{loading=false}}
+  async function saveCloud(){if(!ready||loading||saving)return;saving=true;try{const password=window.garageLoginPassword;if(password)await api('/api/state','PUT',{state:snapshot()},password)}catch(e){console.error('GARAGE cloud save:',e);if(typeof toast==='function')toast('Ошибка синхронизации с облаком','error')}finally{saving=false}}
+  function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,450)}
+  const os=garageStorage.setItem.bind(garageStorage),or=garageStorage.removeItem.bind(garageStorage),oc=garageStorage.clear.bind(garageStorage);
+  garageStorage.setItem=function(k,v){os(k,v);if(!loading)schedule()};
+  garageStorage.removeItem=function(k){or(k);if(!loading)schedule()};
+  garageStorage.clear=function(){oc();if(!loading)schedule()};
+  window.garageCloudSync={start:async password=>{window.garageLoginPassword=password;const had=await loadCloud(password);ready=true;if(!had)await saveCloud();return had},save:saveCloud,load:loadCloud,api};
 })();
 </script>
-<script id="garage-cloud-auth-v3">
+<script id="garage-cloud-auth-v4">
 (function(){
-  function gate(mode){document.getElementById('garageCloudGate')?.remove();const first=mode==='setup';const el=document.createElement('div');el.id='garageCloudGate';el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220 0%,#111827 45%,#1e3a5f 100%);z-index:99999;display:grid;place-items:center;padding:20px;isolation:isolate;overflow:hidden;';el.innerHTML=`<div style="width:min(440px,100%);background:rgba(255,255,255,.97);color:#17202a;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:28px;box-shadow:0 25px 90px rgba(0,0,0,.45)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0 6px">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:#7b8794;margin:0 0 18px">${first?'Создайте пароль входа и отдельный пароль для защищённых действий.':'Введите пароль для входа в GARAGE.'}</p>${first?'<input id="gcp1" type="password" placeholder="Пароль входа (от 6 символов)" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gcp2" type="password" placeholder="Повторите пароль входа" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gca1" type="password" placeholder="Пароль действий (от 6 символов)" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;margin-bottom:9px;box-sizing:border-box"><input id="gca2" type="password" placeholder="Повторите пароль действий" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">':'<input id="gcp1" type="password" placeholder="Пароль входа" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box">'}<div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароли':'Войти'}</button>${first?'':'<button id="gch" class="btn" style="width:100%;margin-top:8px">🔑 Изменить пароль входа</button>'}</div>`;document.body.appendChild(el);const err=el.querySelector('#gce');
-    el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{const login=el.querySelector('#gcp1').value;if(first){const login2=el.querySelector('#gcp2').value,action=el.querySelector('#gca1').value,action2=el.querySelector('#gca2').value;if(login.length<6||action.length<6)throw Error('Оба пароля должны содержать минимум 6 символов.');if(login!==login2||action!==action2)throw Error('Пароли не совпадают.');await postSetup(login,action)}else await apiLogin(login);window.garageCloudPassword=login;await window.garageCloudSync.start(login);el.remove();if(typeof loadCloudStorageInfo==='function')loadCloudStorageInfo();}catch(e){err.textContent=e.message;b.disabled=false;}};
-    el.querySelector('#gcp1').addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gcb').click()});el.querySelector('#gch')?.addEventListener('click',()=>openChangePasswordModal('login'));
+  const api=(path,body)=>fetch(location.origin+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Ошибка');return j});
+  function gate(mode){document.getElementById('garageCloudGate')?.remove();const first=mode==='setup';const el=document.createElement('div');el.id='garageCloudGate';el.style='position:fixed;inset:0;background:linear-gradient(135deg,#0b1220,#111827 45%,#1e3a5f);z-index:99999;display:grid;place-items:center;padding:20px;overflow:auto';el.innerHTML=`<div style="width:min(430px,100%);background:#fff;color:#17202a;border-radius:20px;padding:26px;box-shadow:0 25px 90px rgba(0,0,0,.45)"><div style="font-size:42px;text-align:center">🔐</div><h2 style="text-align:center;margin:8px 0">${first?'Первый запуск GARAGE':'Вход в GARAGE'}</h2><p style="text-align:center;color:#7b8794;margin:0 0 18px">${first?'Создайте два разных пароля.':'Введите пароль входа.'}</p><input id="glogin" type="password" minlength="6" placeholder="Пароль входа (от 6 символов)" autocomplete="new-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box"><input id="gaction" type="password" minlength="6" placeholder="Пароль действий (от 6 символов)" autocomplete="new-password" style="width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;box-sizing:border-box;margin-top:9px;display:${first?'block':'none'}"><div id="gce" style="min-height:22px;color:#dc2626;font-size:13px;margin-top:8px"></div><button id="gcb" class="btn primary" style="width:100%;margin-top:5px">${first?'Создать пароли':'Войти'}</button><button id="gchange" class="btn" style="width:100%;margin-top:8px;display:${first?'none':'block'}">Сменить пароль входа</button></div>`;document.body.appendChild(el);const err=el.querySelector('#gce');
+    el.querySelector('#gcb').onclick=async()=>{const b=el.querySelector('#gcb');b.disabled=true;try{const login=el.querySelector('#glogin').value,action=el.querySelector('#gaction').value;if(login.length<6)throw Error('Пароль входа: минимум 6 символов.');if(first){if(action.length<6)throw Error('Пароль действий: минимум 6 символов.');await api('/api/auth/setup',{loginPassword:login,actionPassword:action})}else await api('/api/auth/login',{password:login});window.garageLoginPassword=login;await window.garageCloudSync.start(login);el.remove()}catch(e){err.textContent=e.message;b.disabled=false}};
+    el.querySelector('#gchange')?.addEventListener('click',()=>openChangeLogin(el));
   }
-  async function postSetup(loginPassword,actionPassword){const r=await fetch(location.origin+'/api/auth/setup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({loginPassword,actionPassword})});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(j.error||'Ошибка создания паролей')}}
-  async function apiLogin(password){const r=await fetch(location.origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(r.status===401?'Неверный пароль.':(j.error||'Ошибка входа'))}}
-  async function init(){try{const r=await fetch(location.origin+'/api/auth/status');const j=await r.json();gate(j.configured?'login':'setup')}catch(e){gate('login')}}window.addEventListener('load',()=>setTimeout(init,50));
+  function openChangeLogin(gateEl){const old=prompt('Введите текущий пароль входа');if(old===null)return;const next=prompt('Введите новый пароль входа (минимум 6 символов)');if(next===null)return;api('/api/auth/change-login',{currentPassword:old,password:next}).then(()=>{window.garageLoginPassword=next;alert('Пароль входа изменён.');gateEl.querySelector('#gchange').focus()}).catch(e=>alert(e.message))}
+  async function init(){try{const r=await fetch(location.origin+'/api/auth/status',{cache:'no-store'});const j=await r.json();gate(j.configured?'login':'setup')}catch{gate('login')}}
+  window.garageRequestActionPassword=async function(){
+    return await new Promise(resolve=>{
+      const old=document.getElementById('garageActionGate');old?.remove();
+      const el=document.createElement('div');el.id='garageActionGate';el.style='position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:100000;display:grid;place-items:center;padding:18px';
+      el.innerHTML=`<div style="width:min(400px,100%);background:#fff;border-radius:18px;padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.35)"><h3 style="margin:0 0 8px">Подтверждение действия</h3><p style="margin:0 0 14px;color:#718096;font-size:13px">Введите пароль для опасных действий.</p><input id="gap" type="password" minlength="6" autocomplete="current-password" placeholder="Пароль действий" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d6deea;border-radius:10px"><div id="gae" style="min-height:20px;color:#dc2626;font-size:12px;margin-top:6px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><button id="gac" class="btn">Отмена</button><button id="gav" class="btn primary">Подтвердить</button></div><button id="gach" class="btn" style="width:100%;margin-top:8px">Сменить пароль действий</button></div>`;
+      document.body.appendChild(el);const input=el.querySelector('#gap'),err=el.querySelector('#gae');
+      const close=v=>{el.remove();resolve(v)};
+      el.querySelector('#gac').onclick=()=>close(false);
+      el.querySelector('#gav').onclick=async()=>{try{await api('/api/auth/action',{password:input.value});close(input.value)}catch{err.textContent='Неверный пароль действий.';input.focus()}};
+      el.querySelector('#gach').onclick=async()=>{const current=input.value||prompt('Введите текущий пароль действий');if(!current)return;const next=prompt('Новый пароль действий (минимум 6 символов)');if(next===null)return;try{await api('/api/auth/change-action',{currentPassword:current,password:next});alert('Пароль действий изменён.');input.value=''}catch(e){err.textContent=e.message}};
+      input.addEventListener('keydown',e=>{if(e.key==='Enter')el.querySelector('#gav').click()});setTimeout(()=>input.focus(),0);
+    });
+  };
+  window.garageChangeActionPassword=async function(){const current=prompt('Текущий пароль действий');if(current===null)return;const next=prompt('Новый пароль действий (минимум 6 символов)');if(next===null)return;try{await api('/api/auth/change-action',{currentPassword:current,password:next});alert('Пароль действий изменён.')}catch(e){alert(e.message)}};
+  window.addEventListener('load',()=>setTimeout(init,50));
+})();
+</script>
+
+<script id="garage-action-password-guard-v1">
+(function(){
+  const ids=new Set(['exportGarageBackup','importGarageBackup','clearOrdersSalesBtn']);
+  document.addEventListener('click',async function(e){const b=e.target.closest('button');if(!b||!ids.has(b.id)||b.dataset.actionVerified==='1')return;e.preventDefault();e.stopImmediatePropagation();const ok=await window.garageRequestActionPassword?.();if(!ok)return;b.dataset.actionVerified='1';b.click();setTimeout(()=>delete b.dataset.actionVerified,100);},true);
 })();
 </script>
 </body>
