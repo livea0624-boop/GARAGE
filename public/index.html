@@ -4830,8 +4830,15 @@ function setOrderItemStatus(orderId,index,value){
   if(value==='taken'){item.receivedQty=Math.max(getItemReceivedQty(item),qty);item.issuedQty=qty;}
   else if(value==='partial_taken'){item.receivedQty=Math.max(getItemReceivedQty(item),1);item.issuedQty=Math.min(getItemReceivedQty(item),Math.max(1,Number(item.issuedQty)||0));}
   else if(value==='stock'||value==='notified'){item.receivedQty=qty;item.issuedQty=0;}
-  else if(value==='transit'){item.receivedQty=0;item.issuedQty=0;order.notifiedAt='';}
+  else if(value==='transit'){item.receivedQty=0;item.issuedQty=0;order.notifiedAt='';order.notificationStatus='waiting';}
   item.status=value;
+  // Если сотрудник вручную вернул позицию из «Уведомлен» обратно в «На складе»,
+  // это новый цикл уведомления: старая дата уведомления больше не блокирует Главную.
+  if(value==='stock'){
+    const activeItems=(order.items||[]).filter(i=>!i.removed);
+    const allStock=activeItems.length>0&&activeItems.every(i=>getOrderItemStatus(i)==='stock');
+    if(allStock){order.notifiedAt='';order.notificationStatus='waiting';}
+  }
   persistOrderAfterChange(order,'Изменён статус товара: '+ORDER_ITEM_STATUSES.find(s=>s.value===value).label);
   toast('Статус товара изменён','ok','Заказ #'+order.id); renderDeliveries(); renderOrders(); renderHomeDashboard();
 }
@@ -4891,6 +4898,11 @@ function getOrdersNeedingNotification(){
     // Пока хотя бы одна позиция в пути — уведомлять клиента рано.
     const allArrived=active.every(i=>['stock','notified'].includes(getOrderItemStatus(i)));
     if(!allArrived)return false;
+
+    // Если все позиции сейчас вручную стоят именно в «На складе», это
+    // всегда новый цикл уведомления. Старая отметка notifiedAt не должна
+    // блокировать заказ после ручного исправления статусов.
+    if(statuses.every(s=>s==='stock'))return true;
 
     // После успешного уведомления ждём 3 суток. Если клиент не забрал заказ,
     // он снова появляется на Главной для повторного звонка.
@@ -5479,7 +5491,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
 <script id="garage-interface-mode">
 (function(){
   const KEY='garageInterfaceMode';
-  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished','garage-mobile-v7-polished'];
+  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished','garage-mobile-v7-polished','garage-mobile-v9-app'];
   const labels={auto:'Автоматически',mobile:'Мобильная версия',desktop:'Компьютерная версия'};
   function getMode(){const v=garageStorage?.getItem?.(KEY);return ['auto','mobile','desktop'].includes(v)?v:'auto'}
   let forcedMobileStyle=null;
@@ -5702,5 +5714,332 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.addEventListener('click',async function(e){const b=e.target.closest('button');if(!b||!ids.has(b.id)||b.dataset.actionVerified==='1')return;e.preventDefault();e.stopImmediatePropagation();const ok=await window.garageRequestActionPassword?.();if(!ok)return;b.dataset.actionVerified='1';b.click();setTimeout(()=>delete b.dataset.actionVerified,100);},true);
 })();
 </script>
+<style id="garage-mobile-v9-app">
+/* =========================================================
+   GARAGE MOBILE V9 — mobile-first application shell
+   Desktop is intentionally untouched: every rule is scoped to
+   body.garage-mobile-mode and the mobile controls added below.
+   ========================================================= */
+@media (max-width:700px){
+  :root{
+    --gm-header:62px;
+    --gm-nav:72px;
+    --gm-gap:10px;
+    --gm-radius:16px;
+    --gm-bg:#f4f7fb;
+    --gm-card:#fff;
+    --gm-line:#e4e9f0;
+    --gm-text:#1d2b3a;
+    --gm-muted:#718096;
+  }
+  body.garage-mobile-mode{
+    background:var(--gm-bg)!important;
+    color:var(--gm-text);
+    overflow-x:hidden!important;
+  }
+  body.garage-mobile-mode .app{display:block!important;min-height:100dvh!important;background:var(--gm-bg)!important}
+  body.garage-mobile-mode aside{display:none!important}
+  body.garage-mobile-mode main{width:100%!important;min-width:0!important;margin:0!important;padding:0!important}
+
+  /* App header: compact, sticky, no desktop chrome. */
+  body.garage-mobile-mode .top{
+    position:sticky!important;top:0!important;z-index:8500!important;
+    height:var(--gm-header)!important;min-height:var(--gm-header)!important;
+    box-sizing:border-box!important;padding:8px 12px!important;
+    background:rgba(255,255,255,.96)!important;
+    border-bottom:1px solid var(--gm-line)!important;
+    box-shadow:0 2px 14px rgba(24,42,62,.06)!important;
+    backdrop-filter:blur(14px);
+    display:flex!important;align-items:center!important;gap:8px!important;
+  }
+  body.garage-mobile-mode .global-search-wrap{flex:1 1 auto!important;min-width:0!important}
+  body.garage-mobile-mode #globalSearch{
+    height:44px!important;border-radius:13px!important;padding:0 13px 0 40px!important;
+    width:100%!important;box-sizing:border-box!important;font-size:16px!important;
+    background:#f1f4f8!important;border:1px solid #e1e6ed!important;
+  }
+  body.garage-mobile-mode .seller-top{display:flex!important;flex:0 0 auto!important;gap:0!important}
+  body.garage-mobile-mode .seller-top>div:not(.avatar),
+  body.garage-mobile-mode #currentSellerSwitch,
+  body.garage-mobile-mode #sellerManage{display:none!important}
+  body.garage-mobile-mode .seller-top .avatar{width:40px!important;height:40px!important;font-size:14px!important}
+
+  /* Main content becomes one-column app feed. */
+  body.garage-mobile-mode .content{
+    width:100%!important;box-sizing:border-box!important;
+    padding:12px 10px calc(var(--gm-nav) + 18px + env(safe-area-inset-bottom))!important;
+    margin:0!important;max-width:none!important;
+  }
+  body.garage-mobile-mode .page{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+  body.garage-mobile-mode .page>.head{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;
+    padding:3px 2px 11px!important;margin:0!important;min-height:44px!important;
+  }
+  body.garage-mobile-mode .eyebrow{font-size:11px!important;margin-bottom:2px!important}
+  body.garage-mobile-mode .title{font-size:22px!important;line-height:1.1!important;letter-spacing:-.3px!important}
+  body.garage-mobile-mode .head .actions{display:flex!important;gap:6px!important;max-width:58%!important}
+  body.garage-mobile-mode .head .actions .btn{min-height:42px!important;padding:8px 10px!important;font-size:13px!important}
+  body.garage-mobile-mode .head>.btn{min-height:42px!important;padding:8px 11px!important}
+
+  /* Cards are flatter and denser than desktop cards. */
+  body.garage-mobile-mode .card,
+  body.garage-mobile-mode .section{
+    border-radius:var(--gm-radius)!important;
+    box-shadow:0 2px 10px rgba(25,48,72,.045)!important;
+    border:1px solid var(--gm-line)!important;
+  }
+  body.garage-mobile-mode .section{padding:12px!important}
+  body.garage-mobile-mode .section-title{font-size:14px!important;margin-bottom:10px!important}
+
+  /* Home: compact KPI strip, then actionable notification card. */
+  body.garage-mobile-mode .home-minimal-grid{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;margin:0 0 10px!important;
+  }
+  body.garage-mobile-mode .home-minimal-stat{
+    min-width:0!important;min-height:86px!important;padding:11px 9px!important;border-radius:14px!important;
+  }
+  body.garage-mobile-mode .home-minimal-stat .label{font-size:10px!important;line-height:1.2!important}
+  body.garage-mobile-mode .home-minimal-stat .value{font-size:22px!important;margin-top:6px!important}
+  body.garage-mobile-mode .home-stat-note{font-size:9px!important;line-height:1.2!important;margin-top:4px!important;color:var(--gm-muted)!important}
+  body.garage-mobile-mode #homeNotifyBanner{
+    border-radius:16px!important;margin:0!important;padding:0!important;background:#fff!important;
+    border:1px solid #f0dfae!important;box-shadow:0 3px 14px rgba(116,84,16,.07)!important;
+  }
+  body.garage-mobile-mode #homeNotifyBanner .home-notify-banner-head{
+    margin:0!important;padding:12px 13px!important;background:#fff9eb!important;
+    border-radius:16px 16px 0 0!important;position:sticky!important;top:0!important;
+  }
+  body.garage-mobile-mode #homeNotifyList{
+    max-height:none!important;overflow:visible!important;padding:9px!important;
+    display:grid!important;gap:8px!important;
+  }
+  body.garage-mobile-mode .home-notify-row{
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+    gap:7px!important;padding:11px!important;border-radius:13px!important;
+    background:#fff!important;border:1px solid var(--gm-line)!important;
+    box-shadow:none!important;min-width:0!important;
+  }
+  body.garage-mobile-mode .home-notify-row .btn{
+    grid-column:1/-1!important;width:100%!important;min-height:45px!important;
+  }
+
+  /* Lists: never squeeze desktop columns. */
+  body.garage-mobile-mode .toolbar,
+  body.garage-mobile-mode .order-toolbar{
+    display:grid!important;grid-template-columns:1fr!important;gap:8px!important;
+    margin-bottom:10px!important;
+  }
+  body.garage-mobile-mode .toolbar input,
+  body.garage-mobile-mode .toolbar select,
+  body.garage-mobile-mode .order-toolbar input,
+  body.garage-mobile-mode .order-toolbar select{width:100%!important;min-width:0!important;height:46px!important}
+  body.garage-mobile-mode .rows{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  body.garage-mobile-mode .rows>.row,
+  body.garage-mobile-mode .order-list-row,
+  body.garage-mobile-mode .order-row{
+    display:grid!important;grid-template-columns:1fr!important;gap:8px!important;
+    min-width:0!important;padding:12px!important;border-radius:15px!important;background:#fff!important;
+  }
+  body.garage-mobile-mode .row>*{min-width:0!important}
+
+  /* Client cards: information first, actions last. */
+  body.garage-mobile-mode .clients-list{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  body.garage-mobile-mode .client-card,
+  body.garage-mobile-mode .client-row,
+  body.garage-mobile-mode .client-list-row{
+    display:block!important;min-width:0!important;padding:12px!important;border-radius:15px!important;
+    background:#fff!important;border:1px solid var(--gm-line)!important;
+    box-shadow:0 2px 9px rgba(27,54,82,.045)!important;
+  }
+  body.garage-mobile-mode .client-card .client-actions,
+  body.garage-mobile-mode .client-row .client-actions,
+  body.garage-mobile-mode .client-list-row .client-actions{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:10px!important;
+  }
+  body.garage-mobile-mode .client-actions .btn{width:100%!important;min-height:44px!important}
+
+  /* Deliveries: each part is a self-contained task card. */
+  body.garage-mobile-mode .delivery-toolbar-simple{display:block!important;margin-bottom:9px!important}
+  body.garage-mobile-mode #deliveriesSearch{width:100%!important;height:46px!important;font-size:16px!important}
+  body.garage-mobile-mode .delivery-list{display:grid!important;gap:8px!important}
+  body.garage-mobile-mode .delivery-list>*{min-width:0!important;border-radius:15px!important}
+  body.garage-mobile-mode .delivery-list button{width:100%!important;min-height:46px!important}
+
+  /* Sales/history/settings: one clear vertical flow. */
+  body.garage-mobile-mode .sales-summary-grid{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  body.garage-mobile-mode .sales-summary-card{min-width:0!important;border-radius:14px!important}
+  body.garage-mobile-mode .settings-grid,
+  body.garage-mobile-mode .settings-cards{grid-template-columns:1fr!important}
+  body.garage-mobile-mode table{font-size:12px!important}
+
+  /* Generic overlays: true bottom sheets, with a fixed action footer. */
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal){
+    padding:0!important;align-items:flex-end!important;place-items:initial!important;
+  }
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .modal,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .notification-modal{
+    width:100%!important;max-width:none!important;max-height:94dvh!important;
+    border-radius:19px 19px 0 0!important;display:flex!important;flex-direction:column!important;
+    overflow:hidden!important;margin:0!important;
+  }
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .modal .modal-head,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .notification-modal .notification-head{flex:0 0 auto!important}
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .modal .modal-body,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .notification-modal .notification-body{
+    min-height:0!important;flex:1 1 auto!important;overflow-y:auto!important;overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .modal .modal-foot,
+  body.garage-mobile-mode .overlay:not(#orderHistoryModal)> .notification-modal .notification-foot{
+    flex:0 0 auto!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;
+    background:#fff!important;box-shadow:0 -4px 14px rgba(22,40,60,.07)!important;
+  }
+  body.garage-mobile-mode .modal-foot .btn,
+  body.garage-mobile-mode .notification-foot .btn{min-height:48px!important}
+
+  /* Order detail: app-like screen, no tiny desktop columns. */
+  body.garage-mobile-mode #orderHistoryModal{padding:0!important;align-items:stretch!important}
+  body.garage-mobile-mode #orderHistoryModal .order-detail-modal{
+    width:100%!important;height:100dvh!important;max-height:none!important;border-radius:0!important;
+    display:flex!important;flex-direction:column!important;
+  }
+  body.garage-mobile-mode #orderHistoryModal .order-detail-head{padding:11px 13px!important;min-height:58px!important}
+  body.garage-mobile-mode #orderHistoryModal .order-detail-body{padding:10px!important;overflow:auto!important}
+  body.garage-mobile-mode #orderHistoryModal .order-detail-foot{
+    padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;
+  }
+  body.garage-mobile-mode .order-workspace{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+  body.garage-mobile-mode .order-status-overview{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  body.garage-mobile-mode .order-status-card{min-width:0!important;padding:11px!important;border-radius:14px!important}
+  body.garage-mobile-mode .order-status-card-label{font-size:14px!important}
+  body.garage-mobile-mode .order-item-card,
+  body.garage-mobile-mode .order-position-card{min-width:0!important;border-radius:14px!important}
+  body.garage-mobile-mode .order-items-grid{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  body.garage-mobile-mode .order-pay-card{width:100%!important;min-width:0!important;border-radius:15px!important}
+  body.garage-mobile-mode .order-pay-amount{font-size:30px!important;line-height:1.05!important}
+  body.garage-mobile-mode .payment-methods{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  body.garage-mobile-mode .payment-methods .btn{min-height:50px!important}
+
+  /* Remove accidental horizontal scrolling from app shell. */
+  body.garage-mobile-mode .table-wrap,
+  body.garage-mobile-mode .table-scroll,
+  body.garage-mobile-mode .orders-table-wrap{max-width:100%!important}
+  body.garage-mobile-mode .content *{max-width:100%;box-sizing:border-box}
+
+  /* Fixed mobile navigation */
+  body.garage-mobile-mode .garage-mobile-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:9500;
+    min-height:var(--gm-nav);padding:6px 7px calc(6px + env(safe-area-inset-bottom));
+    display:grid;grid-template-columns:repeat(4,1fr) 1.08fr;gap:3px;
+    background:rgba(255,255,255,.97);border-top:1px solid #dfe6ee;
+    box-shadow:0 -8px 28px rgba(24,42,62,.11);backdrop-filter:blur(14px);
+  }
+  body.garage-mobile-mode .garage-mobile-nav button{
+    appearance:none;border:0;background:transparent;color:#687789;border-radius:12px;
+    min-width:0;min-height:58px;padding:5px 2px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;font:600 10px/1.05 system-ui,sans-serif;
+  }
+  body.garage-mobile-mode .garage-mobile-nav button .gm-nav-icon{font-size:20px;line-height:20px}
+  body.garage-mobile-mode .garage-mobile-nav button.active{color:#1769e0;background:#edf4ff}
+  body.garage-mobile-mode .garage-mobile-nav button.has-alert::after{
+    content:'';position:absolute;margin:-31px 0 0 25px;width:7px;height:7px;border-radius:50%;background:#ef4444;
+  }
+  body.garage-mobile-mode .garage-mobile-nav button{position:relative}
+
+  /* More sheet */
+  body.garage-mobile-mode .garage-mobile-more{
+    position:fixed;inset:0;z-index:9400;background:rgba(15,23,42,.36);
+    display:flex;align-items:flex-end;padding:0!important;
+  }
+  body.garage-mobile-mode .garage-mobile-more.hidden{display:none!important}
+  body.garage-mobile-mode .garage-mobile-more-panel{
+    width:100%;background:#fff;border-radius:20px 20px 0 0;padding:8px 12px calc(12px + env(safe-area-inset-bottom));
+    box-shadow:0 -16px 50px rgba(15,31,50,.2);
+  }
+  body.garage-mobile-mode .garage-mobile-more-handle{width:38px;height:4px;border-radius:4px;background:#cbd3dd;margin:3px auto 12px}
+  body.garage-mobile-mode .garage-mobile-more-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  body.garage-mobile-mode .garage-mobile-more-grid button{
+    min-height:56px;border:1px solid var(--gm-line);background:#f9fbfd;border-radius:14px;font-weight:700;font-size:13px;color:#334155;
+  }
+}
+
+@media (max-width:380px){
+  body.garage-mobile-mode .content{padding-left:8px!important;padding-right:8px!important}
+  body.garage-mobile-mode .home-minimal-grid{gap:5px!important}
+  body.garage-mobile-mode .home-minimal-stat{padding:9px 7px!important}
+  body.garage-mobile-mode .home-minimal-stat .label{font-size:9px!important}
+  body.garage-mobile-mode .home-minimal-stat .value{font-size:20px!important}
+  body.garage-mobile-mode .garage-mobile-nav{padding-left:4px;padding-right:4px}
+  body.garage-mobile-mode .garage-mobile-nav button{font-size:9px}
+}
+
+@media (min-width:701px){
+  .garage-mobile-nav,.garage-mobile-more{display:none!important}
+}
+</style>
+<script id="garage-mobile-v9-app-js">
+(function(){
+  function install(){
+    if(document.getElementById('garageMobileNav')) return;
+    var nav=document.createElement('nav');
+    nav.id='garageMobileNav'; nav.className='garage-mobile-nav'; nav.setAttribute('aria-label','Мобильная навигация');
+    nav.innerHTML=''+
+      '<button type="button" data-gm-page="home"><span class="gm-nav-icon">⌂</span><span>Главная</span></button>'+
+      '<button type="button" data-gm-page="clients"><span class="gm-nav-icon">♙</span><span>Клиенты</span></button>'+
+      '<button type="button" data-gm-page="orders"><span class="gm-nav-icon">▤</span><span>Заказы</span></button>'+
+      '<button type="button" data-gm-page="deliveries"><span class="gm-nav-icon">🚚</span><span>Поставки</span></button>'+
+      '<button type="button" data-gm-more="1"><span class="gm-nav-icon">☰</span><span>Ещё</span></button>';
+    document.body.appendChild(nav);
+
+    var more=document.createElement('div');
+    more.id='garageMobileMore'; more.className='garage-mobile-more hidden';
+    more.innerHTML='<div class="garage-mobile-more-panel"><div class="garage-mobile-more-handle"></div><div class="garage-mobile-more-grid">'+
+      '<button type="button" data-gm-page="sales">₽ &nbsp; Продажа</button>'+
+      '<button type="button" data-gm-page="history">◷ &nbsp; История</button>'+
+      '<button type="button" data-gm-page="settings">⚙ &nbsp; Настройки</button>'+
+      '<button type="button" data-gm-close="1">Закрыть</button>'+
+      '</div></div>';
+    document.body.appendChild(more);
+
+    nav.addEventListener('click',function(e){
+      var page=e.target.closest('[data-gm-page]');
+      if(page){go(page.dataset.gmPage);return;}
+      if(e.target.closest('[data-gm-more]')) more.classList.remove('hidden');
+    });
+    more.addEventListener('click',function(e){
+      if(e.target===more || e.target.closest('[data-gm-close]')){more.classList.add('hidden');return;}
+      var page=e.target.closest('[data-gm-page]');
+      if(page){more.classList.add('hidden');go(page.dataset.gmPage);}
+    });
+
+    document.addEventListener('click',function(e){
+      var desktop=e.target.closest('.nav button[data-page]');
+      if(desktop) setTimeout(function(){sync();},0);
+    });
+    document.addEventListener('garage-page-changed',sync);
+    sync();
+  }
+  function go(id){
+    var b=document.querySelector('.nav button[data-page="'+id+'"]');
+    if(b){b.click();}
+    else{
+      document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('active',p.id===id);});
+    }
+    setTimeout(sync,0);
+  }
+  function sync(){
+    var active=document.querySelector('.page.active');
+    var id=active&&active.id;
+    document.querySelectorAll('#garageMobileNav [data-gm-page]').forEach(function(b){b.classList.toggle('active',b.dataset.gmPage===id);});
+    var more=document.getElementById('garageMobileMore');
+    var moreBtn=document.querySelector('#garageMobileNav [data-gm-more]');
+    if(moreBtn) moreBtn.classList.toggle('active',['sales','history','settings'].indexOf(id)>=0);
+    if(more && !document.body.classList.contains('garage-mobile-mode')) more.classList.add('hidden');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install); else install();
+})();
+</script>
+
 </body>
 </html>
