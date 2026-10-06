@@ -125,6 +125,22 @@ export default {
         return json({ ok: true });
       }
 
+      // Отдельная смена пароля опасных действий. Текущий пароль действий
+      // проверяется по action_hash; пароль входа для этой операции не подходит.
+      if (url.pathname === '/api/auth/change-action' && request.method === 'POST') {
+        let body;
+        try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+        const auth = await getAuth(env);
+        const current = String(body?.currentPassword || '');
+        const next = String(body?.password || '');
+        if (!auth || (await sha256(current)) !== auth.action_hash) return json({ error: 'Unauthorized' }, 401);
+        if (next.length < 6) return json({ error: 'Password must contain at least 6 characters' }, 400);
+        await env.GARAGE_DB.prepare(
+          'UPDATE garage_auth SET action_hash = ?, updated_at = ? WHERE id = 1'
+        ).bind(await sha256(next), new Date().toISOString()).run();
+        return json({ ok: true });
+      }
+
       if (url.pathname === '/api/hosting-stats' && request.method === 'GET') {
         if (!(await requireLogin(request, env))) return json({ error: 'Unauthorized' }, 401);
 
