@@ -118,7 +118,7 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 @media(max-width:520px){.sales-filters{grid-template-columns:1fr}.sales-filters .sales-filter-search,.sales-filters .btn{grid-column:auto}}
 
 /* warehouse sale cart */
-.warehouse-sale-modal{width:min(1050px,calc(100vw - 24px))}
+.warehouse-sale-modal{width:min(1050px,calc(100vw - 24px));max-height:calc(100vh - 24px);display:flex;flex-direction:column}.warehouse-sale-modal .modal-body{min-height:0;overflow:auto}.warehouse-sale-modal .modal-foot{flex:0 0 auto;background:#fff;position:sticky;bottom:0;z-index:2}.warehouse-sale-modal .cart-list{max-height:min(46vh,480px);overflow-y:auto;overflow-x:auto;scrollbar-width:auto}.warehouse-sale-modal .cart-list::-webkit-scrollbar{width:10px;height:10px}.warehouse-sale-modal .cart-list::-webkit-scrollbar-thumb{background:#b8c3d1;border-radius:999px;border:2px solid #fff}.warehouse-sale-modal .cart-list::-webkit-scrollbar-track{background:#f1f4f8;border-radius:999px}
 .cart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.cart-head>div{display:flex;gap:9px;align-items:center}.cart-head span{font-size:12px;color:var(--muted);background:#f1f4f8;padding:4px 8px;border-radius:20px}
 .cart-list{border:1px solid var(--line);border-radius:13px;overflow:hidden}.cart-empty{padding:28px;text-align:center;color:var(--muted);background:#fafbfd}
 .cart-item{display:grid;grid-template-columns:42px minmax(170px,1fr) 80px 85px 70px 118px 68px 32px;gap:8px;align-items:end;padding:12px;border-bottom:1px solid var(--line)}.cart-item:last-child{border-bottom:0}
@@ -137,6 +137,7 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
 .cart-controls{display:grid;grid-template-columns:1fr 220px;gap:13px;margin-top:16px}.cart-controls .method{display:flex;gap:8px}.cart-controls .method button{flex:1}
 .sale-total-row input{width:155px;text-align:right;border:1px solid #9fb6dd;border-radius:9px;padding:7px 9px;font-weight:800;font-size:18px;background:#fff}
 @media(max-width:650px){.cart-item{grid-template-columns:1fr 80px 85px 72px 100px 62px 30px}.cart-controls{grid-template-columns:1fr}.cart-item .line-total{font-size:13px}}
+@media(max-width:650px){.warehouse-sale-modal{width:calc(100vw - 12px);max-height:calc(100vh - 12px)}.warehouse-sale-modal .modal-body{padding:14px}.warehouse-sale-modal .cart-list{max-height:42vh}.warehouse-sale-modal .modal-foot{padding:12px 14px}}
 
 
 /* client cards */
