@@ -1111,7 +1111,496 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   .modal-body,.order-detail-body{padding:12px!important}
   .sales-summary-card{min-height:92px}
 }
+
+<style id="garage-mobile-v3">
+/* Mobile V3 — не просто сжатие desktop, а рабочий touch-first интерфейс */
+@media (max-width:700px){
+  :root{
+    --mobile-pad:12px;
+    --mobile-radius:14px;
+    --mobile-nav-h:72px;
+  }
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{
+    padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));
+    background:#f4f7fb;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* Верхняя панель */
+  .top{
+    height:auto!important;
+    min-height:58px;
+    padding:8px var(--mobile-pad)!important;
+    gap:8px!important;
+    display:flex!important;
+    align-items:center!important;
+    background:rgba(255,255,255,.94)!important;
+    border-bottom:1px solid #e4eaf1!important;
+    box-shadow:0 2px 12px rgba(23,42,65,.05);
+  }
+  .global-search-wrap{
+    flex:1 1 auto!important;
+    width:auto!important;
+    min-width:0!important;
+  }
+  .global-search-wrap .search{
+    width:100%!important;
+    height:44px!important;
+    border-radius:13px!important;
+    padding:0 12px!important;
+    font-size:13px!important;
+    background:#f5f7fa!important;
+  }
+  .user.seller-top{
+    flex:0 0 auto;
+    gap:0!important;
+  }
+  .seller-top>div:not(.avatar),
+  .seller-top select,
+  .seller-manage{display:none!important}
+  .seller-top .avatar{
+    width:38px!important;
+    height:38px!important;
+    border:2px solid #fff;
+    box-shadow:0 2px 8px rgba(20,40,70,.12);
+  }
+
+  /* Контент и заголовки */
+  .content{
+    padding:12px!important;
+    max-width:100%!important;
+  }
+  .head{
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    margin:2px 0 12px!important;
+  }
+  .head>.actions{
+    margin-left:auto;
+    gap:6px!important;
+  }
+  .eyebrow{font-size:10px!important;letter-spacing:.08em}
+  .title{
+    font-size:22px!important;
+    line-height:1.12!important;
+    margin-top:2px!important;
+  }
+  .head .actions .btn{
+    width:auto!important;
+    min-width:42px!important;
+    padding:9px 10px!important;
+  }
+  .head .actions .btn:not(.primary){
+    font-size:0;
+  }
+  .head .actions .btn:not(.primary)::before{content:"⋯";font-size:20px;line-height:1}
+
+  /* Нижняя навигация */
+  aside{
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;
+    height:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom))!important;
+    z-index:9000!important;
+    padding:5px 6px env(safe-area-inset-bottom)!important;
+    background:rgba(255,255,255,.97)!important;
+    border-top:1px solid #dce4ed!important;
+    box-shadow:0 -8px 28px rgba(25,45,70,.12)!important;
+    backdrop-filter:blur(16px);
+  }
+  .logo,.sidebar-bottom{display:none!important}
+  .nav{
+    height:var(--mobile-nav-h)!important;
+    display:flex!important;
+    align-items:stretch!important;
+    gap:3px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scrollbar-width:none!important;
+    padding:0!important;
+  }
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{
+    flex:0 0 58px!important;
+    min-width:58px!important;
+    min-height:58px!important;
+    height:58px!important;
+    margin:0!important;
+    padding:6px 3px!important;
+    border-radius:12px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:3px!important;
+    text-align:center!important;
+    color:#718096!important;
+    font-size:9px!important;
+    line-height:1.05!important;
+  }
+  .nav button .ico{
+    width:auto!important;
+    height:23px!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:19px!important;
+    line-height:1!important;
+  }
+  .nav button.active{
+    color:#2563eb!important;
+    background:#eaf2ff!important;
+  }
+  .nav button:active{transform:scale(.96)}
+
+  /* Универсальные touch targets */
+  button,.btn,input,select,textarea{
+    min-height:44px;
+    box-sizing:border-box;
+  }
+  button,.btn{touch-action:manipulation}
+  input,select,textarea{font-size:16px!important} /* не вызывает zoom в iOS */
+  .btn{
+    padding:10px 13px!important;
+    border-radius:11px!important;
+  }
+
+  /* Главная — не пустая, а dashboard */
+  .home-minimal-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    margin-bottom:10px!important;
+  }
+  .home-minimal-stat{
+    position:relative;
+    min-height:82px!important;
+    padding:14px 15px!important;
+    border-radius:16px!important;
+    overflow:hidden;
+    box-shadow:0 3px 12px rgba(27,54,82,.055)!important;
+  }
+  .home-minimal-stat .value{
+    font-size:27px!important;
+    margin-top:4px!important;
+  }
+  .home-minimal-stat .home-stat-note{
+    font-size:11px!important;
+    margin-top:3px!important;
+    max-width:78%;
+  }
+  .home-minimal-stat:after{
+    content:"";
+    position:absolute;
+    right:-22px;
+    top:-22px;
+    width:90px;height:90px;
+    border-radius:50%;
+    background:#eef4ff;
+    opacity:.9;
+  }
+  .home-minimal-stat:nth-child(1):after{background:#fff3dc}
+  .home-minimal-stat:nth-child(3):after{background:#fff0df}
+  .home-notify-banner{
+    border-radius:16px!important;
+    box-shadow:0 4px 14px rgba(27,54,82,.06)!important;
+  }
+
+  /* Карточки / списки */
+  .card{
+    border-radius:var(--mobile-radius)!important;
+    box-shadow:0 2px 10px rgba(27,54,82,.045)!important;
+  }
+  .section{padding:13px!important}
+  .section-title{font-size:15px!important;margin-bottom:10px!important}
+  .rows{gap:8px!important}
+  .row{
+    padding:12px!important;
+    border-radius:13px!important;
+    align-items:flex-start!important;
+  }
+  .empty{padding:28px 18px!important}
+
+  /* Панели поиска */
+  .toolbar{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    margin-bottom:10px!important;
+  }
+  .toolbar input,.toolbar select{
+    width:100%!important;
+    min-width:0!important;
+    height:46px!important;
+  }
+
+  /* Клиенты: информация → действия */
+  .clients-list{
+    display:grid!important;
+    gap:9px!important;
+  }
+  .client-card,.client-row,.client-list-row{
+    border-radius:15px!important;
+  }
+  .client-card .client-actions,
+  .client-row .client-actions,
+  .client-list-row .client-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+    margin-top:9px!important;
+  }
+  .client-card .client-actions .btn,
+  .client-row .client-actions .btn,
+  .client-list-row .client-actions .btn{
+    width:100%!important;
+  }
+
+  /* Заказы: карточка, а не длинная строка */
+  .order-list-row,.order-row{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    padding:13px!important;
+    border-radius:15px!important;
+    background:#fff!important;
+    box-shadow:0 2px 9px rgba(27,54,82,.045)!important;
+  }
+  .order-row-right{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+    justify-content:stretch!important;
+  }
+  .order-row-right .btn{width:100%!important}
+  .order-status-badge{
+    display:inline-flex!important;
+    width:max-content!important;
+    max-width:100%!important;
+    min-width:0!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+    text-align:center!important;
+    padding:7px 9px!important;
+    border-radius:9px!important;
+  }
+
+  /* Поставки — каждая деталь отдельной компактной карточкой */
+  .delivery-list{display:grid!important;gap:8px!important}
+  .delivery-toolbar-simple{margin-bottom:8px!important}
+  .delivery-simple-caption{font-size:10px!important;line-height:1.35!important;margin-bottom:9px!important}
+  .delivery-list .row{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  .delivery-list button{
+    width:100%!important;
+  }
+
+  /* Продажи */
+  .sales-summary-grid{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+    margin-bottom:10px!important;
+  }
+  .sales-summary-card{
+    min-height:92px!important;
+    padding:13px!important;
+    border-radius:14px!important;
+  }
+  .sales-summary-card .summary-value{font-size:20px!important}
+  .sales-summary-control{grid-column:1/-1!important;min-height:60px!important}
+  .sales-filters{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    padding:10px!important;
+    border-radius:14px!important;
+  }
+  .sales-filters .sales-filter-search,
+  .sales-filters .btn{grid-column:auto!important}
+  .sales-journal-row,.warehouse-sale-row,.order-sale-row{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:7px!important;
+    padding:11px!important;
+    margin-bottom:7px!important;
+  }
+  .sale-row-total{text-align:left!important;min-width:0!important}
+  .sale-row-total .total-sub{justify-content:flex-start!important}
+
+  /* Модалки */
+  .overlay{
+    padding:0!important;
+    place-items:stretch!important;
+  }
+  .modal,.order-detail-modal{
+    width:100%!important;
+    max-width:none!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .modal-head,.modal-foot,.order-detail-head,.order-detail-foot{
+    padding:11px 13px!important;
+  }
+  .modal-head h2{font-size:17px!important}
+  .modal-body,.order-detail-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow:auto!important;
+    padding:12px!important;
+  }
+  .modal-foot{
+    position:sticky!important;
+    bottom:0!important;
+    z-index:4!important;
+    background:#fff!important;
+  }
+  .modal-foot .btn{flex:1!important}
+  .formgrid,.order-action-grid,.order-payment-tools,.order-history-pay-grid,.sale-product{
+    grid-template-columns:1fr!important;
+  }
+
+  /* Заказ внутри клиента и карточка оплаты */
+  .client-order-detail-head-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    width:100%!important;
+    gap:7px!important;
+  }
+  .client-order-detail-head-actions .btn{width:100%!important}
+  .order-item-detail,.order-item-detail.order-pay-card{
+    grid-template-columns:1fr!important;
+  }
+  .order-item-detail>div,.order-item-detail.order-pay-card>div{grid-column:1!important}
+  .order-history-event{grid-template-columns:1fr!important}
+  .order-history-amount{white-space:normal!important}
+
+  /* Детали заказа: сначала товар и статус, затем деньги */
+  #orderHistoryModal .order-workspace{grid-template-columns:1fr!important;gap:9px!important}
+  #orderHistoryModal .order-side-column{position:static!important}
+  #orderHistoryModal .order-summary-bar{grid-template-columns:1fr 1fr!important;gap:7px!important}
+  #orderHistoryModal .order-summary-card{min-height:68px!important;padding:10px!important}
+  #orderHistoryModal .order-summary-card b{font-size:16px!important}
+  #orderHistoryModal .order-item-card,
+  #orderHistoryModal .order-item-card.is-removed{
+    grid-template-columns:1fr!important;
+    border-radius:14px!important;
+  }
+  #orderHistoryModal .order-item-status-box{
+    border-left:0!important;
+    border-right:0!important;
+    border-top:1px solid #e5ebf1!important;
+  }
+  #orderHistoryModal .order-item-right{
+    border-top:1px solid #e5ebf1!important;
+  }
+  #orderHistoryModal .order-panel-head{
+    padding:10px!important;
+  }
+  #orderHistoryModal .order-panel-head-main{
+    flex-wrap:wrap!important;
+    gap:7px!important;
+  }
+  #orderHistoryModal .order-select-all{
+    width:100%!important;
+    justify-content:center!important;
+    min-height:40px!important;
+  }
+  #orderHistoryModal .order-action-grid{
+    grid-template-columns:1fr!important;
+  }
+  #orderHistoryModal .order-action-grid #orderPayAll,
+  #orderHistoryModal .order-action-grid #orderPaySelected{
+    height:48px!important;
+    font-size:13px!important;
+  }
+  #orderHistoryModal .order-pay-amount{
+    height:50px!important;
+    font-size:21px!important;
+  }
+
+  /* Сотрудники / настройки */
+  .seller-entry{
+    grid-template-columns:40px 1fr!important;
+    gap:9px!important;
+    padding:11px!important;
+  }
+  .seller-actions{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  .seller-add{display:grid!important;grid-template-columns:1fr!important}
+
+  /* Быстрое меню */
+  .quick-menu{
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    top:auto!important;
+    bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom) + 8px)!important;
+    width:auto!important;
+    border-radius:15px!important;
+    box-shadow:0 18px 45px rgba(15,23,42,.18)!important;
+  }
+  .quick-menu button{min-height:46px!important}
+
+  /* Уведомления */
+  .notification-modal{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100dvh!important;
+    border-radius:0!important;
+  }
+  .notification-foot{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+  }
+  .notification-foot #confirmNotification{grid-column:1/-1;order:-1}
+
+  /* Toast над нижним меню */
+  .toast-stack{
+    left:10px!important;
+    right:10px!important;
+    bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom) + 8px)!important;
+  }
+  .garage-toast{
+    width:100%!important;
+    min-width:0!important;
+    border-radius:13px!important;
+  }
+
+  /* Горизонтальные таблицы остаются прокручиваемыми */
+  .table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  table{min-width:620px}
+
+  /* Убираем горизонтальный overflow у сложных блоков */
+  .order-detail-section,.order-side-card,.order-item-detail{min-width:0!important;overflow:hidden}
+  .order-item-detail small,.order-item-name,.order-status-caption{overflow-wrap:anywhere}
+}
+
+@media(max-width:420px){
+  .content{padding:10px!important}
+  .nav button{flex-basis:56px!important;min-width:56px!important;font-size:8.5px!important}
+  .nav button .ico{font-size:18px!important}
+  .title{font-size:21px!important}
+  .sales-summary-grid{grid-template-columns:1fr!important}
+  .sales-summary-control{grid-column:auto!important}
+  .client-card .client-actions,
+  .client-row .client-actions,
+  .client-list-row .client-actions{grid-template-columns:1fr!important}
+  #orderHistoryModal .order-summary-bar{grid-template-columns:1fr!important}
+}
 </style>
+
 </head>
 <body>
 <div class="app">
@@ -3781,13 +4270,18 @@ function exportGarageBackup(){
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='garage-backup-'+todayIso()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500);
   toast('Резервная копия выгружена в JSON','ok','Экспорт завершён');
 }
-function applyGarageBackup(payload){
+async function applyGarageBackup(payload){
   if(!payload||!['garage-local-backup-v1','garage-local-backup-v2'].includes(payload.format)||!payload.data||typeof payload.data!=='object'){
     toast('Файл не похож на резервную копию ГАРАЖ.','error','Импорт отменён'); return;
   }
   const keys=[]; for(let i=0;i<garageStorage.length;i++){const key=garageStorage.key(i); if(key&&key.startsWith('garage'))keys.push(key);}
   keys.forEach(k=>garageStorage.removeItem(k)); Object.entries(payload.data).forEach(([k,v])=>{if(String(k).startsWith('garage'))garageStorage.setItem(k,String(v??''));});
+  if(window.garageCloudSync?.save){
+    try{await window.garageCloudSync.save();}
+    catch(e){toast('Не удалось сохранить импорт в облако.','error','Импорт отменён');return false;}
+  }
   location.reload();
+  return true;
 }
 document.getElementById('exportGarageBackup')?.addEventListener('click',exportGarageBackup);
 document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
