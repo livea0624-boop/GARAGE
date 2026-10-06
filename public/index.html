@@ -3255,6 +3255,33 @@ function allocateOrderPayment(order,amount,selectedIndices){
   });
   return left;
 }
+function getPaymentRoundingDiscount(order,amount,selectedIndices){
+  const indices=Array.isArray(selectedIndices)?selectedIndices:[];
+  const selected=indices.map(i=>order.items?.[i]).filter(i=>i&&!i.removed);
+  const available=selected.reduce((sum,item)=>sum+getItemRemaining(item),0);
+  const totalRemaining=(order.items||[]).reduce((sum,item)=>sum+(!item?.removed?getItemRemaining(item):0),0);
+  const entered=Math.max(0,Number(amount)||0);
+  const diff=Math.max(0,available-entered);
+  // Округление разрешено ТОЛЬКО при последней оплате всего заказа.
+  // Если оплачивается только часть позиций/остатка, разница остаётся обычным долгом.
+  // При создании заказа эта функция не вызывается и на оформление не влияет.
+  const isFinalPayment=available>0.001 && Math.abs(available-totalRemaining)<=0.01 && entered<available-0.001;
+  const MAX_ROUNDING_DISCOUNT=50;
+  if(isFinalPayment && diff>0.001 && diff<=MAX_ROUNDING_DISCOUNT) return Math.round(diff*100)/100;
+  return 0;
+}
+function applyPaymentRoundingDiscount(order,discount,selectedIndices){
+  const value=Math.max(0,Number(discount)||0);
+  if(value<=0)return 0;
+  const indices=Array.isArray(selectedIndices)?selectedIndices:[];
+  const available=indices.reduce((sum,i)=>{const item=order.items?.[i];return sum+(item&&!item.removed?getItemRemaining(item):0)},0);
+  const applied=Math.min(value,available);
+  if(applied<=0.001)return 0;
+  const before=Math.max(0,Number(order.roundingAdjustment)||0);
+  order.roundingAdjustment=before+applied;
+  ensureOrderRoundingAllocation(order);
+  return applied;
+}
 function addOrderPayment(order,amount,method,seller,date,time,createdAt,selectedIndices){
   const beforePaid=Math.max(0,Number(order.paid)||0);
   const total=Math.max(0,Number(order.total)||0);
@@ -4225,7 +4252,10 @@ function ensureOrderItemPayments(order){
     changed=true;
   }else{
     active.forEach(item=>{
-      const next=Math.min(getItemEffectiveTotal(item),Math.max(0,Number(item.paidAmount)||0));
+      // ВАЖНО: скидка/округление не является новой оплатой. Никогда не уменьшаем
+      // исторически внесённый paidAmount до новой стоимости позиции — иначе
+      // скидка могла сама превратить позицию в «полностью оплачено».
+      const next=Math.max(0,Number(item.paidAmount)||0);
       if(Number(item.paidAmount)!==next){item.paidAmount=next;changed=true;}
       if(next>0 && !item.discountLocked){item.discountLocked=true;changed=true;}
     });
@@ -4239,7 +4269,7 @@ function ensureOrderItemPayments(order){
   });
   return changed;
 }
-function getItemPaid(item){return Math.min(getItemEffectiveTotal(item),Math.max(0,Number(item.paidAmount)||0))}
+function getItemPaid(item){return Math.max(0,Number(item?.paidAmount)||0)}
 function getItemRemaining(item){return Math.max(0,getItemEffectiveTotal(item)-getItemPaid(item))}
 function getItemQty(item){return Math.max(0,Number(item?.qty)||0)}
 function getItemReceivedQty(item){
@@ -4382,7 +4412,8 @@ function recordOrderPayment(orderId){
   const method=document.querySelector('#orderHistoryBody [data-order-pay-method].active')?.dataset.orderPayMethod||'cash';
   const available=selected.reduce((sum,i)=>sum+(order.items[i]?getItemRemaining(order.items[i]):0),0);
   const selectedLabel=selected.length===1?'1 позицию':selected.length+' позиции';
-  const detail=`Внести ${money0(amount)} · ${method==='card'?'карта':'наличные'} · выбрано: ${selectedLabel}.${amount>available+0.001?' Сумма превышает остаток — переплата сохранится по заказу.':''}`;
+  const rounding=getPaymentRoundingDiscount(order,amount,selected);
+  const detail=`Внести ${money0(amount)} · ${method==='card'?'карта':'наличные'} · выбрано: ${selectedLabel}.${rounding>0?' Разница '+money0(rounding)+' ₽ будет оформлена как скидка за округление — долг клиента не останется.':amount>available+0.001?' Сумма превышает остаток — переплата сохранится по заказу.':''}`;
   showActionConfirm('payment',()=>recordOrderPaymentNow(orderId),detail);
 }
 
@@ -4394,9 +4425,15 @@ function recordOrderPaymentNow(orderId){
   const amount=Math.max(0,moneyValue(document.getElementById('orderPaymentAmount')?.value));
   if(amount<=0){toast('Укажите сумму оплаты.','error');return;}
   const method=document.querySelector('#orderHistoryBody [data-order-pay-method].active')?.dataset.orderPayMethod||'cash';
+  const rounding=getPaymentRoundingDiscount(order,amount,selected);
   const now=new Date(),pad=n=>String(n).padStart(2,'0');
   const date=pad(now.getDate())+'.'+pad(now.getMonth()+1)+'.'+now.getFullYear(),time=pad(now.getHours())+':'+pad(now.getMinutes()),seller=getCurrentSeller(),createdAt=now.toISOString();
+  const appliedRounding=applyPaymentRoundingDiscount(order,rounding,selected);
   const payment=addOrderPayment(order,amount,method,seller,date,time,createdAt,selected);
+  if(appliedRounding>0){
+    order.events=Array.isArray(order.events)?order.events:[];
+    order.events.push({date,time,createdAt,seller,text:'Скидка за округление при оплате',detail:'Клиент внес '+money0(amount)+' ₽ вместо '+money0(amount+appliedRounding)+' ₽. Разница списана как скидка за округление.',amount:'− '+money0(appliedRounding)});
+  }
   order.events=Array.isArray(order.events)?order.events:[];
   order.events.push({date,time,createdAt,seller,text:'Получена оплата',paymentType:payment.paymentType,paymentAmount:payment.paymentAmount,paymentMethod:payment.paymentMethod,detail:payment.paymentType+' · '+(method==='card'?'карта':'наличные')+'.',amount:money0(payment.amount)});
   if(order.debt<=0.001){
