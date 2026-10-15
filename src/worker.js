@@ -55,6 +55,25 @@ async function requireAction(request, env, password) {
   return (await sha256(supplied)) === auth.action_hash;
 }
 
+// Concurrency guard: migrate the legacy single-state row without resetting data.
+let stateVersionReady = false;
+async function ensureStateVersion(env) {
+  if (stateVersionReady) return;
+  const info = await env.GARAGE_DB.prepare('PRAGMA table_info(app_state)').all();
+  const columns = info?.results || [];
+  if (!columns.some(column => column.name === 'version')) {
+    try {
+      await env.GARAGE_DB.prepare(
+        'ALTER TABLE app_state ADD COLUMN version INTEGER NOT NULL DEFAULT 1'
+      ).run();
+    } catch (error) {
+      // Multiple Worker isolates can attempt the same one-time migration.
+      if (!/duplicate column name/i.test(String(error?.message || error))) throw error;
+    }
+  }
+  stateVersionReady = true;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -220,14 +239,15 @@ export default {
 
       if (url.pathname === '/api/state') {
         if (!(await requireLogin(request, env))) return json({ error: 'Unauthorized' }, 401);
+        await ensureStateVersion(env);
 
         if (request.method === 'GET') {
           const row = await env.GARAGE_DB.prepare(
-            'SELECT state_json, updated_at FROM app_state WHERE id = 1'
+            'SELECT state_json, updated_at, version FROM app_state WHERE id = 1'
           ).first();
-          if (!row) return json({ state: null, updatedAt: null });
+          if (!row) return json({ state: null, updatedAt: null, version: 0 });
           try {
-            return json({ state: JSON.parse(row.state_json), updatedAt: row.updated_at });
+            return json({ state: JSON.parse(row.state_json), updatedAt: row.updated_at, version: Number(row.version) });
           } catch {
             return json({ error: 'Stored state is invalid' }, 500);
           }
@@ -239,15 +259,38 @@ export default {
           if (!body || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
             return json({ error: 'Expected an object in state' }, 400);
           }
+          const expectedVersion = body.expectedVersion;
+          if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) {
+            return json({ error: 'expectedVersion is required; reload GARAGE before saving' }, 428);
+          }
           const updatedAt = new Date().toISOString();
-          await env.GARAGE_DB.prepare(`
-            INSERT INTO app_state (id, state_json, updated_at)
-            VALUES (1, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-              state_json = excluded.state_json,
-              updated_at = excluded.updated_at
-          `).bind(JSON.stringify(body.state), updatedAt).run();
-          return json({ ok: true, updatedAt });
+          const stateJson = JSON.stringify(body.state);
+          const result = expectedVersion === 0
+            ? await env.GARAGE_DB.prepare(
+                'INSERT INTO app_state (id, state_json, updated_at, version) VALUES (1, ?, ?, 1) ON CONFLICT(id) DO NOTHING'
+              ).bind(stateJson, updatedAt).run()
+            : await env.GARAGE_DB.prepare(
+                'UPDATE app_state SET state_json = ?, updated_at = ?, version = version + 1 WHERE id = 1 AND version = ?'
+              ).bind(stateJson, updatedAt, expectedVersion).run();
+
+          if (!result?.meta?.changes) {
+            const remote = await env.GARAGE_DB.prepare(
+              'SELECT state_json, updated_at, version FROM app_state WHERE id = 1'
+            ).first();
+            let currentState = null;
+            try {
+              currentState = remote ? JSON.parse(remote.state_json) : null;
+            } catch {
+              return json({ error: 'Stored state is invalid' }, 500);
+            }
+            return json({
+              error: 'State changed on another device',
+              state: currentState,
+              version: remote ? Number(remote.version) : 0,
+              updatedAt: remote?.updated_at || null
+            }, 409);
+          }
+          return json({ ok: true, updatedAt, version: expectedVersion + 1 });
         }
         return json({ error: 'Method not allowed' }, 405);
       }
