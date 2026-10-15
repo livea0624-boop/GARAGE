@@ -1,4 +1,3 @@
-import { handleOemSearch } from './oem-search.js';
 const corsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET,PUT,POST,OPTIONS',
@@ -69,14 +68,6 @@ export default {
     }
 
     try {
-      if (url.pathname === '/api/oem-config' && request.method === 'GET') {
-        return json({ enabled: !!env.OPENAI_API_KEY });
-      }
-
-      if (url.pathname === '/api/oem-search') {
-        return handleOemSearch(request, env, requireLogin);
-      }
-
       if (url.pathname === '/api/auth/status' && request.method === 'GET') {
         const auth = await getAuth(env);
         return json({ configured: !!auth });
