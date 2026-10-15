@@ -99,8 +99,9 @@ export async function handleOemSearch(request, env, requireLogin) {
   }
   let answer = getAnswer(data);
   // Model output isn't proof that an interactive EPC VIN search was completed.
-  answer = answer.replace(/\bVIN\s+подтвержд[её]н\b/gi, 'VIN не подтверждён');
-  answer = answer.replace(/\bпо\s+VIN\s+подтвержд[её]н\b/gi, 'по VIN не подтверждён');
+  // Discard unsupported claims of VIN verification before adding the server-controlled status.
+  answer = answer.replace(/(?:по\s+)?VIN\s+(?:не\s+)?подтвержд[её]н[аоы]?\.?/gi, '');
+  answer = answer.replace(/(?:проверен[ао]?|проверено)\s+по\s+VIN\.?/gi, '');
   if (!answer) answer = 'OEM в доступных каталогах не найден.';
   answer = answer.replace(/\n?VIN\s+не\s+подтвержд[её]н\.?/gi, '').trim();
   answer = answer.slice(0, 900) + '\nVIN не подтверждён.';
