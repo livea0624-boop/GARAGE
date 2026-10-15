@@ -2746,6 +2746,8 @@ main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--
   body.garage-mobile-mode #orderHistoryModal .order-summary-bar{grid-template-columns:1fr!important}
 }
 </style>
+<link rel="stylesheet" href="/garage-design-refresh.css">
+<link id="garage-mobile-v8" rel="stylesheet" href="/garage-mobile-v8.css">
 </head>
 <body>
 <div class="app">
@@ -5667,7 +5669,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
 <script id="garage-interface-mode">
 (function(){
   const KEY='garageInterfaceMode';
-  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished','garage-mobile-v7-polished'];
+  const MOBILE_STYLE_IDS=['garage-mobile-v2','garage-mobile-v3','garage-mobile-v4-pixel-tune','garage-mobile-v6-polished','garage-mobile-v7-polished','garage-mobile-v8'];
   const labels={auto:'Автоматически',mobile:'Мобильная версия',desktop:'Компьютерная версия'};
   function getMode(){const v=garageStorage?.getItem?.(KEY);return ['auto','mobile','desktop'].includes(v)?v:'auto'}
   let forcedMobileStyle=null;
@@ -5890,6 +5892,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.addEventListener('click',async function(e){const b=e.target.closest('button');if(!b||!ids.has(b.id)||b.dataset.actionVerified==='1')return;e.preventDefault();e.stopImmediatePropagation();const ok=await window.garageRequestActionPassword?.();if(!ok)return;b.dataset.actionVerified='1';b.click();setTimeout(()=>delete b.dataset.actionVerified,100);},true);
 })();
 </script>
+<script src="/garage-mobile-v8.js" defer></script>
 </body>
 </html>
 
