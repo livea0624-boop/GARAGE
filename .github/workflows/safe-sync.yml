@@ -1,0 +1,25 @@
+name: GARAGE safe sync checks
+
+on:
+  push:
+    branches: [fix/safe-cloud-sync]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Worker and client script syntax
+        run: |
+          node --check src/worker.js
+          node --check tests/safe-sync.test.mjs
+      - name: Test simultaneous writes and automatic reconciliation
+        run: node --experimental-default-type=module --test tests/safe-sync.test.mjs
