@@ -20,3 +20,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 @media(prefers-reduced-motion:reduce){
   .btn,.nav button{transition:none}
 }
+
+/* The mobile controls must never appear in the desktop layout. */
+#garageMobileDock,#garageMobileMore{display:none}
+#garageMobileMore[hidden]{display:none!important}
