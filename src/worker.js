@@ -69,6 +69,10 @@ export default {
     }
 
     try {
+      if (url.pathname === '/api/oem-config' && request.method === 'GET') {
+        return json({ enabled: !!env.OPENAI_API_KEY });
+      }
+
       if (url.pathname === '/api/oem-search') {
         return handleOemSearch(request, env, requireLogin);
       }
