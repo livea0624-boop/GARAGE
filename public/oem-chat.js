@@ -28,7 +28,7 @@ a{color:#1d4ed8;text-decoration:underline;overflow-wrap:anywhere}
 .notice{border-top:1px solid #e5e7eb;margin-top:12px;padding-top:9px;color:#6b7280;font-size:11px;line-height:1.45}
 @media(max-width:550px){.toggle{right:12px;bottom:12px}.panel{right:12px;bottom:68px;padding:14px}}
 </style>
-<button class="toggle" type="button" aria-expanded="false" aria-controls="oem-panel">OEM по VIN</button>
+<button class="toggle" type="button" aria-expanded="false" aria-controls="oem-panel" hidden>OEM по VIN</button>
 <section id="oem-panel" class="panel" aria-label="Поиск оригинальной запчасти" hidden>
  <header><h2>Поиск OEM по VIN</h2><button class="close" type="button" aria-label="Закрыть">×</button></header>
  <small>Приоритет: оригинальные каталоги Exist — Elcats, Japancats и другие доступные.</small>
@@ -45,6 +45,9 @@ a{color:#1d4ed8;text-decoration:underline;overflow-wrap:anywhere}
 </section>`;
     document.body.appendChild(host);
     const toggle = root.querySelector('.toggle');
+    fetch('/api/oem-config', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+      .then(config => { if (config?.enabled) toggle.hidden = false; })
+      .catch(() => {});
     const panel = root.querySelector('.panel');
     const close = root.querySelector('.close');
     const form = root.querySelector('form');
