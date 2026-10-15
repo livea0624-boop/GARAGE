@@ -5712,54 +5712,60 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   window.addEventListener('garage-cloud-loaded',()=>applyMode(getMode()));
 })();
 </script>
-<script id="garage-cloud-sync-v5-realtime">
+<script id="garage-cloud-sync-v6-safe">
 (function(){
-  let ready=false,loading=false,saving=false,saveTimer=null,pollTimer=null;
-  let lastCloudUpdatedAt='';
+  let ready=false,loading=false,saving=false,dirty=false,blocked=false,saveTimer=null,pollTimer=null;
+  let lastVersion=0,baseSnapshot={},conflictDialog=null,offlineWarning=false;
   const POLL_MS=2000;
-  const DEVICE_ONLY_KEYS=new Set(['garageInterfaceMode']);
+  // Each terminal must keep its own selected seller and layout.
+  const DEVICE_ONLY_KEYS=new Set(['garageInterfaceMode','garageCurrentUser']);
+  const MERGE_BY_ID=new Set(['garageClients','garageClientOrders','garageCompletedOrders','garageWarehouseSales','garageReturns']);
+  const MERGE_BY_PROPERTY=new Set(['garageClientCarts','garageOrderHistoryOverrides']);
   const base=location.origin;
+  const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
 
   function api(path,method='GET',body=null,password=''){
     const headers={'content-type':'application/json','cache-control':'no-cache'};
     if(password)headers['x-garage-password']=password;
-    return fetch(base+path,{method,headers,cache:'no-store',body:body?JSON.stringify(body):undefined}).then(async r=>{
-      let j=null;try{j=await r.json()}catch{}
-      if(!r.ok)throw new Error(j?.error||('HTTP '+r.status));
-      return j;
+    return fetch(base+path,{method,headers,cache:'no-store',body:body?JSON.stringify(body):undefined}).then(async response=>{
+      let data=null;
+      try{data=await response.json()}catch{}
+      if(!response.ok){
+        const error=new Error(data?.error||('HTTP '+response.status));
+        error.status=response.status;
+        error.data=data;
+        throw error;
+      }
+      return data;
     });
   }
-
   function snapshot(){
     const out={};
     for(let i=0;i<garageStorage.length;i++){
-      const k=garageStorage.key(i);
-      if(k && !DEVICE_ONLY_KEYS.has(k))out[k]=garageStorage.getItem(k);
+      const key=garageStorage.key(i);
+      if(key && !DEVICE_ONLY_KEYS.has(key))out[key]=garageStorage.getItem(key);
     }
     return out;
   }
-
+  function sameState(a,b){
+    const keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+    return [...keys].every(key=>a?.[key]===b?.[key] && own(a||{},key)===own(b||{},key));
+  }
   function applySnapshot(state){
-    // Сохраняем настройки конкретного устройства, очищаем только общие данные,
-    // затем применяем свежий снимок из D1.
     const deviceValues={};
-    DEVICE_ONLY_KEYS.forEach(k=>{
-      const v=garageStorage.getItem(k);
-      if(v!==null)deviceValues[k]=v;
+    DEVICE_ONLY_KEYS.forEach(key=>{
+      const value=garageStorage.getItem(key);
+      if(value!==null)deviceValues[key]=value;
     });
     garageStorage.clear();
-    if(state&&typeof state==='object'){
-      Object.keys(state).forEach(k=>{
-        if(!DEVICE_ONLY_KEYS.has(k))garageStorage.setItem(k,state[k]??'');
+    if(state && typeof state==='object'){
+      Object.keys(state).forEach(key=>{
+        if(!DEVICE_ONLY_KEYS.has(key))garageStorage.setItem(key,state[key]??'');
       });
     }
-    Object.keys(deviceValues).forEach(k=>garageStorage.setItem(k,deviceValues[k]));
+    Object.entries(deviceValues).forEach(([key,value])=>garageStorage.setItem(key,value));
   }
-
   function refreshAllViews(){
-    // В приложении нет единой функции render(), поэтому обновляем реальные
-    // рендеры разделов явно. Это позволяет менять данные на другом устройстве
-    // без перезагрузки страницы.
     const calls=[
       ()=>typeof renderHomeDashboard==='function'&&renderHomeDashboard(),
       ()=>typeof renderClients==='function'&&renderClients(document.getElementById('clientsSearch')?.value||''),
@@ -5769,78 +5775,217 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
       ()=>typeof renderCompletedOrders==='function'&&renderCompletedOrders(),
       ()=>typeof renderSellers==='function'&&renderSellers()
     ];
-    for(const call of calls){
-      try{call()}catch(e){console.warn('GARAGE realtime view refresh:',e)}
-    }
+    calls.forEach(call=>{try{call()}catch(e){console.warn('GARAGE refresh:',e)}});
   }
-
+  function compareRecord(a,b){
+    return JSON.stringify(a)===JSON.stringify(b);
+  }
+  function mergeMembers(baseItems,localItems,remoteItems,mode){
+    const keyFor=(v)=>mode==='object'?String(v):String(v?.id ?? '');
+    const unpack=(raw)=>{
+      try{
+        const value=JSON.parse(raw??(mode==='array'?'[]':'{}'));
+        if(mode==='array'){
+          if(!Array.isArray(value))return null;
+          const map=new Map();
+          for(const item of value){
+            const key=keyFor(item);
+            if(!key || map.has(key))return null;
+            map.set(key,item);
+          }
+          return map;
+        }
+        if(!value || typeof value!=='object' || Array.isArray(value))return null;
+        return new Map(Object.entries(value));
+      }catch{return null}
+    };
+    const b=unpack(baseItems),l=unpack(localItems),r=unpack(remoteItems);
+    if(!b||!l||!r)return null;
+    const merged=new Map();
+    const keys=new Set([...b.keys(),...l.keys(),...r.keys()]);
+    const identical=(mapA,mapB,key)=>mapA.has(key)===mapB.has(key) &&
+      (!mapA.has(key) || compareRecord(mapA.get(key),mapB.get(key)));
+    for(const key of keys){
+      const localChanged=!identical(l,b,key),remoteChanged=!identical(r,b,key);
+      if(localChanged && remoteChanged && !identical(l,r,key))return null;
+      const source=localChanged?l:r;
+      if(source.has(key))merged.set(key,source.get(key));
+    }
+    return JSON.stringify(mode==='array'?[...merged.values()]:Object.fromEntries(merged));
+  }
+  function tryMerge(baseState,localState,remoteState){
+    const merged={},conflicts=[];
+    const keys=new Set([...Object.keys(baseState),...Object.keys(localState),...Object.keys(remoteState)]);
+    for(const key of keys){
+      if(DEVICE_ONLY_KEYS.has(key))continue;
+      const localChanged=localState[key]!==baseState[key] || own(localState,key)!==own(baseState,key);
+      const remoteChanged=remoteState[key]!==baseState[key] || own(remoteState,key)!==own(baseState,key);
+      let selected;
+      if(!localChanged)selected=remoteState[key];
+      else if(!remoteChanged || localState[key]===remoteState[key])selected=localState[key];
+      else if(MERGE_BY_ID.has(key))selected=mergeMembers(baseState[key],localState[key],remoteState[key],'array');
+      else if(MERGE_BY_PROPERTY.has(key))selected=mergeMembers(baseState[key],localState[key],remoteState[key],'object');
+      else selected=null;
+      if(selected===null){
+        conflicts.push(key);
+      }else if(selected!==undefined){
+        merged[key]=selected;
+      }
+    }
+    return {merged,conflicts};
+  }
+  function downloadUnsaved(){
+    const payload={format:'garage-local-backup-v2',createdAt:new Date().toISOString(),data:snapshot()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='garage-unsaved-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function showConflict(keys){
+    if(conflictDialog)return;
+    blocked=true;dirty=true;
+    conflictDialog=document.createElement('div');
+    conflictDialog.id='garageSyncConflict';
+    conflictDialog.style.cssText='position:fixed;inset:0;z-index:999999;background:#111827b8;display:grid;place-items:center;padding:16px';
+    conflictDialog.innerHTML='<div style="width:min(480px,100%);background:white;color:#182231;border-radius:16px;padding:24px;box-shadow:0 20px 60px #0006;font:14px/1.5 system-ui,sans-serif"><h2 style="margin:0 0 10px;font-size:20px">⚠️ Два продавца изменили одни данные</h2><p>GARAGE остановил синхронизацию, чтобы не потерять изменения. Ваши несохранённые данные пока остаются на этом устройстве.</p><p style="color:#64748b">Скачайте копию своих изменений, затем загрузите актуальные данные из облака. При необходимости перенесите изменения из копии вручную.</p><p id="garageSyncConflicts" style="font-size:12px;color:#64748b"></p><button id="garageSyncDownload" style="border:0;background:#2563eb;color:white;border-radius:9px;padding:11px;font-weight:700;width:100%;cursor:pointer">Скачать мои изменения</button><button id="garageSyncReload" disabled style="margin-top:8px;border:1px solid #94a3b8;background:#fff;color:#182231;border-radius:9px;padding:11px;width:100%;cursor:pointer;opacity:.55">Загрузить данные из облака</button></div>';
+    document.body.appendChild(conflictDialog);
+    conflictDialog.querySelector('#garageSyncConflicts').textContent='Разделы с конфликтами: '+keys.join(', ');
+    conflictDialog.querySelector('#garageSyncDownload').onclick=()=>{
+      downloadUnsaved();
+      const btn=conflictDialog.querySelector('#garageSyncReload');
+      btn.disabled=false;btn.style.opacity='1';
+    };
+    conflictDialog.querySelector('#garageSyncReload').onclick=async()=>{
+      try{
+        // Download explicitly requested first; never overwrite without it.
+        const response=await api('/api/state','GET',null,window.garageLoginPassword);
+        loading=true;
+        try{
+          applySnapshot(response.state||{});
+          baseSnapshot={...(response.state||{})};
+          lastVersion=Number(response.version)||0;
+          dirty=false;blocked=false;
+          refreshAllViews();
+          window.dispatchEvent(new Event('garage-cloud-updated'));
+          conflictDialog.remove();conflictDialog=null;
+        }finally{loading=false}
+      }catch(e){if(typeof toast==='function')toast('Не удалось загрузить данные из облака','error')}
+    };
+  }
   async function loadCloud(password){
+    if(ready && (dirty||blocked))throw Error('Есть несохранённые изменения');
     loading=true;
     try{
-      const j=await api('/api/state','GET',null,password);
-      applySnapshot(j.state||{});
-      lastCloudUpdatedAt=String(j.updatedAt||'');
+      const response=await api('/api/state','GET',null,password);
+      applySnapshot(response.state||{});
+      baseSnapshot={...(response.state||{})};
+      lastVersion=Number(response.version)||0;
+      dirty=false;
       refreshAllViews();
       window.dispatchEvent(new Event('garage-cloud-loaded'));
-      return !!j.state;
+      return !!response.state;
     }finally{loading=false}
   }
-
   async function saveCloud(){
-    if(!ready||loading||saving)return;
+    if(!ready || loading || blocked || saving)return;
+    const state=snapshot();
+    if(sameState(state,baseSnapshot)){dirty=false;return}
     saving=true;
     try{
       const password=window.garageLoginPassword;
-      if(password){
-        const j=await api('/api/state','PUT',{state:snapshot()},password);
-        lastCloudUpdatedAt=String(j.updatedAt||'');
-      }
+      if(!password)throw Error('Нет авторизации');
+      const result=await api('/api/state','PUT',{state,expectedVersion:lastVersion},password);
+      baseSnapshot={...state};
+      lastVersion=Number(result.version);
+      offlineWarning=false;
+      dirty=!sameState(snapshot(),baseSnapshot);
+      if(dirty)schedule();
     }catch(e){
-      console.error('GARAGE cloud save:',e);
-      if(typeof toast==='function')toast('Ошибка синхронизации с облаком','error');
-    }finally{saving=false}
+      dirty=true;
+      if(e.status===409 && e.data && Number.isSafeInteger(e.data.version)){
+        const remote=e.data.state||{};
+        const result=tryMerge(baseSnapshot,snapshot(),remote);
+        if(result.conflicts.length){
+          showConflict(result.conflicts);
+        }else{
+          loading=true;
+          try{
+            applySnapshot(result.merged);
+            baseSnapshot={...remote};
+            lastVersion=Number(e.data.version);
+            dirty=!sameState(snapshot(),baseSnapshot);
+            refreshAllViews();
+            window.dispatchEvent(new Event('garage-cloud-updated'));
+          }finally{loading=false}
+          if(dirty)schedule();
+        }
+      }else{
+        if(!offlineWarning && typeof toast==='function'){
+          toast('Нет синхронизации: изменения остаются на устройстве. GARAGE повторит попытку.','error');
+          offlineWarning=true;
+        }
+      }
+      throw e;
+    }finally{
+      saving=false;
+    }
   }
-
   function schedule(){
-    if(!ready||loading)return;
+    if(!ready||loading||blocked)return;
+    dirty=true;
     clearTimeout(saveTimer);
-    saveTimer=setTimeout(async()=>{saveTimer=null;await saveCloud()},450);
+    saveTimer=setTimeout(()=>{saveTimer=null;saveCloud().catch(()=>{})},450);
   }
-
   async function pollCloud(){
-    if(!ready||loading||saving||saveTimer)return;
+    if(!ready||loading||saving||saveTimer||blocked)return;
+    if(dirty){
+      await saveCloud().catch(()=>{});
+      return;
+    }
     try{
       const password=window.garageLoginPassword;
       if(!password)return;
-      const j=await api('/api/state','GET',null,password);
-      const remoteUpdatedAt=String(j.updatedAt||'');
-      if(!remoteUpdatedAt || remoteUpdatedAt===lastCloudUpdatedAt)return;
-
+      const response=await api('/api/state','GET',null,password);
+      // Edits may happen while the GET is in flight; never overwrite a newly dirty editor.
+      if(dirty||saveTimer||saving||blocked||loading)return;
+      const version=Number(response.version)||0;
+      if(version===lastVersion)return;
       loading=true;
       try{
-        applySnapshot(j.state||{});
-        lastCloudUpdatedAt=remoteUpdatedAt;
+        applySnapshot(response.state||{});
+        baseSnapshot={...(response.state||{})};
+        lastVersion=version;
+        dirty=false;
         refreshAllViews();
         window.dispatchEvent(new Event('garage-cloud-updated'));
       }finally{loading=false}
-    }catch(e){
-      console.warn('GARAGE cloud realtime:',e);
-    }
+    }catch(e){console.warn('GARAGE cloud realtime:',e)}
   }
-
   function startPolling(){
     clearInterval(pollTimer);
     pollTimer=setInterval(pollCloud,POLL_MS);
   }
-
-  const os=garageStorage.setItem.bind(garageStorage),
-        or=garageStorage.removeItem.bind(garageStorage),
-        oc=garageStorage.clear.bind(garageStorage);
-
-  garageStorage.setItem=function(k,v){os(k,v);if(!loading&&!DEVICE_ONLY_KEYS.has(k))schedule()};
-  garageStorage.removeItem=function(k){or(k);if(!loading&&!DEVICE_ONLY_KEYS.has(k))schedule()};
-  garageStorage.clear=function(){oc();if(!loading)schedule()};
-
+  const originalSet=garageStorage.setItem.bind(garageStorage);
+  const originalRemove=garageStorage.removeItem.bind(garageStorage);
+  const originalClear=garageStorage.clear.bind(garageStorage);
+  garageStorage.setItem=function(key,value){
+    originalSet(key,value);
+    if(!loading&&!DEVICE_ONLY_KEYS.has(key))schedule();
+  };
+  garageStorage.removeItem=function(key){
+    originalRemove(key);
+    if(!loading&&!DEVICE_ONLY_KEYS.has(key))schedule();
+  };
+  garageStorage.clear=function(){
+    originalClear();
+    if(!loading)schedule();
+  };
+  window.addEventListener('beforeunload',event=>{
+    if(!dirty&&!blocked)return;
+    event.preventDefault();
+    event.returnValue='';
+  });
   window.garageCloudSync={
     start:async password=>{
       window.garageLoginPassword=password;
@@ -5848,7 +5993,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
       ready=true;
       if(!had)await saveCloud();
       startPolling();
-      return had
+      return had;
     },
     save:saveCloud,
     load:loadCloud,

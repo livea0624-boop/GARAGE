@@ -5,7 +5,8 @@
 CREATE TABLE IF NOT EXISTS app_state (
   id INTEGER PRIMARY KEY,
   state_json TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  version INTEGER NOT NULL DEFAULT 1
 );
 
 -- Ежедневные замеры размера D1 для прогноза заполнения бесплатного лимита.
