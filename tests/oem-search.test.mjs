@@ -85,6 +85,7 @@ test('only exposes allowed catalogue citations; positive VIN claims are removed'
     assert.match(data.answer, /BP4K-28-011B/);
     assert.equal(data.vinConfirmed, false);
     assert.match(data.answer, /VIN не подтверждён/);
+    assert.doesNotMatch(data.answer, /VIN подтверждён/);
     assert.equal(data.sources.length, 1);
     assert.match(data.sources[0].url, /japancats\.ru/);
   } finally { globalThis.fetch = prev; }
