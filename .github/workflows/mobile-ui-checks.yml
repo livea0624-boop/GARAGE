@@ -23,3 +23,7 @@ jobs:
           node --check tests/mobile-ui.test.mjs
       - name: Validate responsive layout wiring
         run: node --test tests/mobile-ui.test.mjs
+      - name: Install lightweight browser driver
+        run: npm install --no-save playwright-core@1.56.1
+      - name: Smoke-test real mobile and desktop browser
+        run: node --test tests/mobile-browser.test.mjs
