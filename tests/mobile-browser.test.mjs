@@ -61,9 +61,26 @@ test('real Chrome: mobile navigation, search and desktop layout',async()=>{
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
     assert.ok(overflow<=2,'horizontal mobile overflow '+overflow);
 
+    await page.setViewportSize({width:320,height:720});
+    await page.locator('#garageMobileDock [data-mobile-page="sales"]').click();
+    assert.equal(await page.locator('#sales').evaluate(e=>e.classList.contains('active')),true);
+    const narrowOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+    assert.ok(narrowOverflow<=2,'320px mobile overflow '+narrowOverflow);
+    await page.evaluate(()=>window.garageInterfaceMode.set('desktop'));
+    await page.waitForTimeout(100);
+    assert.equal(await page.locator('#garageMobileDock').isVisible(),false);
+    await page.evaluate(()=>window.garageInterfaceMode.set('auto'));
+
     await page.setViewportSize({width:1440,height:900});
     await page.waitForTimeout(200);
     assert.equal(await page.locator('aside').isVisible(),true);
+    assert.equal(await page.locator('#garageMobileDock').isVisible(),false);
+    await page.evaluate(()=>window.garageInterfaceMode.set('mobile'));
+    await page.waitForTimeout(100);
+    assert.equal(await page.locator('#garageMobileDock').isVisible(),true);
+    assert.equal(await page.locator('aside').isVisible(),false);
+    await page.evaluate(()=>window.garageInterfaceMode.set('auto'));
+    await page.waitForTimeout(100);
     assert.equal(await page.locator('#garageMobileDock').isVisible(),false);
     const desktopOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
     assert.ok(desktopOverflow<=2,'horizontal desktop overflow '+desktopOverflow);
