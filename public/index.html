@@ -5947,6 +5947,8 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
       const password=window.garageLoginPassword;
       if(!password)return;
       const response=await api('/api/state','GET',null,password);
+      // Edits may happen while the GET is in flight; never overwrite a newly dirty editor.
+      if(dirty||saveTimer||saving||blocked||loading)return;
       const version=Number(response.version)||0;
       if(version===lastVersion)return;
       loading=true;
