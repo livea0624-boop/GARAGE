@@ -5890,6 +5890,7 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.addEventListener('click',async function(e){const b=e.target.closest('button');if(!b||!ids.has(b.id)||b.dataset.actionVerified==='1')return;e.preventDefault();e.stopImmediatePropagation();const ok=await window.garageRequestActionPassword?.();if(!ok)return;b.dataset.actionVerified='1';b.click();setTimeout(()=>delete b.dataset.actionVerified,100);},true);
 })();
 </script>
+<script src="/oem-chat.js" defer></script>
 </body>
 </html>
 
