@@ -28,10 +28,10 @@ export async function handleOemSearch(request, env, requireLogin) {
     return oemJson({ error: 'Укажите правильный VIN (17 знаков) и название детали.' }, 400);
   }
   // Fixed window quota protects external API costs. 10 requests per hour for each GARAGE instance.
-  await env.GARAGE_DB.prepare(\`CREATE TABLE IF NOT EXISTS oem_search_limits (window_hour TEXT PRIMARY KEY, used INTEGER NOT NULL)\`).run();
+  await env.GARAGE_DB.prepare(`CREATE TABLE IF NOT EXISTS oem_search_limits (window_hour TEXT PRIMARY KEY, used INTEGER NOT NULL)`).run();
   const hour = new Date().toISOString().slice(0, 13);
-  const quota = await env.GARAGE_DB.prepare(\`INSERT INTO oem_search_limits(window_hour, used) VALUES (?, 1)
-    ON CONFLICT(window_hour) DO UPDATE SET used = used + 1 WHERE used < 10\`).bind(hour).run();
+  const quota = await env.GARAGE_DB.prepare(`INSERT INTO oem_search_limits(window_hour, used) VALUES (?, 1)
+    ON CONFLICT(window_hour) DO UPDATE SET used = used + 1 WHERE used < 10`).bind(hour).run();
   if (!quota.meta?.changes) return oemJson({ error: 'Лимит поиска: 10 запросов в час. Попробуйте позже.' }, 429);
   // Keep the limits table bounded.
   await env.GARAGE_DB.prepare('DELETE FROM oem_search_limits WHERE window_hour < ?').bind(new Date(Date.now() - 48 * 3600e3).toISOString().slice(0,13)).run();
@@ -41,7 +41,7 @@ export async function handleOemSearch(request, env, requireLogin) {
     body: JSON.stringify({
       model: env.OEM_OPENAI_MODEL || 'gpt-5-mini',
       instructions: OEM_PROMPT,
-      input: \`VIN: \${vin}\nДеталь: \${part}\nИщи документы/схемы применяемости исключительно в перечисленных каталогах. Если прямой VIN-подбор недоступен, явно укажи.\`,
+      input: `VIN: ${vin}\nДеталь: ${part}\nИщи документы/схемы применяемости исключительно в перечисленных каталогах. Если прямой VIN-подбор недоступен, явно укажи.`,
       tools: [{ type: 'web_search', filters: { allowed_domains: OEM_DOMAINS } }],
       max_output_tokens: 700
     }),
