@@ -76,11 +76,13 @@ export async function handleOemSearch(request, env, requireLogin) {
       headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json' },
       body: JSON.stringify({
         model: env.OEM_OPENAI_MODEL || 'gpt-5-mini',
+        store: false,
+        reasoning: { effort: 'low' },
         instructions: OEM_PROMPT,
         input: 'VIN: ' + vin + '\nНазвание детали: ' + part + '\nИщи номер только на разрешённых доменах каталогов.',
         tools: [{ type: 'web_search', filters: { allowed_domains: OEM_DOMAINS } }],
         tool_choice: 'required',
-        max_output_tokens: 600
+        max_output_tokens: 1000
       }),
       signal: AbortSignal.timeout(35000)
     });
