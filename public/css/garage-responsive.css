@@ -59,3 +59,20 @@ body.garage-dialog-open{overflow:hidden}
   .garage-toast,.garage-toast-progress{animation:none}
   html{scroll-behavior:auto}
 }
+
+/* Consistent search focus and mobile Safari ergonomics. */
+:is(#globalSearch,#clientsSearch,#ordersSearch,#historySearch,#deliveriesSearch,#salesSearch):focus{outline:2px solid #2563eb!important;outline-offset:1px;border-color:#2563eb!important;box-shadow:0 0 0 4px rgba(37,99,235,.13)!important;background:#fff!important}
+@media(max-width:700px){
+ body .app main{width:100%!important;min-width:0!important}
+ body .content{width:100%!important;max-width:100%!important;box-sizing:border-box;padding-left:10px!important;padding-right:10px!important}
+ body .head{flex-wrap:wrap;gap:10px}
+ body .head>div{min-width:0}
+ body .head .actions{flex-wrap:wrap;width:100%}
+ body .head .actions .btn{flex:1 1 135px;min-height:44px}
+ body :is(#globalSearch,#clientsSearch,#ordersSearch,#historySearch,#deliveriesSearch,#salesSearch){width:100%!important;min-width:0!important;max-width:100%!important;font-size:16px!important;min-height:44px}
+ body .sales-filters{min-width:0}
+ body .sales-filters>*{min-width:0;max-width:100%}
+ body .sales-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body .overlay input,body .overlay select,body .overlay textarea{font-size:16px}
+ body #clientCartContextBar>div{grid-template-columns:minmax(0,1fr)!important}
+}
