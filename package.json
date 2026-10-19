@@ -2,12 +2,19 @@
   "name": "garage-cloud",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "d1:init": "wrangler d1 execute garage-cloud-db --remote --file=./schema.sql"
+    "d1:init": "wrangler d1 execute garage-cloud-db --remote --file=./schema.sql",
+    "d1:init:local": "wrangler d1 execute garage-cloud-db --local --file=./schema.sql",
+    "test": "node --test tests/*.test.cjs tests/*.test.mjs",
+    "test:ui": "python3 tests/ui_smoke.py",
+    "test:integration": "python3 tests/integration_smoke.py"
   },
   "devDependencies": {
-    "wrangler": "latest"
+    "wrangler": "4.151.1"
   }
 }

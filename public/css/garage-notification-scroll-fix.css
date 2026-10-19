@@ -1,0 +1,22 @@
+/* Уведомления: окно не растягивает страницу — прокручивается только содержимое. */
+#notificationModal{overflow:hidden!important;align-items:center!important;}
+#notificationModal > .notification-modal{width:min(760px,calc(100vw - 40px));max-width:760px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column;overflow:hidden;}
+#notificationModal .notification-head{flex:0 0 auto;}
+#notificationModal .notification-body{min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:auto;scrollbar-color:#aeb9c7 #eef2f6;}
+#notificationModal .notification-body::-webkit-scrollbar{width:11px;}
+#notificationModal .notification-body::-webkit-scrollbar-track{background:#eef2f6;border-radius:10px;}
+#notificationModal .notification-body::-webkit-scrollbar-thumb{background:#aeb9c7;border:2px solid #eef2f6;border-radius:10px;}
+#notificationModal .notification-foot{flex:0 0 auto;position:sticky;bottom:0;z-index:5;}
+/* Главная: длинный список уведомлений имеет собственную прокрутку, кнопки каждой строки остаются доступны. */
+.home-notify-list{max-height:min(52vh,520px);overflow-y:auto;overflow-x:hidden;padding-right:5px;scrollbar-width:auto;scrollbar-color:#aeb9c7 #eef2f6;}
+.home-notify-list::-webkit-scrollbar{width:11px;}
+.home-notify-list::-webkit-scrollbar-track{background:#eef2f6;border-radius:10px;}
+.home-notify-list::-webkit-scrollbar-thumb{background:#aeb9c7;border:2px solid #eef2f6;border-radius:10px;}
+@media(max-width:700px){
+  #notificationModal{align-items:flex-end!important;padding:0!important;}
+  #notificationModal > .notification-modal{width:100%;max-width:none;max-height:94dvh;border-radius:20px 20px 0 0;}
+  #notificationModal .notification-body{padding:14px;max-height:none;}
+  #notificationModal .notification-foot{padding:10px 12px;}
+  #notificationModal .notification-foot .btn{min-height:46px;flex:1;}
+  .home-notify-list{max-height:50dvh;}
+}

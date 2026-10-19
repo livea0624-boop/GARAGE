@@ -1,0 +1,80 @@
+/* Order creation / payment UI refresh — visual only */
+.warehouse-sale-modal{width:min(1180px,calc(100vw - 28px))}
+.warehouse-sale-modal .modal-body{padding:18px 20px 20px}
+.warehouse-sale-modal .modal-head{padding:18px 20px}
+.warehouse-sale-modal .cart-head{margin-bottom:14px}
+.warehouse-sale-modal .cart-list{border-color:#d7e1ec;box-shadow:0 3px 12px rgba(31,54,78,.035)}
+.cart-item{grid-template-columns:44px minmax(240px,2.1fr) 105px 92px 92px 180px 118px 40px;gap:10px;padding:14px 13px;align-items:end;background:#fff}
+.cart-item:hover{background:#fbfdff}
+.cart-item>div{min-width:0}
+.cart-item label{font-size:10px;letter-spacing:.01em;color:#738298;margin-bottom:6px}
+.cart-item input{height:39px;box-sizing:border-box;padding:0 10px;font-size:13px}
+.cart-item input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+.cart-item .cart-arrival-date{min-width:180px}
+.cart-arrival-date input{font-size:12px;text-align:left!important}
+.cart-item .item-discount{background:#fffafb;border-color:#e8cfd2}
+.cart-item .item-discount:focus{border-color:#d67a86;box-shadow:0 0 0 3px rgba(214,122,134,.09)}
+.cart-item .line-total{align-self:end;min-height:39px;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;padding:0 10px;border:1px solid #dce8e1;border-radius:9px;background:#f4fbf7;color:#227452;font-size:14px;white-space:nowrap}
+.cart-item .cart-remove{width:40px;height:40px;align-self:end}
+
+.warehouse-sale-modal .cart-controls{grid-template-columns:minmax(0,1fr) 280px;gap:14px;margin-top:16px}
+.warehouse-sale-modal .cart-controls .field{padding:12px 13px;border:1px solid #e1e7ef;border-radius:13px;background:#fff}
+.warehouse-sale-modal .cart-controls .field>label{font-size:10px;color:#718096}
+.warehouse-sale-modal .cart-controls .method button{height:40px;border-radius:10px;background:#f8fafc;border-color:#dce4ee}
+.warehouse-sale-modal .cart-controls .method button.active{background:#eaf4ff;border-color:#8db4ea;color:#2f5e9d;box-shadow:0 2px 6px rgba(59,105,168,.08)}
+.warehouse-sale-modal #saleDiscount{height:40px;border-radius:10px;border:1px solid #dce4ee;padding:0 10px;background:#fcfbff;font-weight:700;color:#554b79}
+.warehouse-sale-modal #saleManualDiscount{height:38px;box-sizing:border-box;border:1px solid #ddd5ef;border-radius:9px;background:#fff}
+
+.warehouse-sale-modal .sale-total{background:linear-gradient(180deg,#f7fbff 0%,#f8fafc 100%);border:1px solid #dce6f1;border-radius:14px;padding:14px 16px;margin-top:15px;box-shadow:0 2px 8px rgba(32,57,83,.035)}
+.warehouse-sale-modal .sale-total-row{margin:6px 0;color:#637287}
+.warehouse-sale-modal .sale-total-row b{color:#33465c;white-space:nowrap;font-variant-numeric:tabular-nums}
+.warehouse-sale-modal .sale-total-row.final{margin-top:10px;padding-top:12px;border-top:1px solid #d9e3ed;align-items:center;color:#23364c}
+.warehouse-sale-modal .sale-total-row.final span{font-size:16px}
+.warehouse-sale-modal .sale-total-row.final input{width:205px;height:48px;box-sizing:border-box;text-align:right;border:2px solid #7fa9e4;border-radius:11px;padding:0 12px;font-size:22px;background:#fff;color:#224c7e;box-shadow:0 2px 7px rgba(66,108,166,.08)}
+.warehouse-sale-modal .sale-total-row.final input:focus{border-color:#5d8fd8;box-shadow:0 0 0 4px rgba(93,143,216,.12)}
+.warehouse-sale-modal .discount-preview{margin-top:8px;border-color:#e5dff1;background:#faf8ff;color:#7b6a9a;border-radius:9px}
+.warehouse-sale-modal .discount-preview strong{color:#5f4d84}
+.warehouse-sale-modal #salePaymentHint{margin-top:8px;color:#748196}
+
+/* Order history / payment side panel */
+.order-detail-modal{width:min(1030px,calc(100vw - 28px))}
+.order-side-column{gap:13px}
+.order-side-card{padding:15px;border-color:#dce4ed;box-shadow:0 4px 14px rgba(20,35,55,.045)}
+.order-side-card:has(#orderPaymentAmount){background:linear-gradient(180deg,#f5f9ff 0%,#fbfdff 100%);border-color:#cfdff2}
+.order-side-card:has(#orderPaymentAmount) .order-side-title{color:#2b5e91;font-size:14px;display:flex;align-items:center;gap:7px}
+.order-side-card:has(#orderPaymentAmount) .order-side-title:before{content:'💳';font-size:15px}
+.order-pay-amount{height:50px;border:2px solid #9bbbe8;border-radius:11px;padding:0 13px;font-size:20px;color:#244f7f;background:#fff;box-shadow:0 2px 8px rgba(65,104,157,.06)}
+.order-pay-method{margin-top:10px}
+.order-pay-method button{height:40px;border-radius:10px;background:#fff}
+.order-pay-method button.active{border-color:#79a4dd;background:#eaf3ff;color:#275d9b;box-shadow:0 2px 5px rgba(54,101,158,.08)}
+#orderPaymentSelected{background:#edf5ff;border-color:#d2e1f4;color:#55708f;padding:10px 11px}
+.order-action-grid{margin-top:10px!important;gap:9px}
+.order-action-grid #orderPayAll{height:44px;border:1px solid #78bf9f;background:#eaf8f2;color:#247356;font-weight:850;box-shadow:0 3px 9px rgba(42,132,96,.10)}
+.order-action-grid #orderPayAll:before{content:'✓';display:inline-grid;place-items:center;width:18px;height:18px;margin-right:7px;border-radius:50%;background:#2f8f70;color:#fff;font-size:11px;vertical-align:-1px}
+.order-action-grid #orderPayAll:hover{background:#def4e9;border-color:#57aa87;transform:translateY(-1px)}
+.order-action-grid #orderPaySelected{height:44px;border-radius:10px;background:#3479c5;border-color:#3479c5;box-shadow:0 3px 9px rgba(52,121,197,.14)}
+.order-action-grid #orderPaySelected:hover{filter:brightness(.97);transform:translateY(-1px)}
+.order-side-card:has(#orderDiscountType){background:linear-gradient(180deg,#fcfaff 0%,#fff 100%);border-color:#ddd6ee}
+.order-side-card:has(#orderDiscountType) .order-side-title{color:#5e4f85;font-size:14px;display:flex;align-items:center;gap:7px}
+.order-side-card:has(#orderDiscountType) .order-side-title:before{content:'%';display:grid;place-items:center;width:18px;height:18px;border-radius:5px;background:#8a76c9;color:#fff;font-size:10px;font-weight:900}
+.order-discount-box{grid-template-columns:minmax(0,1fr) 92px;gap:8px}
+.order-discount-box select{height:42px;border-color:#d8d0e9;background:#fff;font-weight:700;color:#544a77}
+.order-discount-box input{height:42px}
+.order-discount-box .wide{height:42px;background:#f0ecfb;border-color:#cfc2e8;color:#5e4d89;font-weight:800}
+.order-discount-box .wide:hover{background:#e8e1f7;border-color:#b9a9d8}
+#orderDiscountSelected{background:#f3effb;border-color:#e0d8f0;color:#665a84;padding:10px 11px}
+.order-side-card:has(#orderDiscountType) .order-side-note{color:#7b7690}
+
+@media(max-width:1050px){
+  .cart-item{grid-template-columns:42px minmax(210px,1.7fr) 95px 88px 88px 165px 110px 38px}
+  .order-detail-modal{width:min(980px,calc(100vw - 20px))}
+}
+@media(max-width:760px){
+  .warehouse-sale-modal{width:min(760px,calc(100vw - 16px))}
+  .warehouse-sale-modal .cart-controls{grid-template-columns:1fr}
+  .cart-item{grid-template-columns:42px 1fr 1fr 1fr}
+  .cart-item>div:nth-child(2){grid-column:2/-1}
+  .cart-item .cart-arrival-date{min-width:0}
+  .cart-item .line-total{justify-content:flex-end}
+  .order-action-grid{grid-template-columns:1fr}
+}

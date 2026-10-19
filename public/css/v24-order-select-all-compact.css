@@ -1,0 +1,47 @@
+#orderHistoryModal .order-panel-head{padding:10px 12px;gap:10px}
+#orderHistoryModal .order-panel-head-main{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+#orderHistoryModal .order-panel-head-main>div{min-width:0}
+#orderHistoryModal .order-panel-head b{font-size:14px}
+#orderHistoryModal .order-select-all{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 10px;border:1px solid #cfddea;border-radius:9px;background:#f5f9fd;color:#3d5d7a;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+#orderHistoryModal .order-select-all:hover{background:#edf5fc;border-color:#b9cfe3}
+#orderHistoryModal .order-select-all input{width:15px;height:15px;margin:0;accent-color:#3d83c4;cursor:pointer}
+#orderHistoryModal .order-select-all input:indeterminate{accent-color:#3d83c4}
+#orderHistoryModal .order-items-list{gap:6px;padding:8px}
+#orderHistoryModal .order-item-card,#orderHistoryModal .order-item-card.is-removed{grid-template-columns:minmax(0,1.75fr) 128px 150px;align-items:start;border-radius:11px}
+#orderHistoryModal .order-item-primary{align-self:start;padding:9px 10px}
+#orderHistoryModal .order-item-headline{gap:8px}
+#orderHistoryModal .order-item-number{width:24px;height:24px;flex-basis:24px;border-radius:7px;font-size:10px}
+#orderHistoryModal .order-item-name{font-size:12.5px}
+#orderHistoryModal .order-item-meta{font-size:9px;margin-top:2px}
+#orderHistoryModal .order-item-metrics{gap:4px;margin:7px 0 6px}
+#orderHistoryModal .order-item-metrics span{padding:4px 6px;border-radius:7px;font-size:9px}
+#orderHistoryModal .order-item-metrics b{font-size:9px}
+#orderHistoryModal .order-item-price-row{gap:4px;margin-top:6px}
+#orderHistoryModal .order-item-price-row span{padding:3px 6px;border-radius:6px;font-size:9px}
+#orderHistoryModal .order-item-controls{gap:5px;margin-top:7px}
+#orderHistoryModal .order-item-controls .mini-action{padding:5px 7px;font-size:9px;border-radius:7px}
+#orderHistoryModal .discount-editor select{min-width:108px;height:29px;font-size:9px}
+#orderHistoryModal .discount-editor .mini-action{height:29px}
+#orderHistoryModal .order-item-status-box{padding:9px 9px;border-left:1px solid #e5ebf1;border-right:1px solid #e5ebf1}
+#orderHistoryModal .order-status-box-top{gap:7px}
+#orderHistoryModal .order-status-box-icon{width:23px;height:23px;flex-basis:23px;border-radius:7px;font-size:11px}
+#orderHistoryModal .order-status-box-top small{font-size:7px}
+#orderHistoryModal .order-status-box-top b{font-size:10.5px;margin-top:1px}
+#orderHistoryModal .order-status-box-top div>span{font-size:8px;margin-top:2px}
+#orderHistoryModal .order-item-status-select,#orderHistoryModal .order-item-status-value{height:30px;margin-top:7px;font-size:9px;border-radius:7px}
+#orderHistoryModal .order-item-status-progress{height:3px;margin-top:7px}
+#orderHistoryModal .order-item-right{align-self:start}
+#orderHistoryModal .order-item-money{padding:9px 9px 7px}
+#orderHistoryModal .order-money-main{padding-bottom:5px}
+#orderHistoryModal .order-money-main small{font-size:7px}
+#orderHistoryModal .order-money-main b{font-size:15px;margin-top:2px}
+#orderHistoryModal .order-item-money .money-line{margin-top:4px;padding-top:4px;font-size:8px}
+#orderHistoryModal .order-item-money .money-line b{font-size:8px}
+#orderHistoryModal .order-item-payment-state{margin-top:5px;font-size:7px}
+#orderHistoryModal .order-item-paycol{padding:7px 9px 8px}
+#orderHistoryModal .order-item-paycol .select-pay{gap:6px;padding:7px 8px;border-radius:8px;font-size:9px}
+#orderHistoryModal .order-item-paycol .select-pay input{width:15px;height:15px}
+#orderHistoryModal .order-item-paycol .pay-state{margin-top:5px;font-size:7.5px}
+@media(max-width:1100px){#orderHistoryModal .order-item-card,#orderHistoryModal .order-item-card.is-removed{grid-template-columns:minmax(0,1.5fr) 120px 142px}}
+@media(max-width:900px){#orderHistoryModal .order-panel-head-main{gap:10px;flex-wrap:wrap}#orderHistoryModal .order-item-card,#orderHistoryModal .order-item-card.is-removed{grid-template-columns:minmax(0,1.4fr) 120px 138px}}
+@media(max-width:760px){#orderHistoryModal .order-panel-head-main{width:100%}#orderHistoryModal .order-select-all{width:max-content}#orderHistoryModal .order-item-card,#orderHistoryModal .order-item-card.is-removed{grid-template-columns:1fr}}

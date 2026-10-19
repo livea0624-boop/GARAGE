@@ -1,0 +1,6 @@
+.order-discount-preview{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;padding:10px 12px;border:1px solid #e4dfef;border-radius:10px;background:#f8f6fc;min-height:46px;box-sizing:border-box}
+.order-discount-preview span{font-size:11px;font-weight:800;color:#74698c}
+.order-discount-preview b{font-size:15px;color:#5b4a83;font-variant-numeric:tabular-nums;text-align:right}
+.order-discount-preview b small{display:block;margin-top:2px;font-size:9px;font-weight:700;color:#7f8c80}
+.order-discount-preview.has-value{background:linear-gradient(90deg,#f5f1fb,#f9fcfb);border-color:#d8d0ea}
+.order-discount-preview.has-value b{color:#4f3d7d}

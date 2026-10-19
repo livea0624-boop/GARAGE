@@ -1,7 +1,14 @@
 const corsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET,PUT,POST,OPTIONS',
-  'access-control-allow-headers': 'content-type, x-garage-password'
+  'access-control-allow-headers': 'content-type, x-garage-password, x-garage-action-password'
+};
+
+const securityHeaders = {
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=()'
 };
 
 const json = (body, status = 200) => new Response(
@@ -11,6 +18,7 @@ const json = (body, status = 200) => new Response(
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
+      ...securityHeaders,
       ...corsHeaders
     }
   }
@@ -50,9 +58,95 @@ async function requireLogin(request, env) {
 async function requireAction(request, env, password) {
   const auth = await getAuth(env);
   if (!auth) return false;
-  const supplied = password || request.headers.get('x-garage-password') || '';
+  const supplied = password || request.headers.get('x-garage-action-password') || '';
   if (!supplied) return false;
   return (await sha256(supplied)) === auth.action_hash;
+}
+
+// These preferences belong to the browser, even in snapshots saved by old clients.
+const deviceOnlyKeys = new Set(['garageCurrentUser', 'garageInterfaceMode']);
+const credentialKeys = new Set(['garageSitePassword', 'garageLoginPassword', 'garageActionPassword', 'GARAGE_API_PASSWORD']);
+const orderKeys = new Set([
+  'garageClientOrders', 'garageCompletedOrders', 'garageOrderHistoryOverrides',
+  'garageArchivedOrders', 'garageOrderArchive', 'garageCompletedOrderOverrides'
+]);
+const dictionaryOrderKeys = new Set(['garageOrderHistoryOverrides', 'garageCompletedOrderOverrides']);
+const legacyOrderKeys = new Set(['garageArchivedOrders', 'garageOrderArchive', 'garageCompletedOrderOverrides']);
+const liveOrderKeys = new Set(['garageClientOrders', 'garageCompletedOrders', 'garageOrderHistoryOverrides']);
+
+function sharedState(state) {
+  if (!state || typeof state !== 'object' || Array.isArray(state)) return state;
+  return Object.fromEntries(Object.entries(state).filter(([key]) => !deviceOnlyKeys.has(key) && !credentialKeys.has(key)));
+}
+
+async function readState(env) {
+  const row = await env.GARAGE_DB.prepare(
+    'SELECT state_json, updated_at FROM app_state WHERE id = 1'
+  ).first();
+  if (!row) return { state: null, updatedAt: null };
+  return { state: sharedState(JSON.parse(row.state_json)), updatedAt: row.updated_at };
+}
+
+function storedValue(state, key) {
+  const value = state?.[key];
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch { return null; }
+}
+
+function recordIds(state, keys) {
+  const ids = new Set();
+  for (const key of keys) {
+    const value = storedValue(state, key);
+    // Counting IDs inside an object supplied in place of an array would allow
+    // a "same IDs" wipe: the browser ignores that object as an invalid list.
+    const dictionary = dictionaryOrderKeys.has(key)
+      || (legacyOrderKeys.has(key) && value && typeof value === 'object' && !Array.isArray(value));
+    const records = dictionary
+      ? value && typeof value === 'object' && !Array.isArray(value) ? Object.values(value) : []
+      : Array.isArray(value) ? value : [];
+    for (const record of records) {
+      if (record && typeof record === 'object' && record.id != null) ids.add(String(record.id));
+      // Keep malformed legacy records protected as well, rather than silently dropping them.
+      else ids.add(JSON.stringify(record));
+    }
+  }
+  return ids;
+}
+
+function losesRecords(before, after, keys) {
+  const next = recordIds(after, keys);
+  return [...recordIds(before, keys)].some(id => !next.has(id));
+}
+
+function isDestructive(before, after) {
+  if (!before) return false;
+  // Moving an order into/out of the archive preserves the order in this union.
+  // Obsolete containers are protected too, but cannot hide a live order in a
+  // key that current clients do not read.
+  if (losesRecords(before, after, liveOrderKeys)) return true;
+  if (losesRecords(before, after, orderKeys)) return true;
+  for (const key of ['garageClients', 'garageWarehouseSales', 'garageReturns']) {
+    if (losesRecords(before, after, [key])) return true;
+  }
+  const oldSellers = storedValue(before, 'garageSellers');
+  const newSellers = storedValue(after, 'garageSellers');
+  if (Array.isArray(oldSellers) && oldSellers.some(seller => !Array.isArray(newSellers) || !newSellers.includes(seller))) {
+    return true;
+  }
+  // Submitted carts and empty order-source containers are temporary data. Other
+  // shared keys cannot be removed by merely relabelling a request as a normal save.
+  return Object.keys(before).some(key => !Object.hasOwn(after, key)
+    && key !== 'garageClientCarts' && !orderKeys.has(key));
+}
+
+function nextUpdatedAt(previous) {
+  // A successful save always changes the CAS token, even within the same millisecond.
+  const previousTime = Date.parse(previous);
+  return new Date(Math.max(Date.now(), Number.isFinite(previousTime) ? previousTime + 1 : 0)).toISOString();
+}
+
+function stateConflict(current) {
+  return json({ error: 'State changed on another device. Reload and merge before saving.', code: 'STATE_CONFLICT', ...current }, 409);
 }
 
 export default {
@@ -60,7 +154,7 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, { status: 204, headers: { ...securityHeaders, ...corsHeaders } });
     }
 
     if (!env.GARAGE_DB) {
@@ -84,11 +178,16 @@ export default {
         if (loginPassword.length < 6 || actionPassword.length < 6) {
           return json({ error: 'Passwords must contain at least 6 characters' }, 400);
         }
+        if (loginPassword === actionPassword) {
+          return json({ error: 'Login and action passwords must be different' }, 400);
+        }
         const now = new Date().toISOString();
-        await env.GARAGE_DB.prepare(`
+        const result = await env.GARAGE_DB.prepare(`
           INSERT INTO garage_auth (id, login_hash, action_hash, updated_at)
           VALUES (1, ?, ?, ?)
+          ON CONFLICT(id) DO NOTHING
         `).bind(await sha256(loginPassword), await sha256(actionPassword), now).run();
+        if (!result.meta?.changes) return json({ error: 'Already configured' }, 409);
         return json({ ok: true });
       }
 
@@ -119,9 +218,12 @@ export default {
         const next = String(body?.password || '');
         if (!auth || (await sha256(current)) !== auth.login_hash) return json({ error: 'Unauthorized' }, 401);
         if (next.length < 6) return json({ error: 'Password must contain at least 6 characters' }, 400);
-        await env.GARAGE_DB.prepare(
-          'UPDATE garage_auth SET login_hash = ?, updated_at = ? WHERE id = 1'
-        ).bind(await sha256(next), new Date().toISOString()).run();
+        const nextHash = await sha256(next);
+        if (nextHash === auth.action_hash) return json({ error: 'Login and action passwords must be different' }, 400);
+        const result = await env.GARAGE_DB.prepare(
+          'UPDATE garage_auth SET login_hash = ?, updated_at = ? WHERE id = 1 AND login_hash = ? AND action_hash != ?'
+        ).bind(nextHash, new Date().toISOString(), auth.login_hash, nextHash).run();
+        if (!result.meta?.changes) return json({ error: 'Passwords changed. Try again.' }, 409);
         return json({ ok: true });
       }
 
@@ -135,9 +237,12 @@ export default {
         const next = String(body?.password || '');
         if (!auth || (await sha256(current)) !== auth.action_hash) return json({ error: 'Unauthorized' }, 401);
         if (next.length < 6) return json({ error: 'Password must contain at least 6 characters' }, 400);
-        await env.GARAGE_DB.prepare(
-          'UPDATE garage_auth SET action_hash = ?, updated_at = ? WHERE id = 1'
-        ).bind(await sha256(next), new Date().toISOString()).run();
+        const nextHash = await sha256(next);
+        if (nextHash === auth.login_hash) return json({ error: 'Login and action passwords must be different' }, 400);
+        const result = await env.GARAGE_DB.prepare(
+          'UPDATE garage_auth SET action_hash = ?, updated_at = ? WHERE id = 1 AND action_hash = ? AND login_hash != ?'
+        ).bind(nextHash, new Date().toISOString(), auth.action_hash, nextHash).run();
+        if (!result.meta?.changes) return json({ error: 'Passwords changed. Try again.' }, 409);
         return json({ ok: true });
       }
 
@@ -222,12 +327,8 @@ export default {
         if (!(await requireLogin(request, env))) return json({ error: 'Unauthorized' }, 401);
 
         if (request.method === 'GET') {
-          const row = await env.GARAGE_DB.prepare(
-            'SELECT state_json, updated_at FROM app_state WHERE id = 1'
-          ).first();
-          if (!row) return json({ state: null, updatedAt: null });
           try {
-            return json({ state: JSON.parse(row.state_json), updatedAt: row.updated_at });
+            return json(await readState(env));
           } catch {
             return json({ error: 'Stored state is invalid' }, 500);
           }
@@ -239,20 +340,41 @@ export default {
           if (!body || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
             return json({ error: 'Expected an object in state' }, 400);
           }
-          const updatedAt = new Date().toISOString();
-          await env.GARAGE_DB.prepare(`
-            INSERT INTO app_state (id, state_json, updated_at)
-            VALUES (1, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-              state_json = excluded.state_json,
-              updated_at = excluded.updated_at
-          `).bind(JSON.stringify(body.state), updatedAt).run();
+          if (!Object.hasOwn(body, 'baseUpdatedAt')) {
+            return json({ error: 'baseUpdatedAt is required. Load the current state before saving.', code: 'STATE_VERSION_REQUIRED' }, 428);
+          }
+          if (body.baseUpdatedAt !== null && typeof body.baseUpdatedAt !== 'string') {
+            return json({ error: 'baseUpdatedAt must be a string or null' }, 400);
+          }
+          const current = await readState(env);
+          if (body.baseUpdatedAt !== current.updatedAt) return stateConflict(current);
+          const state = sharedState(body.state);
+          if ((body.operation === 'replace' || isDestructive(current.state, state)) && !(await requireAction(request, env))) {
+            return json({ error: 'Action password is required for replacing or deleting shared data.', code: 'ACTION_PASSWORD_REQUIRED' }, 403);
+          }
+          const updatedAt = nextUpdatedAt(current.updatedAt);
+          const serialized = JSON.stringify(state);
+          // D1 executes each statement atomically. Checking only before an
+          // unconditional UPSERT would still let two simultaneous writers win.
+          const result = current.updatedAt === null
+            ? await env.GARAGE_DB.prepare(`
+                INSERT INTO app_state (id, state_json, updated_at)
+                VALUES (1, ?, ?) ON CONFLICT(id) DO NOTHING
+              `).bind(serialized, updatedAt).run()
+            : await env.GARAGE_DB.prepare(`
+                UPDATE app_state SET state_json = ?, updated_at = ?
+                WHERE id = 1 AND updated_at = ?
+              `).bind(serialized, updatedAt, current.updatedAt).run();
+          if (!result.meta?.changes) return stateConflict(await readState(env));
           return json({ ok: true, updatedAt });
         }
         return json({ error: 'Method not allowed' }, 405);
       }
 
-      return env.ASSETS.fetch(request);
+      const asset = await env.ASSETS.fetch(request);
+      const response = new Response(asset.body, asset);
+      for (const [header, value] of Object.entries(securityHeaders)) response.headers.set(header, value);
+      return response;
     } catch (error) {
       console.error(error);
       return json({ error: error?.message || 'Internal server error' }, 500);

@@ -1,0 +1,4 @@
+.client-order-detail-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.client-order-go-payment{background:#2f8f70!important;border-color:#2f8f70!important;box-shadow:0 3px 9px rgba(47,143,112,.14)}
+.client-order-go-payment:hover{filter:brightness(.97);transform:translateY(-1px)}
+@media(max-width:600px){.client-order-detail-head-actions{width:100%;justify-content:stretch}.client-order-detail-head-actions .btn{flex:1}}
