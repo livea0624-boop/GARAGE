@@ -1,0 +1,62 @@
+/* Canonical search styling for GARAGE.
+   Search appearance belongs here; legacy/mobile sheets only control layout. */
+:root{
+  --garage-search-surface:#fff;
+  --garage-search-outline:#d4deeb;
+  --garage-search-hover:#a6bbd6;
+  --garage-search-active:#3978d7;
+  --garage-search-halo:rgba(57,120,215,.17);
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search){
+  -webkit-appearance:none;
+  appearance:none;
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  height:46px;
+  min-height:46px;
+  padding:0 14px;
+  box-sizing:border-box;
+  outline:none;
+  border:1px solid var(--garage-search-outline);
+  border-radius:12px;
+  background:var(--garage-search-surface);
+  color:#203249;
+  box-shadow:0 1px 3px rgba(33,57,89,.04);
+  font:inherit;
+  font-size:14px;
+  line-height:normal;
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search)::placeholder{
+  color:#8392a7;
+  opacity:1;
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search):hover:not(:disabled){
+  border-color:var(--garage-search-hover);
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search):focus{
+  outline:none;
+  border-color:var(--garage-search-active);
+  background:#fff;
+  box-shadow:0 0 0 3px var(--garage-search-halo),0 3px 9px rgba(29,77,149,.07);
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search):disabled{
+  background:#f4f6f9;
+  opacity:.7;
+  cursor:not-allowed;
+}
+.global-search-wrap{min-width:0}
+.global-search-wrap #globalSearch{width:100%}
+.sales-filter-search #salesSearch{padding-left:38px}
+.sales-filter-search:focus-within span{color:var(--garage-search-active)}
+.client-history-search{margin-bottom:10px}
+@media(max-width:700px){
+  :is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search){
+    font-size:16px; /* prevents iOS Safari from zooming the page on focus */
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  :is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search){transition:none}
+}
