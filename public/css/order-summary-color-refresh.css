@@ -1,0 +1,63 @@
+/* Финансовая шапка заказа: мягкая цветовая иерархия */
+#orderHistoryModal .order-summary-card{
+  position:relative;
+  overflow:hidden;
+  background:#ffffff;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+#orderHistoryModal .order-summary-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 5px 14px rgba(28,54,81,.07);
+}
+#orderHistoryModal .order-summary-card:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;width:4px;
+  background:#8ea4bb;
+}
+#orderHistoryModal .order-summary-card:nth-child(1){
+  background:linear-gradient(180deg,#f7fbff 0%,#ffffff 100%);
+  border-color:#d4e3f0;
+}
+#orderHistoryModal .order-summary-card:nth-child(1):before{background:#4f86c7}
+#orderHistoryModal .order-summary-card:nth-child(1) span{color:#6d8195}
+#orderHistoryModal .order-summary-card:nth-child(1) b{color:#2c5f94}
+#orderHistoryModal .order-summary-card.paid{
+  background:linear-gradient(180deg,#f3fbf7 0%,#ffffff 100%);
+  border-color:#cde5d8;
+}
+#orderHistoryModal .order-summary-card.paid:before{background:#3a9b72}
+#orderHistoryModal .order-summary-card.paid span{color:#6d897a}
+#orderHistoryModal .order-summary-card.paid b{color:#237554}
+#orderHistoryModal .order-summary-card.debt{
+  background:linear-gradient(180deg,#fff7f4 0%,#ffffff 100%);
+  border-color:#efd6cf;
+}
+#orderHistoryModal .order-summary-card.debt:before{background:#d66c58}
+#orderHistoryModal .order-summary-card.debt span{color:#92766f}
+#orderHistoryModal .order-summary-card.debt b{color:#b44d3e}
+#orderHistoryModal .order-summary-card:nth-child(4){
+  background:linear-gradient(180deg,#f8f6ff 0%,#ffffff 100%);
+  border-color:#ded8ef;
+}
+#orderHistoryModal .order-summary-card:nth-child(4):before{background:#8774c2}
+#orderHistoryModal .order-summary-card:nth-child(4) span{color:#817995}
+#orderHistoryModal .order-summary-card:nth-child(4) b{color:#63559b}
+
+/* Чуть усиливаем те же цвета внутри позиций */
+#orderHistoryModal .order-item-money .paid{
+  color:#2b8a63;
+  font-weight:800;
+}
+#orderHistoryModal .order-item-money .remain{
+  color:#c35445;
+  font-weight:800;
+}
+#orderHistoryModal .order-money-main{
+  background:#f7fafc;
+  border:1px solid #e4ebf1;
+  border-radius:9px;
+  padding:7px 8px;
+}
+#orderHistoryModal .order-money-main small{color:#77899a}
+#orderHistoryModal .order-money-main b{color:#2e475d}

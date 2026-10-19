@@ -1,0 +1,43 @@
+/* Final balance for the open-order position layout: give status its own readable column. */
+#orderHistoryModal .order-item-card{
+  grid-template-columns:minmax(0,1fr) 220px 175px !important;
+  gap:14px;
+}
+#orderHistoryModal .order-item-status-box{
+  min-width:0;
+  width:220px;
+  box-sizing:border-box;
+  justify-self:start;
+}
+#orderHistoryModal .order-item-status-select,
+#orderHistoryModal .order-item-status-value{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+}
+#orderHistoryModal .order-status-box-top{min-width:0}
+#orderHistoryModal .order-status-box-top > div{min-width:0;flex:1 1 auto}
+#orderHistoryModal .order-status-box-top b{white-space:nowrap;font-size:12px}
+#orderHistoryModal .order-status-box-top div>span{white-space:normal;overflow-wrap:anywhere}
+@media(max-width:1100px){
+  #orderHistoryModal .order-item-card,
+  #orderHistoryModal .order-item-card.is-removed{
+    grid-template-columns:minmax(0,1fr) 210px 155px !important;
+  }
+  #orderHistoryModal .order-item-status-box{width:210px}
+}
+@media(max-width:900px){
+  #orderHistoryModal .order-item-card,
+  #orderHistoryModal .order-item-card.is-removed{
+    grid-template-columns:minmax(0,1fr) 205px 145px !important;
+  }
+  #orderHistoryModal .order-item-status-box{width:205px}
+}
+@media(max-width:760px){
+  #orderHistoryModal .order-item-card,
+  #orderHistoryModal .order-item-card.is-removed{grid-template-columns:1fr !important}
+  #orderHistoryModal .order-item-status-box{width:100%}
+}

@@ -1,0 +1,62 @@
+/* Shared sizing rules: dialogs fit both portrait and short landscape viewports. */
+:root{--garage-nav-height:68px}
+body.garage-dialog-open{overflow:hidden}
+:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+.overlay{overflow:hidden;isolation:isolate;z-index:calc(9500 + var(--garage-dialog-depth,0))!important}
+.overlay > [role="dialog"],
+#notificationModal > [role="dialog"],
+#clientProfileModal > [role="dialog"],
+#orderHistoryModal > [role="dialog"]{
+  display:flex;flex-direction:column;min-height:0;
+  height:auto!important;max-height:calc(100vh - 24px)!important;
+  max-height:calc(100dvh - 24px)!important;max-width:100%;
+  overflow:hidden;
+}
+.overlay :is(.modal-head,.modal-foot,.client-profile-head,.order-detail-head,.order-detail-foot,.notification-head,.notification-foot,.remove-item-foot,.confirm-foot){flex:0 0 auto}
+.overlay :is(.modal-body,.client-profile-body,.order-detail-body,.notification-body,.remove-item-body,.confirm-body){
+  flex:1 1 auto;min-height:0;max-height:none!important;overflow:auto;overscroll-behavior:contain;
+}
+#garageCloudGate,#garageActionGate{box-sizing:border-box;overflow:auto}
+#garageCloudGate > [role="dialog"],#garageActionGate > [role="dialog"]{max-height:calc(100dvh - 32px);overflow:auto}
+.overlay .close{flex-shrink:0}
+
+/* One navigation bar is reused by automatic and forced mobile layouts. */
+@media(max-width:700px){
+  body{padding-bottom:calc(var(--garage-nav-height) + env(safe-area-inset-bottom,0px) + 10px)!important}
+  body .app{display:block;min-height:100dvh}
+  body aside,body.garage-mobile-mode aside{
+    display:block!important;position:fixed!important;inset:auto 0 0!important;width:100%!important;
+    height:calc(var(--garage-nav-height) + env(safe-area-inset-bottom,0px))!important;
+    padding:4px 5px env(safe-area-inset-bottom,0px)!important;z-index:9000!important;
+  }
+  body aside .logo,body aside .sidebar-bottom{display:none!important}
+  body aside .nav{display:flex!important;flex-direction:row!important;width:100%;height:60px!important;overflow-x:auto!important;overflow-y:hidden!important;gap:3px!important}
+  body aside .nav button{flex:1 0 64px!important;min-width:64px!important;min-height:56px!important;white-space:normal!important}
+  body .top{height:auto!important;min-height:58px!important;display:flex!important;flex-wrap:wrap;gap:8px!important;padding:8px 10px!important}
+  body .top .global-search-wrap{order:2;flex:1 0 100%!important;width:100%!important}
+  body .top .seller-top{order:1;margin-left:auto;display:flex;gap:7px!important}
+  body .top .seller-top select,body .top .seller-manage{display:block!important}
+  body .top #currentSellerSwitch{width:auto;max-width:150px;min-width:0!important}
+  body .top .seller-manage{width:44px!important;min-height:44px!important;padding:0!important}
+  body .content{padding-bottom:16px!important}
+  body .head .actions .btn:not(.primary){font-size:13px!important}
+  body .head .actions .btn:not(.primary)::before{content:none}
+  body .overlay{padding:0!important;place-items:end center!important}
+  body .overlay > [role="dialog"],
+  body #notificationModal > [role="dialog"],
+  body #clientProfileModal > [role="dialog"],
+  body #orderHistoryModal > [role="dialog"]{width:100%!important;max-width:100%!important;max-height:96vh!important;max-height:96dvh!important;margin:0;border-radius:18px 18px 0 0!important}
+  body .overlay :is(.modal-foot,.order-detail-foot,.notification-foot,.remove-item-foot,.confirm-foot){padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;flex-wrap:wrap}
+  body .overlay :is(.remove-item-foot,.confirm-foot){display:flex;gap:8px}
+  body .overlay :is(.remove-item-foot,.confirm-foot) .btn{flex:1;min-width:0;white-space:normal}
+  body .toast-stack{bottom:calc(var(--garage-nav-height) + env(safe-area-inset-bottom,0px) + 10px)!important}
+}
+@media(max-height:480px){
+  .overlay{padding:8px!important;place-items:center!important}
+  .overlay :is(.modal-head,.order-detail-head,.client-profile-head,.notification-head){padding-top:8px!important;padding-bottom:8px!important;min-height:48px!important}
+  .overlay :is(.modal-foot,.order-detail-foot,.notification-foot,.remove-item-foot,.confirm-foot){padding-top:8px!important;padding-bottom:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .garage-toast,.garage-toast-progress{animation:none}
+  html{scroll-behavior:auto}
+}

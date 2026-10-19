@@ -1,0 +1,49 @@
+@media (max-width:700px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{padding-bottom:68px}
+  .app{display:block;min-height:100vh}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:62px;z-index:9000;padding:6px 8px;background:rgba(255,255,255,.97);border-top:1px solid #dfe6ee;box-shadow:0 -8px 25px rgba(20,35,55,.10);backdrop-filter:blur(12px)}
+  .logo,.sidebar-bottom{display:none!important}
+  .nav{display:flex!important;flex-direction:row!important;gap:5px!important;overflow-x:auto;height:100%;align-items:stretch;padding:0!important}
+  .nav button{flex:1 0 72px;min-width:72px;min-height:48px;padding:6px 5px!important;font-size:10px!important;line-height:1.1;white-space:normal}
+  .nav button span{display:block}
+  .top{position:sticky;top:0;z-index:8000;padding:9px 10px!important;gap:8px!important;background:rgba(247,249,252,.96);backdrop-filter:blur(10px)}
+  .top h1{font-size:17px!important}
+  .content{padding:10px!important}
+  .grid,.two,.three,.four,.formgrid{grid-template-columns:1fr!important}
+  .card{min-width:0!important}
+  button,.btn,input,select,textarea{min-height:42px;box-sizing:border-box}
+  .btn{padding:9px 12px!important}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:620px}
+  .overlay{padding:0!important;place-items:stretch!important}
+  .modal,.order-detail-modal{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;display:flex;flex-direction:column}
+  .modal-body,.order-detail-body{overflow:auto;max-height:none!important;flex:1}
+  .modal-head,.modal-foot,.order-detail-head,.order-detail-foot{padding:12px 14px!important}
+  .order-item-detail,.order-item-detail.order-pay-card{grid-template-columns:1fr!important}
+  .order-item-detail>div,.order-item-detail.order-pay-card>div{grid-column:1!important}
+  .order-history-event{grid-template-columns:1fr!important}
+  .order-history-amount{white-space:normal}
+  .order-status-badge{min-width:0!important;white-space:normal!important;text-align:center;line-height:1.2;padding:7px 8px!important}
+  .order-list-row,.order-row{grid-template-columns:1fr!important}
+  .order-row-right{justify-content:flex-start!important;flex-wrap:wrap}
+  .order-action-grid,.order-payment-tools,.order-history-pay-grid,.sale-product,.sales-filters{grid-template-columns:1fr!important}
+  .sales-filter-search,.sales-filters .btn{grid-column:auto!important}
+  .sales-summary-grid{grid-template-columns:1fr!important}
+  .client-car-row,.client-history-row{grid-template-columns:1fr!important}
+  .client-car-actions{grid-column:auto!important;justify-content:flex-start!important}
+  .quick-menu{position:fixed;left:10px;right:10px;top:auto;bottom:70px;width:auto}
+  .toast-stack{left:10px!important;right:10px!important;bottom:72px!important}
+  .garage-toast{width:100%!important;min-width:0!important}
+  .order-detail-section,.order-side-card{min-width:0}
+  .order-item-detail{overflow:hidden}
+  .order-item-detail small,.order-item-name,.order-status-caption{overflow-wrap:anywhere}
+}
+@media (max-width:420px){
+  .top{padding:8px!important}
+  .content{padding:7px!important}
+  .nav button{font-size:9px!important;min-width:66px}
+  .card{border-radius:12px!important}
+  .modal-body,.order-detail-body{padding:12px!important}
+  .sales-summary-card{min-height:92px}
+}

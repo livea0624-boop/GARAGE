@@ -1,0 +1,7 @@
+.delivery-item-action{align-items:center;gap:7px}
+.delivery-arrival-btn{display:inline-flex;align-items:center;gap:7px;justify-content:center;min-width:128px;padding:8px 11px!important;border:1px solid #b9d9cb!important;border-radius:10px!important;background:#f1fbf6!important;color:#247255!important;font-weight:850!important;box-shadow:0 1px 2px rgba(35,111,83,.06)!important}
+.delivery-arrival-btn:hover{background:#e5f7ee!important;border-color:#8fc9ae!important;color:#1e654b!important;filter:none!important;transform:translateY(-1px);box-shadow:0 4px 10px rgba(35,111,83,.10)!important}
+.delivery-arrival-icon{width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#2f8f70;color:#fff;font-size:11px;font-weight:900;line-height:1;flex:0 0 20px}
+.delivery-one-btn{min-width:38px;padding:8px 10px!important;border-radius:10px!important;background:#fff!important;border:1px solid #cad6e1!important;color:#51667b!important;font-weight:850!important}
+.delivery-one-btn:hover{background:#f4f8fb!important;border-color:#aebfd0!important;filter:none!important}
+@media(max-width:850px){.delivery-arrival-btn{min-width:0;flex:1}.delivery-one-btn{flex:0 0 auto}}

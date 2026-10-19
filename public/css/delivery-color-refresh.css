@@ -1,0 +1,40 @@
+/* Цветовая иерархия поставок: клиент → заказ → позиция */
+.delivery-toolbar-simple input{background:#fbfdff;border-color:#cfdbea}
+.delivery-toolbar-simple input:focus{border-color:#6f9fe8;box-shadow:0 0 0 3px rgba(79,126,201,.12)}
+.delivery-simple-caption{color:#718096}
+.delivery-client-simple{border-color:#cfdce9;background:#fff;box-shadow:0 5px 18px rgba(36,62,88,.055)}
+.delivery-client-simple-head{background:linear-gradient(90deg,#eef7ff 0%,#f7fbff 72%);border-bottom-color:#d7e4f1;position:relative}
+.delivery-client-simple-head:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#5b8def}
+.delivery-client-simple-head b{color:#234f7d}
+.delivery-client-simple-head small{color:#71869d}
+.delivery-client-simple-count{background:#e5f1ff;border-color:#c8dcf5;color:#35669c}
+.delivery-client-simple-orders{background:#f8fbfe}
+.delivery-order-simple{border-color:#d7e2ec;background:#fff;box-shadow:0 2px 8px rgba(35,58,82,.035)}
+.delivery-order-simple-head{background:linear-gradient(90deg,#f4f1ff 0%,#faf9ff 100%);border-bottom-color:#e2def3;position:relative}
+.delivery-order-simple-head:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#8976c9}
+.delivery-order-simple-head b{color:#4d3f78}
+.delivery-order-simple-head small{color:#7b7790}
+.delivery-order-simple-actions{color:#716d80}
+.delivery-order-simple-actions .btn{background:#fff;border-color:#d8d3e7;color:#62588a}
+.delivery-order-simple-actions .btn:hover{background:#f7f5ff;border-color:#c4bce0}
+.delivery-items-simple{background:#fff;padding:7px}
+.delivery-item-simple{background:#fff;border-color:transparent;transition:background .15s,border-color .15s,box-shadow .15s}
+.delivery-item-simple+.delivery-item-simple{border-top:1px solid #edf1f5;border-radius:0;margin-top:0}
+.delivery-item-simple:first-child{border-radius:8px 8px 0 0}
+.delivery-item-simple:last-child{border-radius:0 0 8px 8px}
+.delivery-item-simple:hover{background:#fafdff;border-color:#dce8f2;box-shadow:0 2px 7px rgba(46,79,111,.045)}
+.delivery-item-icon{background:#eef7f5;color:#378c78;border:1px solid #d5ece6}
+.delivery-item-main b{color:#2d4053}
+.delivery-item-main small{color:#8390a0}
+.delivery-item-date{color:#6f8093}
+.delivery-item-date.today{background:#fff6de;color:#9a6a00;border-radius:6px;padding:2px 6px;display:inline-block}
+.delivery-item-date.overdue{background:#fff0f0;color:#b44141;border-radius:6px;padding:2px 6px;display:inline-block}
+.delivery-item-qty{padding:6px 8px;border-radius:8px;background:#f6f8fb;border:1px solid #e2e7ee}
+.delivery-item-qty b{color:#2d5f55}
+.delivery-item-qty span{color:#3f917b}
+.delivery-status{background:#fff5d8;border-color:#ead18b;color:#947000}
+.delivery-status.partial{background:#fff0dd;border-color:#efc994;color:#ad6c14}
+.delivery-item-action .btn.primary{background:#2f8f70;border-color:#2f8f70;box-shadow:0 2px 6px rgba(47,143,112,.16)}
+.delivery-item-action .btn.primary:hover{filter:brightness(.96)}
+.delivery-item-action .btn.mini:not(.primary){background:#f6f8fb;border-color:#d9e1ea;color:#52677d}
+@media(max-width:850px){.delivery-client-simple-head{background:#eef7ff}.delivery-order-simple-head{background:#f4f1ff}}
