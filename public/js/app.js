@@ -2600,15 +2600,34 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
   document.getElementById('closeClearOrdersSales')?.addEventListener('click',close);
   document.getElementById('cancelClearOrdersSales')?.addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
-  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',()=>{
-    ['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts'].forEach(k=>garageStorage.removeItem(k));
-    // Удаляем также сохранённые признаки архивирования/изменения демонстрационных заказов, если они были.
-    ['garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'].forEach(k=>garageStorage.removeItem(k));
-    close();
-    if(typeof renderOrders==='function')renderOrders();
-    if(typeof renderSalesJournal==='function')renderSalesJournal();
-    if(typeof renderCompletedOrders==='function')renderCompletedOrders();
-    if(typeof renderHomeDashboard==='function')renderHomeDashboard();
-    if(typeof toast==='function')toast('Все заказы и продажи очищены','success');
+  document.getElementById('confirmClearOrdersSales')?.addEventListener('click',async()=>{
+    const confirmButton=document.getElementById('confirmClearOrdersSales');
+    if(confirmButton?.disabled)return;
+    if(confirmButton)confirmButton.disabled=true;
+    try{
+      // Require server-verified action password before touching any order or sale.
+      if(typeof window.garageRequestActionPassword!=='function')throw new Error('Проверка пароля действий недоступна. Очистка отменена.');
+      const actionPassword=await window.garageRequestActionPassword();
+      if(!actionPassword)return;
+      const keys=['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts','garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'];
+      const backup=keys.map(key=>[key,garageStorage.getItem(key)]);
+      try{
+        keys.forEach(key=>garageStorage.removeItem(key));
+        if(!window.garageCloudSync?.save)throw new Error('Нет подключения к облаку. Очистка отменена.');
+        await window.garageCloudSync.save({actionPassword});
+      }catch(error){
+        backup.forEach(([key,value])=>value===null?garageStorage.removeItem(key):garageStorage.setItem(key,value));
+        throw error;
+      }
+      close();
+      if(typeof renderOrders==='function')renderOrders();
+      if(typeof renderSalesJournal==='function')renderSalesJournal();
+      if(typeof renderCompletedOrders==='function')renderCompletedOrders();
+      if(typeof renderHomeDashboard==='function')renderHomeDashboard();
+      if(typeof toast==='function')toast('Все заказы и продажи очищены','ok');
+    }catch(error){
+      if(typeof toast==='function')toast(error.message||'Не удалось очистить данные','error');
+    }finally{if(confirmButton)confirmButton.disabled=false;}
   });
+
 })();
