@@ -47,6 +47,11 @@
 
   function status(message, kind = 'pending') {
     let box = document.getElementById('garageSyncStatus');
+    // Successful cloud sync is the normal state; do not keep a banner above the app.
+    if (kind === 'saved') {
+      box?.remove();
+      return;
+    }
     if (!box) {
       box = document.createElement('div');
       box.id = 'garageSyncStatus'; box.role = 'status'; box.setAttribute('aria-live', 'polite');
