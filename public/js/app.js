@@ -2487,7 +2487,7 @@ function exportPreviousGarageBackup(){
   downloadGarageBackup(payload,'garage-before-import-'+todayIso()+'.json');
   toast('Копия до последнего импорта выгружена в JSON.','ok','Экспорт завершён');
 }
-async function applyGarageBackup(payload){
+async function applyGarageBackup(payload,{actionPassword:approvedPassword}={}){
   try{
     let state;
     try{state=window.GarageBackup.validate(payload)}catch(error){
@@ -2496,9 +2496,9 @@ async function applyGarageBackup(payload){
       state=window.GarageBackup.validate(payload,{allowEmpty:true});
     }
     if(!window.garageCloudSync?.replace)throw new Error('Войдите в GARAGE и дождитесь подключения к облаку.');
-    await window.garageCloudSync.save();
-    const actionPassword=await window.garageRequestActionPassword?.();
+    const actionPassword=approvedPassword||await window.garageRequestActionPassword?.();
     if(!actionPassword)return false;
+    await window.garageCloudSync.save({actionPassword});
     window.GarageBackup.createRollback(garageStorage);
     // Keep the current screen and storage intact until the server confirms the
     // replacement against the exact version we loaded. Conflicts abort safely.
@@ -2512,13 +2512,20 @@ document.getElementById('exportPreviousGarageBackup')?.addEventListener('click',
 window.addEventListener('garage-backup-updated',updatePreviousGarageBackupButton);
 window.addEventListener('storage',event=>{if(event.key===window.GarageBackup.rollbackKey||event.key===null)updatePreviousGarageBackupButton()});
 updatePreviousGarageBackupButton();
-document.getElementById('importGarageBackup')?.addEventListener('click',()=>document.getElementById('garageBackupFile')?.click());
+document.getElementById('importGarageBackup')?.addEventListener('click',()=>{
+  if(!window.GarageBackup.hasImportAuthorization())return;
+  const input=document.getElementById('garageBackupFile');
+  if(input){input.value='';input.click()}else window.GarageBackup.cancelImport();
+});
+document.getElementById('garageBackupFile')?.addEventListener('cancel',()=>window.GarageBackup.cancelImport());
 document.getElementById('garageBackupFile')?.addEventListener('change',e=>{
+  const actionPassword=window.GarageBackup.consumeImportAuthorization();
   const file=e.target.files?.[0]; if(!file)return;
+  if(!actionPassword){e.target.value='';toast('Сначала подтвердите пароль действий кнопкой «Импортировать данные».','error','Импорт отменён');return}
   if(file.size>window.GarageBackup.maxFileBytes){toast('Размер копии превышает 5 МБ.','error','Импорт отменён');e.target.value='';return}
   const reader=new FileReader();
   reader.onerror=()=>{toast('Не удалось прочитать файл.','error','Импорт отменён');e.target.value=''};
-  reader.onload=()=>{try{const payload=JSON.parse(reader.result);window.GarageBackup.validate(payload,{allowEmpty:true});showActionConfirm('import-backup',()=>applyGarageBackup(payload),'Общие данные на всех устройствах будут заменены данными из файла «'+file.name+'». Перед заменой в браузере сохранится копия текущих данных.');}catch(err){toast(err instanceof SyntaxError?'Не удалось прочитать JSON-файл.':err.message,'error','Импорт отменён');}finally{e.target.value='';}};
+  reader.onload=()=>{try{const payload=JSON.parse(reader.result);window.GarageBackup.validate(payload,{allowEmpty:true});showActionConfirm('import-backup',()=>applyGarageBackup(payload,{actionPassword}),'Общие данные на всех устройствах будут заменены данными из файла «'+file.name+'». Перед заменой в браузере сохранится копия текущих данных.');}catch(err){toast(err instanceof SyntaxError?'Не удалось прочитать JSON-файл.':err.message,'error','Импорт отменён');}finally{e.target.value='';}};
   reader.readAsText(file,'utf-8');
 });
 

@@ -48,7 +48,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function fakeServer(initialState = pack(baseClients())) {
+function fakeServer(initialState = pack(baseClients()), { actionPassword = null } = {}) {
   let state = clone(initialState), sequence = 1, updatedAt = initialState === null ? null : 'version-1';
   const controls = [], requests = [];
   const response = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => clone(body) });
@@ -85,6 +85,10 @@ function fakeServer(initialState = pack(baseClients())) {
       if (request.body.baseUpdatedAt !== updatedAt) {
         request.status = 409;
         return response(409, { code: 'STATE_CONFLICT', error: 'State changed', state, updatedAt });
+      }
+      if (actionPassword && request.headers['x-garage-action-password'] !== actionPassword) {
+        request.status = 403;
+        return response(403, { code: 'ACTION_PASSWORD_REQUIRED', error: 'Action password required' });
       }
       state = clone(request.body.state); updatedAt = 'version-' + (++sequence);
       request.status = 200;
@@ -128,6 +132,11 @@ function browser(server, { localStorage = fakeStorage(), sessionStorage = fakeSt
     async start() { await context.garageCloudSync.start('test-login-only'); },
     editClients(clients) { context.garageStorage.setItem('garageClients', JSON.stringify(clients)); },
     get clients() { return records({ garageClients: context.garageStorage.getItem('garageClients') }); },
+    async runNextTimer() {
+      const [id, timer] = timers.entries().next().value || [];
+      assert.ok(timer, 'an autosave should be scheduled');
+      timers.delete(id); await timer.callback();
+    },
     drafts() { return Object.keys(localStorage).filter(key => key.startsWith('garageDraft:v1:')).map(key => JSON.parse(localStorage.getItem(key))); }
   };
 }
@@ -449,4 +458,138 @@ test('legacy credential keys loaded from the cloud are excluded from storage, up
   for (const part of ['baseState', 'state', 'inFlightState']) assert.deepEqual(Object.keys(draft[part]), ['garageClients']);
   assert.equal(app.sync.getStatus().dirty, true);
   assert.equal(app.sync.getStatus().durable, true);
+});
+
+test('login normalization requiring action authorization pauses without opening a password dialog and saves only after a status-button click', async () => {
+  const initial = { garageClientOrders: JSON.stringify([{ id: 'legacy-order', total: 100 }, null]) };
+  const server = fakeServer(initial, { actionPassword: 'test-action-only' }), app = browser(server);
+  let passwordRequests = 0;
+  const approval = deferred();
+  app.context.garageRequestActionPassword = () => { passwordRequests++; return approval.promise; };
+  app.context.renderOrders = () => {
+    const orders = JSON.parse(app.storage.getItem('garageClientOrders') || '[]');
+    app.storage.setItem('garageClientOrders', JSON.stringify(orders.filter(Boolean)));
+  };
+  await app.start();
+  await app.runNextTimer();
+  assert.equal(passwordRequests, 0, 'initial rendering and its autosave cannot request an action password');
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  assert.equal(app.sync.getStatus().dirty, true);
+  assert.equal(app.sync.getStatus().durable, true);
+  assert.deepEqual(server.state, initial, 'protected cloud records remain unchanged');
+  assert.equal(app.drafts().length, 1);
+  assert.deepEqual(JSON.parse(app.drafts()[0].state.garageClientOrders), [{ id: 'legacy-order', total: 100 }]);
+  assert.equal(app.timers.size, 0, 'a rejected protected write does not schedule a retry loop');
+  const requestCount = server.requests.length;
+  app.context.dispatchEvent(new Event('online'));
+  await app.sync.poll();
+  await assert.rejects(app.sync.save(), error => error.code === 'ACTION_PASSWORD_REQUIRED');
+  assert.equal(server.requests.length, requestCount, 'background recovery does not retry a write awaiting approval');
+  assert.equal(passwordRequests, 0);
+  const button = app.document.getElementById('garageSyncStatus').children.find(child => child.tagName === 'button');
+  assert.equal(button.textContent, 'Подтвердить сохранение');
+  const firstClick = button.onclick(), repeatedClick = button.onclick();
+  assert.equal(passwordRequests, 1, 'repeated clicks share a single action-password dialog');
+  approval.resolve('test-action-only');
+  await Promise.all([firstClick, repeatedClick]);
+  assert.equal(server.requests.filter(request => request.method === 'PUT').length, 2);
+  assert.equal(server.requests.at(-1).headers['x-garage-action-password'], 'test-action-only');
+  assert.deepEqual(JSON.parse(server.state.garageClientOrders), [{ id: 'legacy-order', total: 100 }]);
+  assert.equal(app.sync.getStatus().actionRequired, false);
+  assert.equal(app.sync.getStatus().dirty, false);
+  assert.equal(app.drafts().length, 0);
+});
+
+test('expired explicit approval and server-denied credentials never automatically reopen the action dialog', async () => {
+  const server = fakeServer(pack(baseClients()), { actionPassword: 'test-current-action' }), app = browser(server);
+  let passwordRequests = 0;
+  app.context.garageRequestActionPassword = async () => { passwordRequests++; return 'test-old-action'; };
+  await app.start();
+  app.sync.authorizeAction('test-current-action');
+  app.context.Date = class extends Date { static now() { return Date.now() + 31000; } };
+  app.editClients([baseClients()[0]]);
+  await app.runNextTimer();
+  assert.equal(passwordRequests, 0);
+  assert.equal(server.requests.at(-1).headers['x-garage-action-password'], undefined, 'expired credentials are not sent');
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  assert.equal(app.drafts().length, 1);
+  const button = app.document.getElementById('garageSyncStatus').children.find(child => child.tagName === 'button');
+  await button.onclick();
+  assert.equal(passwordRequests, 1, 'a rejected user-entered password does not cause a second modal');
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  assert.equal(app.sync.getStatus().dirty, true);
+  assert.equal(app.timers.size, 0);
+  assert.equal(app.drafts().length, 1);
+  assert.deepEqual(records(server.state), records(pack(baseClients())));
+  app.context.garageRequestActionPassword = async () => { passwordRequests++; return 'test-current-action'; };
+  await app.sync.confirmSave();
+  assert.equal(passwordRequests, 2);
+  assert.equal(app.sync.getStatus().dirty, false);
+  assert.deepEqual(records(server.state), records(pack([baseClients()[0]])));
+});
+
+test('normalizing newly polled legacy data cannot open an action-password dialog in the background', async () => {
+  const server = fakeServer(pack(baseClients()), { actionPassword: 'test-action-only' }), app = browser(server);
+  let passwordRequests = 0;
+  app.context.garageRequestActionPassword = async () => { passwordRequests++; return 'test-action-only'; };
+  await app.start();
+  app.context.renderOrders = () => {
+    const raw = app.storage.getItem('garageClientOrders');
+    if (raw) app.storage.setItem('garageClientOrders', JSON.stringify(JSON.parse(raw).filter(Boolean)));
+  };
+  const remote = { ...server.state, garageClientOrders: JSON.stringify([{ id: 'legacy-order' }, null]) };
+  server.setState(remote);
+  await app.sync.poll();
+  await app.runNextTimer();
+  assert.equal(passwordRequests, 0);
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  assert.equal(app.sync.getStatus().dirty, true);
+  assert.deepEqual(server.state, remote);
+  assert.equal(app.drafts().length, 1);
+});
+
+test('an explicitly authorized destructive save reuses the action approval without a duplicate password prompt', async () => {
+  const server = fakeServer(pack(baseClients()), { actionPassword: 'test-action-only' }), app = browser(server);
+  let passwordRequests = 0;
+  app.context.garageRequestActionPassword = async () => { passwordRequests++; return 'test-action-only'; };
+  await app.start();
+  app.sync.authorizeAction('test-action-only');
+  app.editClients([baseClients()[0]]);
+  await app.runNextTimer();
+  assert.equal(passwordRequests, 0);
+  assert.equal(server.requests.at(-1).headers['x-garage-action-password'], 'test-action-only');
+  assert.equal(app.sync.getStatus().actionRequired, false);
+  assert.equal(app.sync.getStatus().dirty, false);
+});
+
+test('cancelling explicit pending-save approval retains the draft without automatic retries', async () => {
+  const server = fakeServer(pack(baseClients()), { actionPassword: 'test-action-only' }), app = browser(server);
+  let passwordRequests = 0;
+  app.context.garageRequestActionPassword = async () => { passwordRequests++; return false; };
+  await app.start();
+  app.editClients([baseClients()[0]]);
+  await app.runNextTimer();
+  const requestCount = server.requests.length;
+  await app.document.getElementById('garageSyncStatus').children.find(child => child.tagName === 'button').onclick();
+  assert.equal(passwordRequests, 1);
+  assert.equal(server.requests.length, requestCount);
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  assert.equal(app.sync.getStatus().dirty, true);
+  assert.equal(app.drafts().length, 1);
+  assert.equal(app.timers.size, 0);
+  assert.deepEqual(records(server.state), records(pack(baseClients())));
+});
+
+test('reverting all pending protected changes restores normal autosave for later edits', async () => {
+  const server = fakeServer(pack(baseClients()), { actionPassword: 'test-action-only' }), app = browser(server);
+  await app.start();
+  app.editClients([baseClients()[0]]);
+  await app.runNextTimer();
+  assert.equal(app.sync.getStatus().actionRequired, true);
+  app.editClients(baseClients());
+  assert.equal(app.sync.getStatus().dirty, false);
+  assert.equal(app.sync.getStatus().actionRequired, false);
+  assert.equal(app.drafts().length, 0);
+  app.editClients([{ id: 'a', name: 'Новая обычная правка' }, baseClients()[1]]);
+  assert.equal(app.timers.size, 1, 'cancelled protected changes must not leave unrelated future autosaves paused');
 });

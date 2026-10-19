@@ -12,7 +12,7 @@
   let ready = false, applying = false, dirty = false, revision = 0;
   let baseState = {}, version = null, inFlight = null, pollFlight = null, replacing = false;
   let timer = null, retryDelay = 1000, paused = false, conflict = null;
-  let actionCredential = null, persistenceFailed = false;
+  let actionCredential = null, actionRequired = false, actionApprovalFlight = null, persistenceFailed = false;
   let sentState = null, uncertainState = null;
   const recoveredDrafts = new Map();
 
@@ -60,8 +60,8 @@
     if (dirty && kind !== 'saving') {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'btn'; button.style.padding = '4px 8px';
-      button.textContent = conflict ? 'Разобрать изменения' : 'Повторить сохранение';
-      button.onclick = () => conflict ? showConflicts() : save().catch(report);
+      button.textContent = conflict ? 'Разобрать изменения' : actionRequired ? 'Подтвердить сохранение' : 'Повторить сохранение';
+      button.onclick = () => conflict ? showConflicts() : (actionRequired ? confirmSave() : save()).catch(report);
       box.append(button);
     }
   }
@@ -104,8 +104,8 @@
   }
   function schedule(delay = 450) {
     clearTimeout(timer);
-    if (paused || conflict || !ready || replacing) return;
-    timer = setTimeout(() => { timer = null; save().catch(report); }, delay);
+    if (paused || actionRequired || conflict || !ready || replacing) return;
+    timer = setTimeout(() => { timer = null; return save().catch(report); }, delay);
   }
   function changed() {
     if (!ready || applying) return;
@@ -116,9 +116,14 @@
     if (dirty) {
       if (!persistenceFailed) status(conflict
         ? 'Одни и те же записи изменены на другом устройстве. Выберите версии.'
-        : 'Изменения сохранены на устройстве, ожидается запись в облако.', conflict ? 'conflict' : 'pending');
+        : actionRequired ? 'Для сохранения этих изменений нужен пароль действий. Подтвердите сохранение.'
+          : 'Изменения сохранены на устройстве, ожидается запись в облако.', conflict ? 'conflict' : actionRequired ? 'approval' : 'pending');
       schedule();
-    } else status('Все изменения сохранены', 'saved');
+    } else {
+      if (actionRequired) paused = false;
+      actionRequired = false;
+      status('Все изменения сохранены', 'saved');
+    }
   }
   function refreshViews(eventName) {
     for (const render of [
@@ -154,6 +159,7 @@
     baseState = latest; version = remote.updatedAt ?? null;
     applyState(result.state, 'garage-cloud-updated');
     revision++; conflict = null; dirty = !same(snapshot(), baseState);
+    if (!dirty && actionRequired) { actionRequired = false; paused = false; }
     persistDraft();
     return true;
   }
@@ -201,6 +207,22 @@
   }
   function authorizeAction(password) {
     actionCredential = password ? { password, expires: Date.now() + 30000 } : null;
+    if (password) { actionRequired = false; paused = false; }
+  }
+  async function confirmSave() {
+    if (actionApprovalFlight) return actionApprovalFlight;
+    if (!actionRequired || !dirty) return save();
+    // Authentication is only opened from the explicit status-button click.
+    // Startup normalization, background saves and expired approvals must never
+    // unexpectedly interrupt the user with an action-password dialog.
+    actionApprovalFlight = (async () => {
+      const password = await window.garageRequestActionPassword?.();
+      if (!password) throw error('Пароль действий не введён', 'ACTION_CANCELLED');
+      authorizeAction(password);
+      return save();
+    })();
+    try { return await actionApprovalFlight; }
+    finally { actionApprovalFlight = null; }
   }
   async function write(state, operation, actionPassword) {
     const credential = actionPassword || (actionCredential?.expires > Date.now() ? actionCredential.password : '');
@@ -209,8 +231,8 @@
   }
   function report(e) {
     if (e?.code === 'STATE_CONFLICT') return;
-    if (e?.code === 'ACTION_CANCELLED') {
-      status('Удаление не отправлено: требуется пароль действий. Правки сохранены на устройстве.', 'error');
+    if (e?.code === 'ACTION_PASSWORD_REQUIRED' || e?.code === 'ACTION_CANCELLED') {
+      status('Для сохранения этих изменений нужен пароль действий. Правки сохранены на устройстве.', 'approval');
       return;
     }
     if (e?.status === 401) {
@@ -227,6 +249,8 @@
     if (!ready) throw error('Сначала войдите в GARAGE', 'NOT_READY');
     if (replacing) throw error('Дождитесь завершения импорта', 'REPLACING');
     if (conflict) throw error('Разберите одновременные изменения', 'STATE_CONFLICT');
+    if (actionRequired && actionCredential?.expires > Date.now()) actionRequired = false;
+    if (actionRequired) throw error('Подтвердите сохранение паролем действий', 'ACTION_PASSWORD_REQUIRED');
     paused = false;
     if (inFlight) {
       await inFlight;
@@ -256,15 +280,14 @@
             continue;
           }
           if (e.code === 'ACTION_PASSWORD_REQUIRED') {
-            const password = await window.garageRequestActionPassword?.();
-            if (!password) { paused = true; throw error('Пароль действий не введён', 'ACTION_CANCELLED'); }
-            authorizeAction(password); continue;
+            actionCredential = null; actionRequired = true; paused = true;
+            throw e;
           }
           // A lost response is not proof that the server rejected the write.
           if (!e.status || e.status >= 500) uncertainState = sent;
           throw e;
         }
-        baseState = sent; version = result.updatedAt; actionCredential = null; sentState = null;
+        baseState = sent; version = result.updatedAt; actionCredential = null; actionRequired = false; sentState = null;
         dirty = sentRevision !== revision && !same(snapshot(), baseState);
         persistDraft(); retryDelay = 1000;
       }
@@ -274,7 +297,7 @@
     try { return await inFlight; }
     catch (e) {
       persistDraft();
-      if (e.code !== 'STATE_CONFLICT' && e.code !== 'ACTION_CANCELLED' && e.status !== 401) {
+      if (e.code !== 'STATE_CONFLICT' && e.code !== 'ACTION_CANCELLED' && e.code !== 'ACTION_PASSWORD_REQUIRED' && e.status !== 401) {
         retryDelay = Math.min(retryDelay * 2, 30000); schedule(retryDelay);
       }
       throw e;
@@ -338,6 +361,7 @@
   async function start(password) {
     if (inFlight) await inFlight;
     window.garageLoginPassword = password; paused = false; conflict = null;
+    actionCredential = null; actionRequired = false;
     const draft = readDraft(draftKey);
     sentState = null; uncertainState = null;
     const remote = await api('/api/state', 'GET', null, password);
@@ -361,7 +385,7 @@
   }
   async function replace(state, options = {}) {
     if (!ready) throw error('Сначала войдите в GARAGE', 'NOT_READY');
-    await save();
+    await save({ actionPassword: options.actionPassword });
     const next = shared(state);
     const before = snapshot(), beforeRevision = revision;
     replacing = true; status('Восстановление резервной копии…', 'saving');
@@ -400,12 +424,12 @@
   };
   garageStorage.clear = () => { original.clear(); changed(); };
   window.garageCloudSync = {
-    start, save, replace, poll, api, authorizeAction, resolveConflicts,
+    start, save, replace, poll, api, authorizeAction, confirmSave, resolveConflicts,
     load: async password => {
       if (dirty) throw error('Сначала сохраните локальные изменения', 'UNSAVED_CHANGES');
       return start(password || window.garageLoginPassword);
     },
-    getStatus: () => ({ ready, dirty, saving: !!inFlight, conflict: !!conflict, durable: !persistenceFailed, updatedAt: version })
+    getStatus: () => ({ ready, dirty, saving: !!inFlight, conflict: !!conflict, actionRequired, durable: !persistenceFailed, updatedAt: version })
   };
   setInterval(() => poll(), 5000);
   window.addEventListener('online', () => { paused = false; if (dirty) schedule(0); else poll(); });

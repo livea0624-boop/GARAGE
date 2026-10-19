@@ -194,7 +194,7 @@ test('failed pending save prevents replacement and keeps the current state', asy
   b.context.garageCloudSync.save = async () => { throw new Error('Offline'); };
   assert.equal(await b.context.applyGarageBackup(pack(sampleState())), false);
   assert.deepEqual(b.garageStorage.all(), b.before);
-  assert.deepEqual(b.calls, []);
+  assert.deepEqual(b.calls, ['password']);
   assert.equal(b.localStorage.getItem(b.api.rollbackKey), null);
 });
 
@@ -204,7 +204,7 @@ test('server conflict preserves current state, durable rollback and the current 
   const payload = pack({ garageClients: '[{"id":"import","name":"Новый"}]' });
   assert.equal(await b.context.applyGarageBackup(payload), false);
   assert.deepEqual(b.garageStorage.all(), b.before);
-  assert.deepEqual(b.calls, ['save', 'password', 'replace']);
+  assert.deepEqual(b.calls, ['password', 'save', 'replace']);
   assert.deepEqual(JSON.parse(b.localStorage.getItem(b.api.rollbackKey)).data, b.before);
 });
 
@@ -213,7 +213,7 @@ test('quota failure aborts before cloud replacement', async () => {
   b.localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
   assert.equal(await b.context.applyGarageBackup(pack(sampleState())), false);
   assert.deepEqual(b.garageStorage.all(), b.before);
-  assert.deepEqual(b.calls, ['save', 'password']);
+  assert.deepEqual(b.calls, ['password', 'save']);
 });
 
 test('successful import saves a rollback before replacing and reloads only after confirmation', async () => {
@@ -226,7 +226,7 @@ test('successful import saves a rollback before replacing and reloads only after
   };
   assert.equal(await b.context.applyGarageBackup(pack(next)), true);
   assert.deepEqual(b.garageStorage.all(), next);
-  assert.deepEqual(b.calls, ['save', 'password', 'replace', 'reload']);
+  assert.deepEqual(b.calls, ['password', 'save', 'replace', 'reload']);
 });
 
 test('canceling the action password or empty-copy warning leaves current data intact', async () => {
@@ -264,4 +264,58 @@ test('clear authorization cannot be bypassed by a forged dataset flag or rapid c
   assert.equal(actions, 1);
   assert.equal(authorization, 'volatile-action-password');
   assert.deepEqual(button.dataset, { actionVerified: '1' });
+});
+
+test('import authorization is one-use and is never written to persistent storage', () => {
+  const b = browser();
+  assert.equal(b.api.hasImportAuthorization(), false);
+  b.api.authorizeImport('temporary-import-password');
+  assert.equal(b.api.hasImportAuthorization(), true);
+  assert.equal(b.api.consumeImportAuthorization(), 'temporary-import-password');
+  assert.equal(b.api.consumeImportAuthorization(), null);
+  b.api.authorizeImport('temporary-import-password');
+  b.api.cancelImport();
+  assert.equal(b.api.hasImportAuthorization(), false);
+  assert.equal(JSON.stringify(b.localStorage.all()).includes('temporary-import-password'), false);
+});
+
+test('import click asks for action password before opening the file picker', async () => {
+  const b = browser();
+  let handler, approve, picked = 0, prompts = 0;
+  const waiting = new Promise(resolve => { approve = resolve; });
+  b.context.document = { addEventListener(name, fn) { assert.equal(name, 'click'); handler = fn; } };
+  b.context.garageRequestActionPassword = async () => { prompts++; return waiting; };
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../public/js/action-guard.js'), 'utf8'), b.context);
+  assert.equal(prompts, 0, 'loading the guard never asks for an action password');
+  const button = { id: 'importGarageBackup', dataset: {} };
+  const event = () => ({ target: { closest: () => button }, blocked: false,
+    preventDefault() { this.blocked = true; }, stopImmediatePropagation() {} });
+  button.click = () => { const e = event(); handler(e); if (!e.blocked) {
+    assert.equal(b.api.hasImportAuthorization(), true); picked++;
+  } };
+  const opening = handler(event());
+  assert.equal(prompts, 1); assert.equal(picked, 0);
+  await handler(event());
+  assert.equal(prompts, 1, 'rapid clicks share one authorization');
+  approve('action-test-password');
+  await opening;
+  assert.equal(picked, 1);
+  const password = b.api.consumeImportAuthorization();
+  b.calls.length = 0;
+  assert.equal(await b.context.applyGarageBackup(pack(sampleState()), { actionPassword: password }), true);
+  assert.deepEqual(b.calls, ['save', 'replace', 'reload'], 'confirmation reuses approval without a second password dialog');
+});
+
+test('canceling import authorization cannot open the picker or reuse a previous approval', async () => {
+  const b = browser();
+  let handler, picked = 0;
+  b.api.authorizeImport('previous-password');
+  b.context.document = { addEventListener(_name, fn) { handler = fn; } };
+  b.context.garageRequestActionPassword = async () => false;
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../public/js/action-guard.js'), 'utf8'), b.context);
+  const button = { id: 'importGarageBackup', click() { picked++; } };
+  await handler({ target: { closest: () => button }, preventDefault() {}, stopImmediatePropagation() {} });
+  assert.equal(picked, 0);
+  assert.equal(b.api.hasImportAuthorization(), false);
+  assert.deepEqual(b.garageStorage.all(), b.before);
 });

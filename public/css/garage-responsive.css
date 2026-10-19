@@ -1,7 +1,6 @@
 /* Shared sizing rules: dialogs fit both portrait and short landscape viewports. */
 :root{--garage-nav-height:68px}
 body.garage-dialog-open{overflow:hidden}
-:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
 .overlay{overflow:hidden;isolation:isolate;z-index:calc(9500 + var(--garage-dialog-depth,0))!important}
 .overlay > [role="dialog"],
 #notificationModal > [role="dialog"],

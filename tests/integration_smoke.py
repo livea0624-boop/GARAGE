@@ -191,12 +191,28 @@ def browser_checks():
     login, action = credentials()
     client_name = "Integration client " + secrets.token_hex(4)
     xss_seller = '<img src=x onerror="window.__garageXss=1">'
-    browser_errors, console_errors, http_errors = [], [], []
+    browser_errors, console_errors, http_errors, action_denials = [], [], [], []
+
+    def record_console_error(message):
+        if message.type != "error":
+            return
+        if (message.location.get("url") == BASE + "/api/auth/action"
+                and message.text == "Failed to load resource: the server responded with a status of 401 (Unauthorized)"):
+            return
+        console_errors.append({"text": clean(message.text), "location": message.location})
+
+    def record_response(response):
+        if response.status < 400:
+            return
+        if response.status == 401 and response.url == BASE + "/api/auth/action":
+            action_denials.append(response.status)
+            return
+        http_errors.append({"status": response.status, "url": response.url})
 
     def attach(page):
         page.on("pageerror", lambda error: browser_errors.append(clean(error)))
-        page.on("console", lambda message: console_errors.append({"text": clean(message.text), "location": message.location}) if message.type == "error" else None)
-        page.on("response", lambda response: http_errors.append({"status": response.status, "url": response.url}) if response.status >= 400 else None)
+        page.on("console", record_console_error)
+        page.on("response", record_response)
 
     def logged_in(page, first=False):
         expect(page.locator("#garageCloudGate")).to_be_visible()
@@ -204,12 +220,17 @@ def browser_checks():
             expect(page.locator("#gaction")).to_be_visible()
         else:
             expect(page.locator("#gaction")).to_be_hidden()
+            expect(page.locator('#garageCloudGate input[type="password"]:visible')).to_have_count(1)
+            expect(page.locator("#garageActionGate")).to_have_count(0)
+            check("configured site opening asks only for the login password")
         page.locator("#glogin").fill(login)
         if first:
             page.locator("#gaction").fill(action)
         page.locator("#gcb").click()
         expect(page.locator("#garageCloudGate")).to_have_count(0)
         saved(page)
+        expect(page.locator("#garageActionGate")).to_have_count(0)
+        check("login and initial synchronization do not show an action password prompt")
 
     def saved(page):
         page.wait_for_function("() => { const s=window.garageCloudSync?.getStatus(); return s?.ready && !s.dirty && !s.saving && !s.conflict; }", timeout=15000)
@@ -237,6 +258,8 @@ def browser_checks():
         try:
             first = browser.new_context(viewport={"width": 1440, "height": 1000})
             page = first.new_page()
+            file_choosers = []
+            page.on("filechooser", lambda chooser: file_choosers.append(chooser))
             attach(page)
             response = page.goto(BASE, wait_until="networkidle")
             check("split UI assets load", response.status == 200)
@@ -309,12 +332,35 @@ def browser_checks():
 
             page.set_viewport_size({"width": 1440, "height": 1000})
             navigate(page, "settings")
+            check("pointer clicks do not add the removed three-pixel focus outline", page.locator('.nav [data-page="settings"]').evaluate('(el)=>{const s=getComputedStyle(el);return s.outlineWidth!=="3px"||s.outlineStyle==="none"}'))
             before_import = api("/api/state", login=login)[1]["state"]
+
+            before_choosers = len(file_choosers)
+            page.locator("#importGarageBackup").click()
+            expect(page.locator("#garageActionGate")).to_be_visible()
+            check("import password is requested before the native file chooser", len(file_choosers) == before_choosers)
+            page.locator("#gac").click()
+            expect(page.locator("#garageActionGate")).to_have_count(0)
+            check("cancelled import password opens no chooser and preserves D1", len(file_choosers) == before_choosers and api("/api/state", login=login)[1]["state"] == before_import)
+
+            page.locator("#importGarageBackup").click()
+            expect(page.locator("#garageActionGate")).to_be_visible()
+            page.locator("#gap").fill("incorrect-action-password")
+            page.locator("#gav").click()
+            expect(page.locator("#gae")).to_contain_text("Неверный пароль действий.")
+            check("incorrect import password opens no chooser and preserves D1", len(action_denials) == 1 and len(file_choosers) == before_choosers and api("/api/state", login=login)[1]["state"] == before_import)
+            page.locator("#gac").click()
+            expect(page.locator("#garageActionGate")).to_have_count(0)
+
             invalid_backup = {"format": "garage-local-backup-v2", "data": {
                 "garageClients": json.dumps([{"id": "invalid-import", "name": 7}])
             }}
+            page.locator("#importGarageBackup").click()
+            expect(page.locator("#garageActionGate")).to_be_visible()
+            page.locator("#gap").fill(action)
             with page.expect_file_chooser() as chooser:
-                page.locator("#importGarageBackup").click()
+                page.locator("#gav").click()
+            expect(page.locator("#garageActionGate")).to_have_count(0)
             chooser.value.set_files({"name": "invalid-backup.json", "mimeType": "application/json",
                                      "buffer": json.dumps(invalid_backup).encode()})
             expect(page.locator(".garage-toast.error .garage-toast-text").last).to_contain_text("garageClients[0].name")
@@ -327,17 +373,20 @@ def browser_checks():
             imported_clients.append({"id": "import-" + secrets.token_hex(8), "name": imported_name, "phone": "000"})
             imported_state["garageClients"] = json.dumps(imported_clients)
             valid_backup = {"format": "garage-local-backup-v2", "data": imported_state}
+            page.locator("#importGarageBackup").click()
+            expect(page.locator("#garageActionGate")).to_be_visible()
+            check("valid backup import requests password before file selection", len(file_choosers) == before_choosers + 1)
+            page.locator("#gap").fill(action)
             with page.expect_file_chooser() as chooser:
-                page.locator("#importGarageBackup").click()
+                page.locator("#gav").click()
+            expect(page.locator("#garageActionGate")).to_have_count(0)
             chooser.value.set_files({"name": "valid-backup.json", "mimeType": "application/json",
                                      "buffer": json.dumps(valid_backup).encode()})
             expect(page.locator("#actionConfirmModal")).to_be_visible()
-            page.locator("#confirmYes").click()
-            expect(page.locator("#garageActionGate")).to_be_visible()
-            check("backup replacement requests action password")
-            page.locator("#gap").fill(action)
+            expect(page.locator("#garageActionGate")).to_have_count(0)
             with page.expect_navigation(wait_until="networkidle"):
-                page.locator("#gav").click()
+                page.locator("#confirmYes").click()
+            check("backup confirmation saves and reloads without a second action password prompt")
             logged_in(page)
             navigate(page, "clients")
             expect(page.locator("#clientsList .client-name", has_text=imported_name)).to_have_count(1)
@@ -373,14 +422,17 @@ def browser_checks():
                 "garageClients": json.dumps(minimal_clients)
             }}
             navigate(page, "settings")
+            page.locator("#importGarageBackup").click()
+            expect(page.locator("#garageActionGate")).to_be_visible()
+            check("minimal backup import also requests password before file selection", len(file_choosers) == before_choosers + 2)
+            page.locator("#gap").fill(action)
             with page.expect_file_chooser() as chooser:
-                page.locator("#importGarageBackup").click()
+                page.locator("#gav").click()
+            expect(page.locator("#garageActionGate")).to_have_count(0)
             chooser.value.set_files({"name": "minimal-clients-backup.json", "mimeType": "application/json",
                                      "buffer": json.dumps(minimal_backup).encode()})
             expect(page.locator("#actionConfirmModal")).to_be_visible()
-            page.locator("#confirmYes").click()
-            expect(page.locator("#garageActionGate")).to_be_visible()
-            page.locator("#gap").fill(action)
+            expect(page.locator("#garageActionGate")).to_have_count(0)
             navigations = []
 
             def record_navigation(frame):
@@ -389,7 +441,7 @@ def browser_checks():
 
             page.on("framenavigated", record_navigation)
             with page.expect_navigation(wait_until="networkidle"):
-                page.locator("#gav").click()
+                page.locator("#confirmYes").click()
             page.remove_listener("framenavigated", record_navigation)
             check("minimal clients-only import reloads exactly once", len(navigations) == 1)
             # Read D1 before logging back in so a later startup save cannot hide

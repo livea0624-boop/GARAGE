@@ -8,6 +8,11 @@
   const sequenceKeys=new Set(['garageClientSequence','garageOrderSequence']);
   const rollbackKey='GARAGE_ROLLBACK_BACKUP';
   const maxFileBytes=5*1024*1024;
+  let importPassword=null;
+  function authorizeImport(password){importPassword=typeof password==='string'&&password?password:null}
+  function hasImportAuthorization(){return importPassword!==null}
+  function consumeImportAuthorization(){const password=importPassword;importPassword=null;return password}
+  function cancelImport(){importPassword=null}
   const has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
   const record=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
   const isSharedKey=key=>arrayKeys.has(key)||mapKeys.has(key)||legacyKeys.has(key)||sequenceKeys.has(key)||key==='garageSellers'||key.startsWith('garageSellerColor_');
@@ -153,5 +158,5 @@
       return {format:'garage-local-backup-v2',createdAt:typeof payload.createdAt==='string'?payload.createdAt:'',data};
     }catch{return null}
   }
-  window.GarageBackup=Object.freeze({validate,make,createRollback,previous,rollbackKey,maxFileBytes});
+  window.GarageBackup=Object.freeze({validate,make,createRollback,previous,rollbackKey,maxFileBytes,authorizeImport,hasImportAuthorization,consumeImportAuthorization,cancelImport});
 })();
