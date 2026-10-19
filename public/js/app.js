@@ -203,6 +203,7 @@ function normalizeClientOrder(raw){
     if(!x.status){x.status='transit';changed=true;}
     x.receivedQty=Math.max(0,Math.min(qty,Number(x.receivedQty)||0));
     x.issuedQty=Math.max(0,Math.min(x.receivedQty,Number(x.issuedQty)||0));
+    if(reconcileOrderItemCounts(x))changed=true;
     if(!Array.isArray(x.discountHistory))x.discountHistory=[];
     return x;
   });
@@ -1991,6 +1992,28 @@ function setOrderItemStatus(orderId,index,value){
   persistOrderAfterChange(order,'Изменён статус товара: '+ORDER_ITEM_STATUSES.find(s=>s.value===value).label);
   toast('Статус товара изменён','ok','Заказ #'+order.id); renderDeliveries(); renderOrders(); renderHomeDashboard();
 }
+function reconcileOrderItemCounts(item){
+  const qty=Math.max(0,Number(item.qty)||0);
+  const status=String(item.status||'transit');
+  const beforeReceived=Number(item.receivedQty)||0;
+  const beforeIssued=Number(item.issuedQty)||0;
+  // Status is the intentional selection. Older/manual edits may have left
+  // receivedQty/issuedQty from the previous status, causing conflicting cards.
+  if(status==='transit'){
+    // Partial deliveries legitimately stay in transit until the last item arrives.
+    if(qty>0 && beforeReceived>=qty)item.receivedQty=0;
+    item.issuedQty=0;
+  }else if(status==='stock'||status==='notified'){
+    item.receivedQty=qty;
+    item.issuedQty=0;
+  }else if(status==='taken'){
+    item.receivedQty=qty;
+    item.issuedQty=qty;
+  }
+  // Do not overwrite legitimate partial_taken quantities.
+  return (Number(item.receivedQty)||0)!==beforeReceived ||
+         (Number(item.issuedQty)||0)!==beforeIssued;
+}
 function normalizeOrderStatuses(order){
   let changed=false;
   (order.items||[]).forEach(item=>{
@@ -2004,6 +2027,7 @@ function normalizeOrderStatuses(order){
     const oldR=Number(item.receivedQty)||0,oldI=Number(item.issuedQty)||0;
     item.receivedQty=Math.max(0,Math.min(qty,oldR));
     item.issuedQty=Math.max(0,Math.min(item.receivedQty,oldI));
+    if(reconcileOrderItemCounts(item))changed=true;
     if(item.issuedQty>=qty&&qty>0&&item.status!=='taken'){item.status='taken';changed=true;}
   });
   return changed;
@@ -2016,10 +2040,11 @@ function getOrderAggregateStatus(order){
   const issued=active.reduce((n,i)=>n+getItemIssuedQty(i),0);
   const totalQty=active.reduce((n,i)=>n+getItemQty(i),0);
   const notifiedStock=active.reduce((n,i)=>n+(getItemOnStockQty(i)>0&&getOrderItemStatus(i)==='notified'?getItemOnStockQty(i):0),0);
+  const hasPendingItems=active.some(i=>getOrderItemStatus(i)==='transit'||getItemExpectedQty(i)>0);
   if(totalQty>0&&issued>=totalQty)return {value:'taken',label:'Выдан',cls:'status-taken'};
   if(issued>0)return {value:'partial_taken',label:'Частично забрал',cls:'status-partial-taken'};
-  if(notifiedStock>0 && notifiedStock===stock && transit===0)return {value:'notified',label:'Уведомлен · готов к выдаче',cls:'status-notified'};
-  if(stock>0)return {value:'stock',label:'На складе',cls:'status-arrived'};
+  if(notifiedStock>0 && notifiedStock===stock && !hasPendingItems)return {value:'notified',label:'Уведомлен · готов к выдаче',cls:'status-notified'};
+  if(stock>0 && !hasPendingItems)return {value:'stock',label:'На складе',cls:'status-arrived'};
   if(transit>=totalQty&&totalQty>0)return {value:'transit',label:'В пути',cls:'status-transit'};
   return {value:'transit',label:'В пути',cls:'status-transit'};
 }
@@ -2045,7 +2070,7 @@ function getOrdersNeedingNotification(){
     const statuses=active.map(getOrderItemStatus);
     // На Главную попадает только полностью поступивший заказ.
     // Пока хотя бы одна позиция в пути — уведомлять клиента рано.
-    const allArrived=active.every(i=>['stock','notified'].includes(getOrderItemStatus(i)));
+    const allArrived=active.every(i=>['stock','notified'].includes(getOrderItemStatus(i)) && getItemExpectedQty(i)===0 && getItemIssuedQty(i)===0);
     if(!allArrived)return false;
 
     // Если все позиции вручную возвращены в «На складе», это новый цикл уведомления.
