@@ -34,9 +34,18 @@
   async function api(path, method = 'GET', body = null, password = '', extraHeaders = {}) {
     const headers = { 'content-type': 'application/json', ...extraHeaders };
     if (password) headers['x-garage-password'] = password;
-    const response = await fetch(location.origin + path, {
-      method, headers, cache: 'no-store', body: body === null ? undefined : JSON.stringify(body)
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    let response;
+    try {
+      response = await fetch(location.origin + path, {
+        method, headers, cache: 'no-store', signal: controller.signal,
+        body: body === null ? undefined : JSON.stringify(body)
+      });
+    } catch (error) {
+      if (error.name === 'AbortError') throw new Error('Сервер не ответил за 12 секунд. Повторите попытку.');
+      throw error;
+    } finally { clearTimeout(timeout); }
     let result = null;
     try { result = await response.json(); } catch { /* handled by status check */ }
     if (!response.ok) throw Object.assign(new Error(result?.error || ('HTTP ' + response.status)), {
