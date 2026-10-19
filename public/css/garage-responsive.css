@@ -489,3 +489,151 @@ body.garage-dialog-open{overflow:hidden}
   body #sales .sales-journal-row .sale-row-total,
   body #sales .sales-journal-row .sale-row-history {grid-column:1!important;grid-row:auto!important;justify-content:flex-start!important}
 }
+
+
+/* Desktop interaction language: one focus system for searches, forms and dialogs. */
+@media (min-width:701px) {
+  :root {
+    --garage-ui-border:var(--garage-search-border);
+    --garage-ui-hover:#aabfda;
+    --garage-ui-focus:var(--garage-search-focus);
+    --garage-ui-halo:var(--garage-search-halo);
+    --garage-ui-shadow:0 3px 14px rgba(28,52,84,.045);
+    --garage-ui-shadow-hover:0 9px 24px rgba(32,69,109,.085);
+  }
+
+  /* Non-search controls use precisely the same blue border/halo as search. */
+  body:not(.garage-mobile-mode) :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not(.item-discount):not(.locked):not([aria-invalid="true"]),
+    select, textarea
+  ) {
+    border-color:var(--garage-ui-border)!important;
+    border-radius:11px!important;
+    outline:none;
+    transition:border-color .17s ease, box-shadow .17s ease, background-color .17s ease;
+  }
+  body:not(.garage-mobile-mode) :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not(.item-discount):not(.locked):not([aria-invalid="true"]),
+    select, textarea
+  ):hover:not(:focus):not(:disabled) {
+    border-color:var(--garage-ui-hover)!important;
+  }
+  body:not(.garage-mobile-mode) :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not(.item-discount):not(.locked):not([aria-invalid="true"]),
+    select, textarea
+  ):focus:not(:disabled) {
+    border-color:var(--garage-ui-focus)!important;
+    background-color:#fff!important;
+    outline:0!important;
+    box-shadow:0 0 0 3px var(--garage-ui-halo),0 2px 10px rgba(48,100,170,.065)!important;
+  }
+  body:not(.garage-mobile-mode) :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not(.item-discount):not(.locked):not([aria-invalid="true"]),
+    select, textarea
+  )::placeholder {
+    color:#8292a7;opacity:1;
+  }
+  /* Search has a known icon inset; never override its special padding. */
+  body:not(.garage-mobile-mode) #salesSearch {padding-left:40px!important}
+
+  /* Focus is also communicated by a quieter label, not only a glowing border. */
+  body:not(.garage-mobile-mode) :is(.field,.sales-filter-wrap):focus-within > :is(label,.sales-filter-label) {
+    color:#3468b0!important;
+    transition:color .17s ease;
+  }
+  body:not(.garage-mobile-mode) .global-search-results:not(.hidden) {
+    border-color:#cbd9eb;
+    box-shadow:0 16px 38px rgba(28,57,91,.15);
+  }
+  body:not(.garage-mobile-mode) .global-search-result:focus-visible {
+    outline:2px solid var(--garage-ui-focus);
+    outline-offset:-2px;
+    background:#edf5ff;
+  }
+
+  /* Neutral actions: aligned edge, clear hover and keyboard focus.
+     The primary, danger, status and payment colors retain their meaning. */
+  body:not(.garage-mobile-mode) :is(
+    .btn, .order-history-btn, .return-details-btn, .financial-eye,
+    .seller-manage, .client-profile-toggle, .delivery-filter,
+    .quick-menu button, .method button, .order-pay-method button,
+    .order-item-controls .mini-action, .order-item-tools .mini-action
+  ) {
+    border-radius:11px;
+    transition:border-color .17s ease,background-color .17s ease,
+      box-shadow .17s ease,color .17s ease,filter .17s ease;
+  }
+  body:not(.garage-mobile-mode) .btn:not(.primary):not(.danger):not(.order-delete-btn):not(:disabled):hover,
+  body:not(.garage-mobile-mode) :is(.order-history-btn,.return-details-btn,.financial-eye,.seller-manage,.client-profile-toggle,.delivery-filter):not(:disabled):hover {
+    border-color:#9ebbe3!important;
+    background-color:#f2f7ff!important;
+    color:#2c5f9d!important;
+    box-shadow:0 3px 11px rgba(42,92,155,.055);
+  }
+  body:not(.garage-mobile-mode) .btn.primary:not(:disabled):hover {
+    filter:brightness(1.045);
+    box-shadow:0 5px 15px rgba(37,99,235,.15);
+  }
+  body:not(.garage-mobile-mode) :is(button,[role="button"],a):focus-visible {
+    outline:2px solid var(--garage-ui-focus)!important;
+    outline-offset:3px!important;
+  }
+  body:not(.garage-mobile-mode) :is(input[type="checkbox"],input[type="radio"]):focus-visible {
+    outline:2px solid var(--garage-ui-focus)!important;
+    outline-offset:3px!important;
+  }
+  body:not(.garage-mobile-mode) :is(button,.btn):disabled {
+    cursor:not-allowed;
+  }
+
+  /* Card rhythm is shared by clients, orders, stock arrival and sales. */
+  body:not(.garage-mobile-mode) :is(
+    .home-minimal-stat,.client-card,.order-list-row,.sales-journal-row,
+    .delivery-client-simple,.order-side-card,.client-profile-section
+  ) {
+    border-color:#e0e7f0;
+    box-shadow:var(--garage-ui-shadow);
+    transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+  }
+  @media (hover:hover) and (pointer:fine) {
+    body:not(.garage-mobile-mode) :is(
+      .client-card,.order-list-row,.sales-journal-row,.delivery-client-simple
+    ):hover {
+      border-color:#bed0e8!important;
+      box-shadow:var(--garage-ui-shadow-hover)!important;
+    }
+  }
+  body:not(.garage-mobile-mode) :is(
+    .client-card,.order-list-row,.sales-journal-row,.order-side-card
+  ):focus-within {
+    border-color:#bed0e8!important;
+    box-shadow:0 0 0 2px rgba(62,130,224,.065),var(--garage-ui-shadow-hover)!important;
+  }
+
+  /* Desktop left navigation only; never touches the seven-icon bottom bar. */
+  @media (min-width:901px) {
+    body:not(.garage-mobile-mode) .app > aside {
+      background:linear-gradient(180deg,#111c30 0%,#17233a 100%);
+    }
+    body:not(.garage-mobile-mode) .app > aside .nav button {
+      border:1px solid transparent;
+      transition:background-color .17s ease,color .17s ease,border-color .17s ease;
+    }
+    body:not(.garage-mobile-mode) .app > aside .nav button:hover:not(.active) {
+      background:rgba(130,172,232,.10);
+      color:#e6f0ff;
+    }
+    body:not(.garage-mobile-mode) .app > aside .nav button.active {
+      background:linear-gradient(90deg,rgba(56,117,213,.28),rgba(59,113,185,.14));
+      color:#fff;
+      border-color:rgba(144,190,246,.18);
+    }
+  }
+}
+
+@media (prefers-reduced-motion:reduce) and (min-width:701px) {
+  body:not(.garage-mobile-mode) :is(
+    input,select,textarea,button,.btn,.client-card,.order-list-row,
+    .sales-journal-row,.home-minimal-stat,.delivery-client-simple,.order-side-card
+  ) {transition:none!important}
+}
