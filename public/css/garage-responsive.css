@@ -59,3 +59,112 @@ body.garage-dialog-open{overflow:hidden}
   .garage-toast,.garage-toast-progress{animation:none}
   html{scroll-behavior:auto}
 }
+
+/* Canonical search control: identical on all pages and in client history. */
+:root {
+  --garage-search-border:#cbd9eb;
+  --garage-search-focus:#4f8bdf;
+  --garage-search-halo:rgba(62,130,224,.17);
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search) {
+  -webkit-appearance:none;appearance:none;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  box-sizing:border-box!important;height:44px!important;min-height:44px!important;
+  padding:0 14px!important;border:1px solid var(--garage-search-border)!important;
+  border-radius:12px!important;background:#fff!important;color:#21354d!important;
+  font-family:inherit!important;font-size:14px!important;font-weight:400!important;
+  line-height:1.35!important;outline:0!important;
+  box-shadow:0 1px 2px rgba(24,51,83,.035)!important;
+  transition:border-color .17s ease,box-shadow .17s ease,background-color .17s ease;
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search)::placeholder {
+  color:#8292a7!important;opacity:1!important;
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search):hover:not(:focus) {
+  border-color:#aabfda!important;background:#fbfdff!important;
+}
+:is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search):focus {
+  border-color:var(--garage-search-focus)!important;background:#fff!important;
+  outline:0!important;
+  box-shadow:0 0 0 3px var(--garage-search-halo),0 2px 10px rgba(48,100,170,.065)!important;
+}
+/* Sales contains an icon inside the search box: keep a single focus ring. */
+.sales-filter-search:focus-within {border-radius:12px}
+#salesSearch {padding-left:40px!important}
+.global-search-wrap,.sales-filter-search {min-width:0}
+@media(max-width:700px){
+  :is(#globalSearch,#clientsSearch,#ordersSearch,#deliveriesSearch,#salesSearch,#historySearch,.client-history-search) {
+    height:46px!important;min-height:46px!important;font-size:16px!important;
+  }
+}
+/* Stop flex/grid children from widening the iPhone viewport. */
+@media(max-width:700px){
+  body main,body .page,body .content,body .section,
+  body .client-card,body .client-profile-modal,body .order-detail-modal,
+  body .sales-filters,body .delivery-client-simple,body .delivery-order-simple {
+    min-width:0!important;max-width:100%;box-sizing:border-box;
+  }
+  body .client-card{grid-template-columns:minmax(0,1fr)!important;gap:10px}
+  body .client-cart{min-width:0;max-width:100%;width:100%}
+  body .client-card :is(.client-main,.client-actions){min-width:0}
+  body .client-profile-head-main{min-width:0}
+  body .client-profile-head-main>div:last-child{min-width:0;overflow-wrap:anywhere}
+  body .global-search-results{max-height:min(55dvh,390px);overscroll-behavior:contain}
+  body .delivery-order-simple-head,body .delivery-client-simple-head{min-width:0}
+  body .delivery-item-main{min-width:0;overflow-wrap:anywhere}
+  body .notification-body,body .modal-body,body .client-profile-body,body .order-detail-body{
+    -webkit-overflow-scrolling:touch;
+  }
+  body .top .global-search-wrap{min-width:0}
+}
+
+/* Mobile layout shared by automatic and manually selected mobile modes. */
+@media(max-width:700px){
+  html,body{max-width:100%;overflow-x:clip}
+  body .content{padding:12px 10px 18px!important;min-width:0}
+  body .head{align-items:flex-start;flex-wrap:wrap;gap:10px}
+  body .head>div:first-child{min-width:0}
+  body .head .title{font-size:21px;line-height:1.2;overflow-wrap:anywhere}
+  body .head .actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  body .head .actions .btn{min-width:0;width:100%;min-height:44px;white-space:normal}
+  body .card{min-width:0;max-width:100%;box-sizing:border-box}
+  body .section{padding:12px!important}
+  body .toolbar{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  body .toolbar>*{width:100%!important;min-width:0!important;box-sizing:border-box}
+  body #sales .head>div:last-child{width:100%;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  body #sales .head>div:last-child .btn{width:100%;min-width:0;white-space:normal}
+  body .sales-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  body .sales-summary-grid .sales-summary-card{min-width:0;min-height:86px}
+  body .sales-filters{grid-template-columns:minmax(0,1fr)!important}
+  body .sales-filters>*{grid-column:auto!important;min-width:0}
+  body .sales-journal-row{grid-template-columns:minmax(0,1fr)!important;gap:8px}
+  body .sale-row-total{min-width:0;text-align:left}
+  body .sale-row-history{justify-content:flex-start}
+  body .order-row-right{width:100%;justify-content:flex-start!important;flex-wrap:wrap;gap:8px}
+  body .order-row-right>div{text-align:left;min-width:0}
+  body .client-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  body .client-actions .btn{min-width:0;width:100%;white-space:normal}
+  body .delivery-item-simple{grid-template-columns:30px minmax(0,1fr)!important;gap:8px}
+  body .delivery-item-simple .delivery-item-qty{grid-column:2;text-align:left;justify-self:start}
+  body .delivery-item-simple .delivery-item-action{grid-column:1/-1!important;justify-content:stretch}
+  body .delivery-item-simple .delivery-item-action .btn{min-height:40px;white-space:normal}
+  body #orderHistoryModal .order-workspace{grid-template-columns:minmax(0,1fr)!important}
+  body #orderHistoryModal .order-side-column{position:static!important;min-width:0}
+  body #orderHistoryModal .order-item-card,
+  body #orderHistoryModal .order-item-card.is-removed{grid-template-columns:minmax(0,1fr)!important}
+  body #orderHistoryModal .order-summary-bar{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body #orderHistoryModal .order-item-status-box{border-left:0;border-right:0;border-top:1px solid #e5ebf1}
+  body #orderHistoryModal .order-item-right{border-top:1px solid #e5ebf1}
+  body #productSaleModal .cart-item{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+  body #productSaleModal .cart-item>div{min-width:0;max-width:100%}
+  body #productSaleModal .cart-item>div:nth-child(2){grid-column:1/-1!important}
+  body #productSaleModal .cart-item .cart-arrival-date{min-width:0!important}
+  body #productSaleModal .cart-controls{grid-template-columns:minmax(0,1fr)!important}
+  body .overlay input,body .overlay select,body .overlay textarea{max-width:100%;min-width:0;box-sizing:border-box;font-size:16px}
+  body .overlay .modal-foot .btn{min-width:0;flex:1;white-space:normal}
+  body .interface-mode-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(max-width:380px){
+  body .head .actions,body #sales .head>div:last-child,body .client-actions{grid-template-columns:minmax(0,1fr)!important}
+  body .sales-summary-grid{grid-template-columns:minmax(0,1fr)!important}
+}
