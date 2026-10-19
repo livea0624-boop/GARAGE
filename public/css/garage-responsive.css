@@ -563,8 +563,8 @@ body.garage-dialog-open{overflow:hidden}
     transition:border-color .17s ease,background-color .17s ease,
       box-shadow .17s ease,color .17s ease,filter .17s ease;
   }
-  body:not(.garage-mobile-mode) .btn:not(.primary):not(.danger):not(.order-delete-btn):not(:disabled):hover,
-  body:not(.garage-mobile-mode) :is(.order-history-btn,.return-details-btn,.financial-eye,.seller-manage,.client-profile-toggle,.delivery-filter):not(:disabled):hover {
+  body:not(.garage-mobile-mode) .btn:not(.primary):not(.danger):not(.success):not(.order-delete-btn):not(.delivery-arrival-btn):not(#markWholeOrderTaken):not(#orderPayAll):not(#orderPaySelected):not(:disabled):hover,
+  body:not(.garage-mobile-mode) :is(.order-history-btn,.return-details-btn,.financial-eye,.seller-manage,.client-profile-toggle,.delivery-filter):not(.order-delete-btn):not(:disabled):hover {
     border-color:#9ebbe3!important;
     background-color:#f2f7ff!important;
     color:#2c5f9d!important;
