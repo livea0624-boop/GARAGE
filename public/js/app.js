@@ -1624,6 +1624,25 @@ function updateOrderDiscountInfo(){
   }
   syncOrderSelectAllCheckbox();
 }
+function getOrderDiscountSummary(order){
+  const active=(order.items||[]).filter(item=>!item.removed);
+  const everApplied=(order.items||[]).some(item=>
+    Number(item.discountPct)>0||Number(item.discountAmount)>0||
+    (Array.isArray(item.discountHistory)&&item.discountHistory.some(entry=>Number(entry.to)>0))
+  );
+  let cents=0, count=0;
+  active.forEach(item=>{
+    const pct=Math.max(0,Number(item.discountPct)||0);
+    const price=Math.max(0,Number(item.price)||0);
+    const unitDiscount=Math.max(0,Number(item.discountAmount)||0);
+    if(pct>0){
+      count++;
+      const qty=Math.max(0,Number(item.qty)||0);
+      cents+=moneyCents(Math.min(price,unitDiscount||price*pct/100)*qty);
+    }
+  });
+  return {amount:cents/100,count,everApplied};
+}
 function openOrderHistory(id){
   const order=getOrderHistory(id);
   if(!order){toast('Не удалось найти заказ','error','Заказ не найден');return;}
@@ -1638,6 +1657,7 @@ function openOrderHistory(id){
   const body=document.getElementById('orderHistoryBody');body.dataset.orderId=String(order.id);body.classList.toggle('order-history-archived',archived);
   const aggregate=getOrderAggregateStatus(order)||{value:'empty',label:'Без активных позиций',cls:'status-arrived'};
   const activeItems=order.items.filter(item=>!item.removed);
+  const discountSummary=getOrderDiscountSummary(order);
   const statusCounts={transit:0,stock:0,notified:0,taken:0,partial_taken:0};
   let totalExpected=0,totalStock=0,totalIssued=0;
   activeItems.forEach(i=>{
@@ -1706,7 +1726,7 @@ function openOrderHistory(id){
     partial_taken:{icon:'◐',note:'Клиент уже забрал часть позиций заказа.'},
     taken:{icon:'✓',note:'Все активные позиции заказа выданы клиенту.'}
   }[aggregate.value]||{icon:'•',note:'Текущее состояние заказа.'};
-  body.innerHTML=`<div class="order-status-overview"><div class="order-status-card ${aggregate.value}"><div class="order-status-card-icon">${orderStatusMeta.icon}</div><div class="order-status-card-main"><div class="order-status-card-kicker">Статус заказа</div><div class="order-status-card-label">${escapeHtml(aggregate.label)}</div><div class="order-status-card-note">${escapeHtml(orderStatusMeta.note)}</div></div><div class="order-status-card-side"><small>Позиций</small><b>${activeItems.length}</b></div></div>${statusDetail}</div><div class="order-workspace"><div class="order-main-column"><div class="order-summary-bar"><div class="order-summary-card"><span>Итого</span><b>${money0(order.total)}</b>${Number(order.roundingAdjustment)>0?`<small style="display:block;color:#c47a12;margin-top:3px">Округление −${money0(order.roundingAdjustment)}</small>`:''}</div><div class="order-summary-card paid"><span>Оплачено</span><b>${money0(order.paid)}</b></div><div class="order-summary-card debt"><span>Долг</span><b>${money0(order.debt)}</b></div><div class="order-summary-card"><span>Позиций</span><b>${activeItems.length}</b></div></div><div class="order-panel"><div class="order-panel-head"><div class="order-panel-head-main"><div><b>Позиции заказа</b><span>${activeItems.length} шт. · оплата и статус по каждой позиции</span></div><label class="order-select-all"><input type="checkbox" id="orderSelectAll" ${archived?'disabled':''}><span>Выбрать всё</span></label></div>${archived?'':'<button class="btn" type="button" id="markWholeOrderTaken">✓ Выдан весь заказ</button>'}</div><div class="order-items-list">${items}</div></div>${completionBar}</div><div class="order-side-column">${archived?'<div class="order-side-card"><div class="order-side-title">Архивный заказ</div><div class="order-side-note">Оплата, скидки, удаление позиций и изменение статусов здесь недоступны. Заказ уже завершён.</div></div>':'<div class="order-side-card"><div class="order-side-title">Оплата выбранных позиций</div>'}<input class="order-pay-amount" id="orderPaymentAmount" type="number" min="0" step="0.01" value="0" placeholder="Сумма"><div class="order-pay-method"><button type="button" data-order-pay-method="cash" class="active">💵 Наличные</button><button type="button" data-order-pay-method="card">💳 Карта</button></div><div class="order-selection-bar" id="orderPaymentSelected">Выберите позиции</div><div class="order-payment-discount-hint" id="orderPaymentDiscountHint"><span>Если применить скидку 5%</span><b>—</b></div><div class="order-action-grid" style="margin-top:9px"><button class="btn" type="button" id="orderPayAll">Оплатить весь остаток</button><button class="btn primary" type="button" id="orderPaySelected">Внести оплату</button></div><div class="order-side-note">Сначала оплачиваются выбранные позиции, затем остальные неоплаченные. Сумма сверх долга всего заказа сохраняется как переплата.</div></div><div class="order-side-card"><div class="order-side-title">Скидка выбранным позициям</div><div class="order-discount-box"><select id="orderDiscountType"><option value="0">0% — без скидки / отменить</option><option value="5">5%</option><option value="10">10%</option><option value="manual">Своя %</option></select><input id="orderDiscountManual" type="number" min="0" max="100" step="0.01" placeholder="%" style="display:none"><button class="btn wide" type="button" id="applyOrderDiscount">Применить скидку</button></div><div class="order-selection-bar" id="orderDiscountSelected">Выберите позиции</div><div class="order-discount-preview" id="orderDiscountPreview"><span>Сумма после скидки</span><b>—</b></div><div class="order-side-note">После оплаты обычное изменение скидки фиксируется. Отменить уже установленную скидку до 0% можно отдельно; оплаченная сумма сохраняется, а остаток заказа пересчитывается.</div></div><div class="order-side-card"><div class="order-side-title">Последние действия</div><div class="order-history-compact">${events||'<div style="font-size:11px;color:#8792a1">История пока пуста</div>'}</div></div></div></div>`;
+  body.innerHTML=`<div class="order-status-overview"><div class="order-status-card ${aggregate.value}"><div class="order-status-card-icon">${orderStatusMeta.icon}</div><div class="order-status-card-main"><div class="order-status-card-kicker">Статус заказа</div><div class="order-status-card-label">${escapeHtml(aggregate.label)}</div><div class="order-status-card-note">${escapeHtml(orderStatusMeta.note)}</div></div><div class="order-status-card-side"><small>Позиций</small><b>${activeItems.length}</b></div></div>${statusDetail}</div><div class="order-workspace"><div class="order-main-column"><div class="order-summary-bar"><div class="order-summary-card"><span>Итого</span><b>${money0(order.total)}</b>${Number(order.roundingAdjustment)>0?`<small style="display:block;color:#c47a12;margin-top:3px">Округление −${money0(order.roundingAdjustment)}</small>`:''}</div><div class="order-summary-card paid"><span>Оплачено</span><b>${money0(order.paid)}</b></div><div class="order-summary-card debt"><span>Долг</span><b>${money0(order.debt)}</b></div><div class="order-summary-card"><span>Позиций</span><b>${activeItems.length}</b><small style="display:block;margin-top:6px;color:#6b5a92;line-height:1.35">${discountSummary.count?'Скидка: −'+money0(discountSummary.amount)+' · '+discountSummary.count+' поз.':'Скидка не применена'}</small></div></div><div class="order-panel"><div class="order-panel-head"><div class="order-panel-head-main"><div><b>Позиции заказа</b><span>${activeItems.length} шт. · оплата и статус по каждой позиции</span></div><label class="order-select-all"><input type="checkbox" id="orderSelectAll" ${archived?'disabled':''}><span>Выбрать всё</span></label></div>${archived?'':'<button class="btn" type="button" id="markWholeOrderTaken">✓ Выдан весь заказ</button>'}</div><div class="order-items-list">${items}</div></div>${completionBar}</div><div class="order-side-column">${archived?'<div class="order-side-card"><div class="order-side-title">Архивный заказ</div><div class="order-side-note">Оплата, скидки, удаление позиций и изменение статусов здесь недоступны. Заказ уже завершён.</div></div>':'<div class="order-side-card"><div class="order-side-title">Оплата выбранных позиций</div>'}<input class="order-pay-amount" id="orderPaymentAmount" type="number" min="0" step="0.01" value="0" placeholder="Сумма"><div class="order-pay-method"><button type="button" data-order-pay-method="cash" class="active">💵 Наличные</button><button type="button" data-order-pay-method="card">💳 Карта</button></div><div class="order-selection-bar" id="orderPaymentSelected">Выберите позиции</div><div class="order-payment-discount-hint" id="orderPaymentDiscountHint"><span>Если применить скидку 5%</span><b>—</b></div><div class="order-action-grid" style="margin-top:9px"><button class="btn" type="button" id="orderPayAll">Оплатить весь остаток</button><button class="btn primary" type="button" id="orderPaySelected">Внести оплату</button></div><div class="order-side-note">Сначала оплачиваются выбранные позиции, затем остальные неоплаченные. Сумма сверх долга всего заказа сохраняется как переплата.</div></div><div class="order-side-card"><div class="order-side-title">Скидка выбранным позициям</div><div class="order-discount-box"><select id="orderDiscountType"><option value="0">0% — без скидки / отменить</option><option value="5">5%</option><option value="10">10%</option><option value="manual">Своя %</option></select><input id="orderDiscountManual" type="number" min="0" max="100" step="0.01" placeholder="%" style="display:none"><button class="btn wide" type="button" id="applyOrderDiscount">Применить скидку</button></div><div class="order-selection-bar" id="orderDiscountSelected">Выберите позиции</div><div class="order-discount-preview" id="orderDiscountPreview"><span>Сумма после скидки</span><b>—</b></div><div class="order-side-note">После оплаты обычное изменение скидки фиксируется. Отменить уже установленную скидку до 0% можно отдельно; оплаченная сумма сохраняется, а остаток заказа пересчитывается.</div></div><div class="order-side-card"><div class="order-side-title">Последние действия</div><div class="order-history-compact">${events||'<div style="font-size:11px;color:#8792a1">История пока пуста</div>'}</div></div></div></div>`;
   body.querySelectorAll('[data-pay-item]').forEach(x=>x.addEventListener('change',updateOrderPaymentAmount));
   body.querySelectorAll('[data-discount-item]').forEach(x=>x.addEventListener('change',updateOrderDiscountInfo));
   body.querySelector('#orderSelectAll')?.addEventListener('change',e=>toggleAllOrderPaymentChecks(e.currentTarget));
@@ -2141,6 +2161,10 @@ function openNotificationForOrder(orderId){
   const paid=Number(order.paid)||0;
   const debt=Number(order.debt)||0;
   const total=Number(order.total)||0;
+  const discountSummary=getOrderDiscountSummary(order);
+  const hasPrepayment=paid>0||getOrderPaymentLedgerTotal(order)>0;
+  const cashPayment=(order.paymentMethod||order.saleMethod)!=='card';
+  const canPreviewCashDiscount=cashPayment&&!hasPrepayment&&!discountSummary.everApplied&&debt>0;
   const date=order.date||String(order.createdAt||'').slice(0,10)||'—';
   const paymentMethod=(order.paymentMethod||order.saleMethod)==='card'?'Карта':'Наличные';
   const itemRows=items.map(i=>{
@@ -2180,7 +2204,32 @@ function openNotificationForOrder(orderId){
       <div class="notification-total paid"><span>Оплачено</span><b>${money0(paid)}</b></div>
       <div class="notification-total debt"><span>Остаток</span><b>${money0(debt)}</b></div>
     </div>
+    <div class="notification-info-card" style="margin-top:10px;background:#faf8ff;border-color:#e6def1">
+      <span>Скидка по всему заказу</span>
+      <b>${discountSummary.count?'Применена скидка −'+money0(discountSummary.amount)+' на '+discountSummary.count+' поз.':discountSummary.everApplied?'Ранее применялась, сейчас отменена':'Не применялась'}</b>
+    </div>
+    ${canPreviewCashDiscount?`<div class="notification-info-card" style="margin-top:10px;background:#f6fbff;border-color:#d8e8f8">
+      <span>Калькулятор скидки за наличные · только просмотр</span>
+      <label for="notificationCashDiscount" style="display:block;margin:9px 0 5px;font-size:12px">Предполагаемая скидка, %</label>
+      <input id="notificationCashDiscount" type="number" min="0" max="100" step="0.1" value="5" style="width:105px;max-width:100%;box-sizing:border-box;font-size:16px;padding:9px 10px;border:1px solid #cfddea;border-radius:9px">
+      <div style="margin-top:10px;font-size:12px;color:#64748b">Экономия: <b id="notificationCashSaving">—</b></div>
+      <div style="margin-top:5px;font-size:14px">К оплате с учётом скидки: <b id="notificationCashDue">—</b></div>
+      <small style="display:block;margin-top:8px;color:#718096">Только расчёт для разговора. Не меняет заказ, платежи, долг или историю.</small>
+    </div>`:`<div class="notification-info-card" style="margin-top:10px"><span>Калькулятор скидки наличными</span><b>${hasPrepayment?'Недоступен: уже была оплата':discountSummary.everApplied?'Недоступен: скидка уже применялась':!cashPayment?'Недоступен: оплата не наличными':'Недоступен: нет остатка к оплате'}</b></div>`}
     ${order.comment?`<div class="notification-info-card" style="margin-top:10px"><span>Комментарий</span><b>${escapeHtml(order.comment)}</b></div>`:''}`;
+  if(canPreviewCashDiscount){
+    const input=body.querySelector('#notificationCashDiscount');
+    const updateCashPreview=()=>{
+      const value=Number(input.value);
+      const pct=Number.isFinite(value)?Math.max(0,Math.min(100,value)):0;
+      const saving=moneyAmount(debt*pct/100);
+      const amount=moneyAmount(Math.max(0,debt-saving));
+      body.querySelector('#notificationCashSaving').textContent=money0(saving);
+      body.querySelector('#notificationCashDue').textContent=money0(amount);
+    };
+    input.addEventListener('input',updateCashPreview);
+    updateCashPreview();
+  }
   document.getElementById('notificationModal').dataset.orderId=String(order.id);
   document.getElementById('notificationModal').classList.remove('hidden');
 }
@@ -2619,9 +2668,22 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
 (function(){
   const open=document.getElementById('clearOrdersSalesBtn');
   const modal=document.getElementById('clearOrdersSalesModal');
-  const close=()=>modal&&modal.classList.add('hidden');
+  let approvedPassword='';
+  const close=()=>{approvedPassword='';modal?.classList.add('hidden');};
   if(!open||!modal)return;
-  open.addEventListener('click',()=>modal.classList.remove('hidden'));
+  let opening=false;
+  open.addEventListener('click',async()=>{
+    if(opening||!modal.classList.contains('hidden'))return;
+    opening=true;open.disabled=true;
+    try{
+      if(typeof window.garageRequestActionPassword!=='function')throw Error('Проверка пароля действий недоступна.');
+      const password=await window.garageRequestActionPassword();
+      if(!password)return;
+      approvedPassword=password;
+      modal.classList.remove('hidden');
+    }catch(error){if(typeof toast==='function')toast(error.message||'Не удалось проверить пароль','error');}
+    finally{opening=false;open.disabled=false;}
+  });
   document.getElementById('closeClearOrdersSales')?.addEventListener('click',close);
   document.getElementById('cancelClearOrdersSales')?.addEventListener('click',close);
   modal.addEventListener('click',e=>{if(e.target===modal)close()});
@@ -2630,10 +2692,9 @@ document.getElementById('failedNotification')?.addEventListener('click',markNoti
     if(confirmButton?.disabled)return;
     if(confirmButton)confirmButton.disabled=true;
     try{
-      // Require server-verified action password before touching any order or sale.
-      if(typeof window.garageRequestActionPassword!=='function')throw new Error('Проверка пароля действий недоступна. Очистка отменена.');
-      const actionPassword=await window.garageRequestActionPassword();
-      if(!actionPassword)return;
+      // Already verified on the server before showing the final confirmation.
+      const actionPassword=approvedPassword;
+      if(!actionPassword)throw new Error('Сначала подтвердите пароль действий.');
       const keys=['garageClientOrders','garageCompletedOrders','garageOrderHistoryOverrides','garageWarehouseSales','garageReturns','garageClientCarts','garageArchivedOrders','garageOrderArchive','garageCompletedOrderOverrides'];
       const backup=keys.map(key=>[key,garageStorage.getItem(key)]);
       try{
