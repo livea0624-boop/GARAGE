@@ -1626,18 +1626,20 @@ function updateOrderDiscountInfo(){
 }
 function getOrderDiscountSummary(order){
   const active=(order.items||[]).filter(item=>!item.removed);
-  let cents=0, count=0, everApplied=false;
+  const everApplied=(order.items||[]).some(item=>
+    Number(item.discountPct)>0||Number(item.discountAmount)>0||
+    (Array.isArray(item.discountHistory)&&item.discountHistory.some(entry=>Number(entry.to)>0))
+  );
+  let cents=0, count=0;
   active.forEach(item=>{
     const pct=Math.max(0,Number(item.discountPct)||0);
+    const price=Math.max(0,Number(item.price)||0);
     const unitDiscount=Math.max(0,Number(item.discountAmount)||0);
-    const hadDiscount=Array.isArray(item.discountHistory)&&item.discountHistory.some(entry=>Number(entry.to)>0);
     if(pct>0||unitDiscount>0){
       count++;
-      const price=Math.max(0,Number(item.price)||0);
       const qty=Math.max(0,Number(item.qty)||0);
-      cents+=moneyCents(Math.min(price,unitDiscount)*qty);
+      cents+=moneyCents(Math.min(price,unitDiscount||price*pct/100)*qty);
     }
-    if(pct>0||unitDiscount>0||hadDiscount)everApplied=true;
   });
   return {amount:cents/100,count,everApplied};
 }
