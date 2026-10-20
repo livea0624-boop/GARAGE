@@ -1118,7 +1118,7 @@ function showActionConfirm(type, onYes, detailText){
     const details=document.getElementById('orderConfirmDetails'); details.classList.remove('hidden');
     const total=Math.max(0,+saleFinalInput.value||0);
     document.getElementById('orderConfirmTotal').textContent=money0(total);
-    const paid=document.getElementById('orderConfirmPaid'); paid.value=total;
+    const paid=document.getElementById('orderConfirmPaid'); paid.value='0';
     const updateDebt=()=>{const p=Math.max(0,moneyValue(paid.value));const debt=Math.max(0,total-p);const over=Math.max(0,p-total);document.getElementById('orderConfirmDebt').textContent=over>0?('0 ₽ · переплата '+money0(over)):money0(debt)};
     paid.oninput=updateDebt; updateDebt();
     yes.textContent='Подтверждаю'; yes.className='btn success';
@@ -1575,6 +1575,8 @@ function updateOrderPaymentAmount(){
   const info=document.getElementById('orderPaymentSelected');if(info)info.textContent=selected.length?`Выбрано позиций: ${selected.length} · к оплате ${money0(total)}`:'Выберите товары галочками';
   const discountHint=document.getElementById('orderPaymentDiscountHint');
   if(discountHint){
+    // After any previously applied order discount, do not suggest another 5% discount.
+    discountHint.classList.toggle('hidden',getOrderDiscountSummary(order).everApplied);
     const value=discountHint.querySelector('b');
     if(value) value.textContent=selected.length&&total>0?money0(total*0.95):'—';
   }
