@@ -1520,6 +1520,7 @@ function recordOrderPayment(orderId){
   const amount=Math.max(0,Number(document.getElementById('orderPaymentAmount')?.value)||0);
   if(amount<=0){toast('Укажите сумму оплаты.','error');return;}
   const method=document.querySelector('#orderHistoryBody [data-order-pay-method].active')?.dataset.orderPayMethod||'cash';
+  if(method==='card'&&orderHasActiveDiscount(order)){toast('В заказе применена скидка — оплатить можно только наличными.','error');return;}
   const available=selected.reduce((sum,i)=>sum+(order.items[i]?getItemRemaining(order.items[i]):0),0);
   const selectedLabel=selected.length===1?'1 позицию':selected.length+' позиции';
   const rounding=getPaymentRoundingDiscount(order,amount,selected);
@@ -1535,6 +1536,7 @@ function recordOrderPaymentNow(orderId){
   const amount=Math.max(0,moneyValue(document.getElementById('orderPaymentAmount')?.value));
   if(amount<=0){toast('Укажите сумму оплаты.','error');return;}
   const method=document.querySelector('#orderHistoryBody [data-order-pay-method].active')?.dataset.orderPayMethod||'cash';
+  if(method==='card'&&orderHasActiveDiscount(order)){toast('В заказе применена скидка — оплатить можно только наличными.','error');return;}
   const rounding=getPaymentRoundingDiscount(order,amount,selected);
   const now=new Date(),pad=n=>String(n).padStart(2,'0');
   const date=pad(now.getDate())+'.'+pad(now.getMonth()+1)+'.'+now.getFullYear(),time=pad(now.getHours())+':'+pad(now.getMinutes()),seller=getCurrentSeller(),createdAt=now.toISOString();
@@ -1625,6 +1627,12 @@ function updateOrderDiscountInfo(){
     }
   }
   syncOrderSelectAllCheckbox();
+}
+function orderHasActiveDiscount(order){
+  // Card payments are disallowed only for actual position discounts.
+  // Rounding adjustments are independent and do not trigger this restriction.
+  return (order.items||[]).some(item=>!item.removed&&
+    (Number(item.discountPct)>0||Number(item.discountAmount)>0));
 }
 function getOrderDiscountSummary(order){
   const active=(order.items||[]).filter(item=>!item.removed);
@@ -1748,7 +1756,25 @@ function openOrderHistory(id){
       toast('Скидка отменена у товара','ok','Скидка отменена');
     },'Скидка будет отменена у товара «'+(item.name||'товар')+'».');
   }));
-  body.querySelectorAll('[data-order-pay-method]').forEach(btn=>btn.addEventListener('click',()=>{body.querySelectorAll('[data-order-pay-method]').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}));
+  body.querySelectorAll('[data-order-pay-method]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(btn.disabled)return;
+    body.querySelectorAll('[data-order-pay-method]').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+  }));
+  if(!archived&&orderHasActiveDiscount(order)){
+    const cardButton=body.querySelector('[data-order-pay-method="card"]');
+    if(cardButton){
+      cardButton.disabled=true;
+      cardButton.title='Карта недоступна: в заказе уже применена скидка';
+      cardButton.style.opacity='0.5';
+      cardButton.style.cursor='not-allowed';
+    }
+    const note=document.createElement('div');
+    note.className='order-side-note';
+    note.style.color='#9a6509';
+    note.textContent='В заказе применена скидка: дальнейшая оплата только наличными.';
+    body.querySelector('.order-pay-method')?.after(note);
+  }
   body.querySelector('#orderDiscountType')?.addEventListener('change',e=>{const el=body.querySelector('#orderDiscountManual');el.style.display=e.target.value==='manual'?'block':'none';updateOrderDiscountInfo()});
   body.querySelector('#orderDiscountManual')?.addEventListener('input',updateOrderDiscountInfo);
   body.querySelectorAll('[data-item-discount-type]').forEach(sel=>sel.addEventListener('change',()=>{const input=body.querySelector(`[data-item-discount-manual="${sel.dataset.itemDiscountType}"]`);if(input)input.style.display=sel.value==='manual'?'block':'none'}));
