@@ -1635,7 +1635,7 @@ function getOrderDiscountSummary(order){
     const pct=Math.max(0,Number(item.discountPct)||0);
     const price=Math.max(0,Number(item.price)||0);
     const unitDiscount=Math.max(0,Number(item.discountAmount)||0);
-    if(pct>0||unitDiscount>0){
+    if(pct>0){
       count++;
       const qty=Math.max(0,Number(item.qty)||0);
       cents+=moneyCents(Math.min(price,unitDiscount||price*pct/100)*qty);
