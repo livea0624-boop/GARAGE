@@ -2192,7 +2192,7 @@ function openNotificationForOrder(orderId){
   const discountSummary=getOrderDiscountSummary(order);
   const hasPrepayment=paid>0||getOrderPaymentLedgerTotal(order)>0;
   const cashPayment=(order.paymentMethod||order.saleMethod)!=='card';
-  const canPreviewCashDiscount=cashPayment&&!hasPrepayment&&!discountSummary.everApplied&&debt>0;
+  const canPreviewCashDiscount=cashPayment&&!hasPrepayment&&!orderHasActiveDiscount(order)&&debt>0;
   const date=order.date||String(order.createdAt||'').slice(0,10)||'—';
   const paymentMethod=(order.paymentMethod||order.saleMethod)==='card'?'Карта':'Наличные';
   const itemRows=items.map(i=>{
@@ -2243,7 +2243,7 @@ function openNotificationForOrder(orderId){
       <div style="margin-top:10px;font-size:12px;color:#64748b">Экономия: <b id="notificationCashSaving">—</b></div>
       <div style="margin-top:5px;font-size:14px">К оплате с учётом скидки: <b id="notificationCashDue">—</b></div>
       <small style="display:block;margin-top:8px;color:#718096">Только расчёт для разговора. Не меняет заказ, платежи, долг или историю.</small>
-    </div>`:`<div class="notification-info-card" style="margin-top:10px"><span>Калькулятор скидки наличными</span><b>${hasPrepayment?'Недоступен: уже была оплата':discountSummary.everApplied?'Недоступен: скидка уже применялась':!cashPayment?'Недоступен: оплата не наличными':'Недоступен: нет остатка к оплате'}</b></div>`}
+    </div>`:`<div class="notification-info-card" style="margin-top:10px"><span>Калькулятор скидки наличными</span><b>${hasPrepayment?'Недоступен: уже была оплата':orderHasActiveDiscount(order)?'Недоступен: скидка уже применена':!cashPayment?'Недоступен: оплата не наличными':'Недоступен: нет остатка к оплате'}</b></div>`}
     ${order.comment?`<div class="notification-info-card" style="margin-top:10px"><span>Комментарий</span><b>${escapeHtml(order.comment)}</b></div>`:''}`;
   if(canPreviewCashDiscount){
     const input=body.querySelector('#notificationCashDiscount');
